@@ -3,15 +3,11 @@ import numpy as np
 
 
 class DataGenerator(tf.keras.utils.Sequence):
-    def __init__(self, db_dir, batch_size, input_shape, num_classes,
-                 shuffle=True):
-        # TODO your initialization
-        # you might want to store the parameters into class variables
+    def __init__(self, db_dir, batch_size, input_shape, shuffle=True):
         self.input_shape = input_shape
         self.batch_size = batch_size
-        self.num_classes = num_classes
         self.shuffle = shuffle
-        # load the data from the root directory
+
         self.data, self.labels = self.get_data(db_dir)
         self.indices = np.arange(len(self.data))
         self.on_epoch_end()
@@ -20,7 +16,7 @@ class DataGenerator(tf.keras.utils.Sequence):
         """"
         Loads the paths to the images and their corresponding labels from the database directory
         """
-        # TODO your code here
+
         self.data = None
         self.labels = None
         return self.data, self.labels
@@ -36,9 +32,9 @@ class DataGenerator(tf.keras.utils.Sequence):
         Generates a batch of data
         """
         batch_indices = self.indices[index * self.batch_size: (index + 1) * self.batch_size]
-        batch_x = None  # TODO load the image from batch_indices
-        batch_y = None  # TODO load the corresponding labels of the images you loaded
-        # optionally you can use: batch_y = tf.keras.utils.to_categorical(batch_y, num_classes=self.num_classes)
+        batch_x = self.data[batch_indices]
+        batch_y = self.labels[batch_indices]
+        # batch_y = tf.keras.utils.to_categorical(batch_y, num_classes=self.num_classes)
         return batch_x, batch_y
 
     def on_epoch_end(self):
@@ -48,6 +44,8 @@ class DataGenerator(tf.keras.utils.Sequence):
         # if required, shuffle your data after each epoch
         self.indices = np.arange(len(self.data))
         if self.shuffle:
-            # TODO shuffle data
-            # you might find np.random.shuffle useful here
             np.random.shuffle(self.indices)
+
+
+if __name__ == '__main__':
+    pass

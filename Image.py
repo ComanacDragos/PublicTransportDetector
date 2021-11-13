@@ -1,4 +1,3 @@
-import numpy as np
 from cv2 import cv2
 from matplotlib import pyplot as plt
 from settings import *
@@ -9,7 +8,7 @@ class Image:
         self.image = cv2.cvtColor(cv2.imread(f"{dir}\\{image_name}"), cv2.COLOR_BGR2RGB)
         self.bounding_boxes = []
         self.read_bounding_boxes(f"{dir}\\Label\\{image_name[:-4]}.txt")
-        self.image = cv2.resize(self.image, (416, 416))
+        self.image = cv2.resize(self.image, (IMAGE_SIZE, IMAGE_SIZE))
 
     def read_bounding_boxes(self, path):
         with open(path) as f:
