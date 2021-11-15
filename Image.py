@@ -1,6 +1,8 @@
+import numpy as np
 from cv2 import cv2
 from matplotlib import pyplot as plt
 from settings import *
+from utils import *
 
 
 class Image:
@@ -18,8 +20,7 @@ class Image:
                 height = self.image.shape[0]
                 width = self.image.shape[1]
 
-                coordinates = [float(t) for t in tokens[-4:]]
-                coordinates = [int(t) if t - int(t) < 0.5 else int(t) + 1 for t in coordinates]
+                coordinates = [round(float(t)) for t in tokens[-4:]]
                 coordinates[0] = int(IMAGE_SIZE / width * coordinates[0])
                 coordinates[1] = int(IMAGE_SIZE / height * coordinates[1])
                 coordinates[2] = int(IMAGE_SIZE / width * coordinates[2])
@@ -38,6 +39,9 @@ class Image:
             img[bbox.y_min:bbox.y_max, bbox.x_max - width:bbox.x_max + width] = color
         return img
 
+    def bounding_boxes_as_arrays(self):
+        return [b.as_coordinates_array() for b in self.bounding_boxes]
+
 
 class BoundingBox:
     def __init__(self, c, x_min, y_min, x_max, y_max):
@@ -47,8 +51,57 @@ class BoundingBox:
         self.y_max = y_max
         self.c = c
 
+    def as_coordinates_array(self):
+        return np.array([self.x_min, self.y_min, self.x_max, self.y_max])
+
+    def center(self):
+        return round((self.x_min+self.x_max)/2), round((self.y_min+self.y_max)/2)
+
+
+def iou(bbox, other_bbox):
+    """
+    :param bbox: array of coordinates x_min, y_min, x_max, y_max
+    :param other_bbox: array of coordinates x_min, y_min, x_max, y_max
+    :return: IOU
+    """
+    x_min, y_min, x_max, y_max = bbox
+    other_x_min, other_y_min, other_x_max, other_y_max = other_bbox
+
+    intersect_width = max(min(x_max, other_x_max) - max(x_min, other_x_min), 0)
+    intersect_height = max(min(y_max, other_y_max) - max(y_min, other_y_min), 0)
+
+    bbox_width, bbox_height = x_max - x_min, y_max - y_min
+    other_bbox_width, other_bbox_height = other_x_max - other_x_min, other_y_max - other_y_min
+
+    intersect = intersect_height * intersect_width
+    union = bbox_height * bbox_width + other_bbox_height * other_bbox_width - intersect
+    return float(intersect) / union
+
+
+def iou_bbox(bbox, other_bbox):
+    return iou(bbox.as_coordinates_array(), other_bbox.as_coordinates_array())
+
 
 if __name__ == '__main__':
+    bbox = BoundingBox(-1, 1, 1, 5, 5)
+    other_bbox = BoundingBox(-1, 3, 3, 6, 6)
+    print(iou_bbox(bbox, other_bbox))
+
+    bbox = BoundingBox(-1, 1, 1, 5, 5)
+    other_bbox = BoundingBox(-1, 2, 2, 4, 4)
+    print(iou_bbox(bbox, other_bbox))
+
+    bbox = BoundingBox(-1, 1, 1, 5, 5)
+    other_bbox = BoundingBox(-1, 20, 20, 40, 40)
+    print(iou_bbox(bbox, other_bbox))
+
+    bbox = BoundingBox(-1, 1, 1, 5, 5)
+    other_bbox = BoundingBox(-1, 1, 1, 5, 5)
+    print(iou_bbox(bbox, other_bbox))
+
+    print(BoundingBox(-1, 3, 3, 6, 6).center())
+
+
     images = [
         Image(PATH_TO_VALIDATION, "0f4bfc46402a9f52.jpg"),
         Image(PATH_TO_VALIDATION, "3f10138eb086f2e9.jpg"),

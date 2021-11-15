@@ -48,4 +48,5 @@ class DataGenerator(tf.keras.utils.Sequence):
 
 
 if __name__ == '__main__':
-    pass
+    anchors = np.load("data/anchors.pickle", allow_pickle=True)
+    print(anchors)
