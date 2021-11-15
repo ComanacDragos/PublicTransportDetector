@@ -17,5 +17,8 @@ ENCODE_LABEL = {
 
 # Data processing
 IMAGE_SIZE = 416
+GRID_SIZE = 13
 
 ANCHORS = 5
+
+OBJ_THRESHOLD = 0.9

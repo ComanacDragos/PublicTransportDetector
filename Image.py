@@ -20,7 +20,7 @@ class Image:
                 height = self.image.shape[0]
                 width = self.image.shape[1]
 
-                coordinates = [round(float(t)) for t in tokens[-4:]]
+                coordinates = [my_round(float(t)) for t in tokens[-4:]]
                 coordinates[0] = int(IMAGE_SIZE / width * coordinates[0])
                 coordinates[1] = int(IMAGE_SIZE / height * coordinates[1])
                 coordinates[2] = int(IMAGE_SIZE / width * coordinates[2])
@@ -32,7 +32,7 @@ class Image:
         img = self.image
         for bbox in self.bounding_boxes:
             color = [200, 0, 0]
-            color[bbox.c] = 255
+            color[bbox.c % 3] = 255
             img[bbox.y_min - width:bbox.y_min + width, bbox.x_min:bbox.x_max] = color
             img[bbox.y_max - width:bbox.y_max + width, bbox.x_min:bbox.x_max] = color
             img[bbox.y_min:bbox.y_max, bbox.x_min - width:bbox.x_min + width] = color
@@ -51,11 +51,14 @@ class BoundingBox:
         self.y_max = y_max
         self.c = c
 
+    def width_height(self):
+        return self.x_max - self.x_min, self.y_max - self.y_min
+
     def as_coordinates_array(self):
         return np.array([self.x_min, self.y_min, self.x_max, self.y_max])
 
     def center(self):
-        return round((self.x_min+self.x_max)/2), round((self.y_min+self.y_max)/2)
+        return my_round((self.x_min + self.x_max) / 2), my_round((self.y_min + self.y_max) / 2)
 
 
 def iou(bbox, other_bbox):
@@ -100,7 +103,6 @@ if __name__ == '__main__':
     print(iou_bbox(bbox, other_bbox))
 
     print(BoundingBox(-1, 3, 3, 6, 6).center())
-
 
     images = [
         Image(PATH_TO_VALIDATION, "0f4bfc46402a9f52.jpg"),

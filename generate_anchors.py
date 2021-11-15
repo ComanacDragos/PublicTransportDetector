@@ -92,7 +92,7 @@ def generate_anchors(bounding_boxes=None, prior_centroids=None):
                 return generate_anchors(boxes, prior_centroids)
 
 
-if __name__ == '__main__':
+def run_generate_anchors():
     start = time.time()
 
     anchors = generate_anchors(prior_centroids=np.load("data/anchors_10000.pickle", allow_pickle=True))
@@ -103,6 +103,20 @@ if __name__ == '__main__':
 
     anchors = np.load("data/anchors.pickle", allow_pickle=True)
     print(anchors)
+
+
+def visualize_anchors(path):
+    anchors = np.load(path, allow_pickle=True)
+    boxes = [BoundingBox(-1, *anchor) for anchor in anchors]
+    img = with_bounding_boxes(np.zeros((IMAGE_SIZE, IMAGE_SIZE, 3)), boxes, 2, (255, 0, 0))
+
+    plt.imshow(img)
+    plt.show()
+
+
+if __name__ == '__main__':
+    # run_generate_anchors()
+    visualize_anchors("data/anchors.pickle")
 
     """
     [[114 130 294 280]
