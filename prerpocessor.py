@@ -1,13 +1,17 @@
+import time
+
 import numpy as np
 import tensorflow as tf
 from Image import *
 
 
 class DataGenerator(tf.keras.utils.Sequence):
-    def __init__(self, db_dir, batch_size, input_shape, shuffle=True):
+    def __init__(self, db_dir, batch_size, input_shape, anchors_path, shuffle=True):
         self.input_shape = input_shape
         self.batch_size = batch_size
         self.shuffle = shuffle
+
+        self.anchors = process_anchors(anchors_path)
 
         self.data, self.labels = self.get_data(db_dir)
         self.indices = np.arange(len(self.data))
@@ -17,9 +21,16 @@ class DataGenerator(tf.keras.utils.Sequence):
         """"
         Loads the paths to the images and their corresponding labels from the database directory
         """
+        self.data = []
+        self.labels = []
 
-        self.data = None
-        self.labels = None
+        image_paths = os.listdir(root_dir)
+        image_paths.remove("Label")
+
+        mutex = threading.Lock()
+        run_task(image_paths, _read_images_worker, [root_dir, self.data, self.labels, self.anchors, mutex])
+        self.data = np.array(self.data)
+        self.labels = np.array(self.labels)
         return self.data, self.labels
 
     def __len__(self):
@@ -46,6 +57,19 @@ class DataGenerator(tf.keras.utils.Sequence):
         self.indices = np.arange(len(self.data))
         if self.shuffle:
             np.random.shuffle(self.indices)
+
+
+def _read_images_worker(paths, dir, data, labels, anchors, mutex):
+    local_data = []
+    local_labels = []
+    for path in paths:
+        image = Image(dir, path)
+        local_data.append(image.image)
+        local_labels.append(generate_output_array(image, anchors))
+    mutex.acquire()
+    data += local_data
+    labels += local_labels
+    mutex.release()
 
 
 def process_anchors(path):
@@ -142,10 +166,24 @@ def test_generate_output_array():
 
     for b in originalImage.bounding_boxes:
         print(b.c, b.as_coordinates_array())
-    print("==========")
+    print("="*20)
     for b in boxes:
         print(b.c, b.as_coordinates_array())
 
 
+def test_generator():
+    start = time.time()
+    generator = DataGenerator(PATH_TO_VALIDATION, 32, (IMAGE_SIZE, IMAGE_SIZE, 3), "data/anchors.pickle")
+    print("Time to load: ", time.time() - start)
+    print(generator.data.shape)
+    print(generator.labels.shape)
+    print(len(generator) * generator.batch_size)
+    # for i in range(len(generator)):
+    #    data, labels = generator[i]
+    #    print(data.shape, labels.shape)
+    #    print(np.min(labels), np.max(labels))
+
+
 if __name__ == '__main__':
-    test_generate_output_array()
+    #test_generate_output_array()
+    test_generator()
