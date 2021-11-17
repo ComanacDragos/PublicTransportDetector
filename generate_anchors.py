@@ -108,7 +108,7 @@ def run_generate_anchors():
 def visualize_anchors(path):
     anchors = np.load(path, allow_pickle=True)
     boxes = [BoundingBox(-1, *anchor) for anchor in anchors]
-    img = with_bounding_boxes(np.zeros((IMAGE_SIZE, IMAGE_SIZE, 3)), boxes, 2, (255, 0, 0))
+    img = with_bounding_boxes(np.zeros((IMAGE_SIZE, IMAGE_SIZE, 3)), boxes, 2, (255, 255, 255))
 
     plt.imshow(img)
     plt.show()
