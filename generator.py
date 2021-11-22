@@ -13,63 +13,48 @@ class DataGenerator(tf.keras.utils.Sequence):
 
         self.anchors = process_anchors(anchors_path)
 
-        self.data, self.labels = self.get_data(db_dir)
-        self.indices = np.arange(len(self.data))
+        self.image_paths = []
+        self.db_dir = db_dir
+        self.get_data()
+        self.indices = np.arange(len(self.image_paths))
         self.on_epoch_end()
 
-    def get_data(self, root_dir):
+    def get_data(self):
         """"
-        Loads the paths to the images and their corresponding labels from the database directory
+        Loads the paths to the images from the database directory
         """
-        self.data = []
-        self.labels = []
-
-        image_paths = os.listdir(root_dir)
-        image_paths.remove("Label")
-
-        mutex = threading.Lock()
-        run_task(image_paths, _read_images_worker, [root_dir, self.data, self.labels, self.anchors, mutex])
-        self.data = np.array(self.data)
-        self.labels = np.array(self.labels)
-        return self.data, self.labels
+        self.image_paths = os.listdir(self.db_dir)
+        self.image_paths.remove("Label")
 
     def __len__(self):
         """
         Returns the number of batches per epoch: the total size of the dataset divided by the batch size
         """
-        return int(np.floor(len(self.data) / self.batch_size))
+        return int(np.ceil(len(self.image_paths) / self.batch_size))
 
     def __getitem__(self, index):
         """"
         Generates a batch of data
         """
         batch_indices = self.indices[index * self.batch_size: (index + 1) * self.batch_size]
-        batch_x = self.data[batch_indices]
-        batch_y = self.labels[batch_indices]
+        batch_x = []
+        batch_y = []
+        for i in range(len(batch_indices)):
+            index = batch_indices[i]
+            image = Image(self.db_dir, self.image_paths[index])
+            batch_x.append(image.image)
+            batch_y.append(generate_output_array(image, self.anchors))
         # batch_y = tf.keras.utils.to_categorical(batch_y, num_classes=self.num_classes)
-        return batch_x, batch_y
+        return np.asarray(batch_x), np.asarray(batch_y)
 
     def on_epoch_end(self):
         """"
         Called at the end of each epoch
         """
         # if required, shuffle your data after each epoch
-        self.indices = np.arange(len(self.data))
+        self.indices = np.arange(len(self.image_paths))
         if self.shuffle:
             np.random.shuffle(self.indices)
-
-
-def _read_images_worker(paths, dir, data, labels, anchors, mutex):
-    local_data = []
-    local_labels = []
-    for path in paths:
-        image = Image(dir, path)
-        local_data.append(image.image)
-        local_labels.append(generate_output_array(image, anchors))
-    mutex.acquire()
-    data += local_data
-    labels += local_labels
-    mutex.release()
 
 
 def process_anchors(path):
@@ -82,7 +67,7 @@ def process_anchors(path):
 
 
 def clip_value(value):
-    return max(0, min(value, IMAGE_SIZE-1))
+    return max(0, min(value, IMAGE_SIZE - 1))
 
 
 def generate_output_array(image: Image, anchors):
@@ -166,24 +151,29 @@ def test_generate_output_array():
 
     for b in originalImage.bounding_boxes:
         print(b.c, b.as_coordinates_array())
-    print("="*20)
+    print("=" * 20)
     for b in boxes:
         print(b.c, b.as_coordinates_array())
 
 
 def test_generator():
-    start = time.time()
     generator = DataGenerator(PATH_TO_VALIDATION, 32, (IMAGE_SIZE, IMAGE_SIZE, 3), "data/anchors.pickle")
+    start = time.time()
+    data, labels = generator[0]
     print("Time to load: ", time.time() - start)
-    print(generator.data.shape)
-    print(generator.labels.shape)
-    print(len(generator) * generator.batch_size)
-    # for i in range(len(generator)):
-    #    data, labels = generator[i]
-    #    print(data.shape, labels.shape)
-    #    print(np.min(labels), np.max(labels))
+    print(len(generator), len(generator.image_paths))
+    last_data, last_labels = generator[len(generator)-1]
+    print(data.shape, last_data.shape)
+    print(labels.shape, last_labels.shape)
+
+    boxes = interpret_output(labels[0], generator.anchors)
+    image = with_bounding_boxes(data[0], boxes, 3, (255, 0, 0))
+
+    plt.imshow(image)
+    plt.show()
 
 
 if __name__ == '__main__':
+    print("starting...")
     # test_generate_output_array()
     test_generator()

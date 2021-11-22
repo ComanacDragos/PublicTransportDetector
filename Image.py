@@ -7,25 +7,19 @@ from utils import *
 
 class Image:
     def __init__(self, dir, image_name):
+        self.image_name = image_name
         self.image = cv2.cvtColor(cv2.imread(f"{dir}\\{image_name}"), cv2.COLOR_BGR2RGB)
         self.bounding_boxes = []
         self.read_bounding_boxes(f"{dir}\\Label\\{image_name[:-4]}.txt")
-        self.image = cv2.resize(self.image, (IMAGE_SIZE, IMAGE_SIZE))
+        # self.image = cv2.resize(self.image, (IMAGE_SIZE, IMAGE_SIZE))
 
     def read_bounding_boxes(self, path):
         with open(path) as f:
             for line in f.readlines():
                 tokens = line.split()
                 label = tokens[0] if len(tokens) == 5 else " ".join(tokens[:len(tokens) - 4])
-                height = self.image.shape[0]
-                width = self.image.shape[1]
 
                 coordinates = [my_round(float(t)) for t in tokens[-4:]]
-                coordinates[0] = int(IMAGE_SIZE / width * coordinates[0])
-                coordinates[1] = int(IMAGE_SIZE / height * coordinates[1])
-                coordinates[2] = int(IMAGE_SIZE / width * coordinates[2])
-                coordinates[3] = int(IMAGE_SIZE / height * coordinates[3])
-
                 self.bounding_boxes.append(BoundingBox(ENCODE_LABEL[label], *coordinates))
 
     def with_bboxes(self, width):
@@ -39,8 +33,19 @@ class Image:
             img[bbox.y_min:bbox.y_max, bbox.x_max - width:bbox.x_max + width] = color
         return img
 
+    def save_image(self, dir):
+        image_to_save = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(f"{dir}/{self.image_name}", image_to_save)
+        with open(f"{dir}\\Label\\{self.image_name[:-4]}.txt", "w") as f:
+            for bbox in self.bounding_boxes:
+                coordinates = " ".join([str(coord) for coord in [bbox.x_min, bbox.y_min, bbox.x_max, bbox.y_max]])
+                f.write(f"{DECODE_LABEL[bbox.c]} {coordinates}\n")
+
     def bounding_boxes_as_arrays(self):
         return [b.as_coordinates_array() for b in self.bounding_boxes]
+
+    def bounding_boxes_as_array_with_classes(self):
+        return np.asarray([b.as_coordinates_array_with_class() for b in self.bounding_boxes])
 
 
 class BoundingBox:
@@ -56,6 +61,9 @@ class BoundingBox:
 
     def as_coordinates_array(self):
         return np.array([self.x_min, self.y_min, self.x_max, self.y_max])
+
+    def as_coordinates_array_with_class(self):
+        return np.array([self.x_min, self.y_min, self.x_max, self.y_max, self.c])
 
     def center(self):
         return my_round((self.x_min + self.x_max) / 2), my_round((self.y_min + self.y_max) / 2)

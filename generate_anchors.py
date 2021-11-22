@@ -95,9 +95,9 @@ def generate_anchors(bounding_boxes=None, prior_centroids=None):
 def run_generate_anchors():
     start = time.time()
 
-    anchors = generate_anchors(prior_centroids=np.load("data/anchors_10000.pickle", allow_pickle=True))
+    anchors = generate_anchors(prior_centroids=np.load("data/anchors.pickle", allow_pickle=True))
     print(anchors)
-    anchors.dump("data/anchors.pickle")
+    anchors.dump("data/anchors_v2.pickle")
 
     print("Time to generate anchors: ", time.time() - start)
 
@@ -107,6 +107,7 @@ def run_generate_anchors():
 
 def visualize_anchors(path):
     anchors = np.load(path, allow_pickle=True)
+    print(anchors)
     boxes = [BoundingBox(-1, *anchor) for anchor in anchors]
     img = with_bounding_boxes(np.zeros((IMAGE_SIZE, IMAGE_SIZE, 3)), boxes, 2, (255, 255, 255))
 
@@ -115,7 +116,7 @@ def visualize_anchors(path):
 
 
 if __name__ == '__main__':
-    # run_generate_anchors()
+    #run_generate_anchors()
     visualize_anchors("data/anchors.pickle")
 
     """
