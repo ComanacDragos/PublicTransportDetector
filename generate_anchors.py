@@ -117,6 +117,7 @@ def visualize_anchors(path):
 
 if __name__ == '__main__':
     #run_generate_anchors()
+
     visualize_anchors("data/anchors.pickle")
 
     """

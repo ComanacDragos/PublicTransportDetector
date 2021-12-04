@@ -6,7 +6,7 @@ from Image import *
 
 
 class DataGenerator(tf.keras.utils.Sequence):
-    def __init__(self, db_dir, batch_size, input_shape, anchors_path, shuffle=True):
+    def __init__(self, db_dir, batch_size, input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), anchors_path="data/anchors.pickle", shuffle=True):
         self.input_shape = input_shape
         self.batch_size = batch_size
         self.shuffle = shuffle
