@@ -6,7 +6,8 @@ from Image import *
 
 
 class DataGenerator(tf.keras.utils.Sequence):
-    def __init__(self, db_dir, batch_size, input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), anchors_path="data/anchors.pickle", shuffle=True):
+    def __init__(self, db_dir, batch_size, input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), anchors_path="data/anchors.pickle",
+                 shuffle=True):
         self.input_shape = input_shape
         self.batch_size = batch_size
         self.shuffle = shuffle
@@ -108,8 +109,8 @@ def generate_output_array(image: Image, anchors):
 
         anchor_width, anchor_height = anchors[best_anchor]
         box_width, box_height = bbox.width_height()
-        tw = np.log(box_width) - np.log(anchor_width)
-        th = np.log(box_height) - np.log(anchor_height)
+        tw = box_width / anchor_width  # np.log(box_width) - np.log(anchor_width)
+        th = box_height / anchor_height  # np.log(box_height) - np.log(anchor_height)
 
         output[cx, cy, best_anchor, 0] = tx
         output[cx, cy, best_anchor, 1] = ty
@@ -130,8 +131,8 @@ def interpret_output(output, anchors):
                     tx, ty, tw, th = output[cx, cy, i, :4]
                     bx = (tx + cx) * downsample_factor
                     by = (ty + cy) * downsample_factor
-                    bw = anchor_width * np.exp(tw)
-                    bh = anchor_height * np.exp(th)
+                    bw = anchor_width * tw  # np.exp(tw)
+                    bh = anchor_height * th  # np.exp(th)
                     x_min, y_min = bx - bw / 2, by - bh / 2
                     x_max, y_max = bx + bw / 2, by + bh / 2
                     boxes.append(BoundingBox(
@@ -162,7 +163,7 @@ def test_generator():
     data, labels = generator[0]
     print("Time to load: ", time.time() - start)
     print(len(generator), len(generator.image_paths))
-    last_data, last_labels = generator[len(generator)-1]
+    last_data, last_labels = generator[len(generator) - 1]
     print(data.shape, last_data.shape)
     print(labels.shape, last_labels.shape)
 
