@@ -45,7 +45,6 @@ class DataGenerator(tf.keras.utils.Sequence):
             image = Image(self.db_dir, self.image_paths[index])
             batch_x.append(image.image)
             batch_y.append(generate_output_array(image, self.anchors))
-        # batch_y = tf.keras.utils.to_categorical(batch_y, num_classes=self.num_classes)
         return np.asarray(batch_x), np.asarray(batch_y)
 
     def on_epoch_end(self):
@@ -60,6 +59,8 @@ class DataGenerator(tf.keras.utils.Sequence):
 
 def process_anchors(path):
     anchor_boxes = np.load(path, allow_pickle=True)
+    if anchor_boxes.shape[-1] == 2:
+        return anchor_boxes
     anchors = []
     for i in range(anchor_boxes.shape[0]):
         x_min, y_min, x_max, y_max = anchor_boxes[i]
@@ -109,8 +110,8 @@ def generate_output_array(image: Image, anchors):
 
         anchor_width, anchor_height = anchors[best_anchor]
         box_width, box_height = bbox.width_height()
-        tw = box_width / anchor_width  # np.log(box_width) - np.log(anchor_width)
-        th = box_height / anchor_height  # np.log(box_height) - np.log(anchor_height)
+        tw = np.log(box_width) - np.log(anchor_width)
+        th = np.log(box_height) - np.log(anchor_height)
 
         output[cx, cy, best_anchor, 0] = tx
         output[cx, cy, best_anchor, 1] = ty
@@ -131,8 +132,8 @@ def interpret_output(output, anchors):
                     tx, ty, tw, th = output[cx, cy, i, :4]
                     bx = (tx + cx) * downsample_factor
                     by = (ty + cy) * downsample_factor
-                    bw = anchor_width * tw  # np.exp(tw)
-                    bh = anchor_height * th  # np.exp(th)
+                    bw = anchor_width * np.exp(tw)
+                    bh = anchor_height * np.exp(th)
                     x_min, y_min = bx - bw / 2, by - bh / 2
                     x_max, y_max = bx + bw / 2, by + bh / 2
                     boxes.append(BoundingBox(

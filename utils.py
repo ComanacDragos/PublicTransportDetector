@@ -1,6 +1,8 @@
 import threading
 import os
 
+import numpy as np
+
 
 def my_round(a, threshold=0.5):
     return int(a) if a - int(a) < threshold else int(a) + 1
@@ -26,9 +28,12 @@ def run_task(items, target, args):
 
 
 def with_bounding_boxes(img, bounding_boxes, width, color):
+    copy = np.copy(img)
     for bbox in bounding_boxes:
-        img[bbox.y_min - width:bbox.y_min + width, bbox.x_min:bbox.x_max] = color
-        img[bbox.y_max - width:bbox.y_max + width, bbox.x_min:bbox.x_max] = color
-        img[bbox.y_min:bbox.y_max, bbox.x_min - width:bbox.x_min + width] = color
-        img[bbox.y_min:bbox.y_max, bbox.x_max - width:bbox.x_max + width] = color
-    return img
+        color = color
+        color[bbox.c % 3] = 255
+        copy[bbox.y_min - width:bbox.y_min + width, bbox.x_min:bbox.x_max] = color
+        copy[bbox.y_max - width:bbox.y_max + width, bbox.x_min:bbox.x_max] = color
+        copy[bbox.y_min:bbox.y_max, bbox.x_min - width:bbox.x_min + width] = color
+        copy[bbox.y_min:bbox.y_max, bbox.x_max - width:bbox.x_max + width] = color
+    return copy

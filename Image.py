@@ -68,6 +68,8 @@ class BoundingBox:
     def center(self):
         return my_round((self.x_min + self.x_max) / 2), my_round((self.y_min + self.y_max) / 2)
 
+    def __str__(self):
+        return str(self.as_coordinates_array_with_class())
 
 def iou(bbox, other_bbox):
     """

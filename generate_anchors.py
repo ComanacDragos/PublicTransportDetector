@@ -1,3 +1,4 @@
+import random
 import time
 
 import numpy as np
@@ -31,13 +32,15 @@ def read_boxes():
 
 
 def distance(centroid, box):
-    return 1 - iou(centroid, box)
+    x, y = BoundingBox(-1, *box).center()
+    w, h = centroid
+    return 1 - iou([x-w//2, y-h//w, x+w//2, y+h//2], box)
 
 
 def generate_centroid():
-    x = np.random.randint(0, IMAGE_SIZE, 2)
-    y = np.random.randint(0, IMAGE_SIZE, 2)
-    return np.min(x), np.min(y), np.max(x), np.max(y)
+    width = random.randint(0, IMAGE_SIZE)
+    height = random.randint(0, IMAGE_SIZE)
+    return width, height
 
 
 def generate_anchors(bounding_boxes=None, prior_centroids=None):
@@ -50,9 +53,10 @@ def generate_anchors(bounding_boxes=None, prior_centroids=None):
         centroids = set()
         while len(centroids) != ANCHORS:
             new_centroid = generate_centroid()
+            new_centroid_aspect_ratio = new_centroid[0] / new_centroid[1]
             add = True
             for centroid in centroids:
-                add = add and iou(centroid, new_centroid) < 0.5
+                add = add and abs(centroid[0]/centroid[1] - new_centroid_aspect_ratio) < 0.3
             if add:
                 centroids.add(new_centroid)
         centroids = np.array(list(centroids))
@@ -86,7 +90,8 @@ def generate_anchors(bounding_boxes=None, prior_centroids=None):
         for i in range(len(centroids)):
             indices = np.nonzero((assignments == i))[0]
             if len(indices) != 0:
-                centroids[i] = np.sum(boxes[indices], axis=0) / len(indices)
+                x_min, y_min, x_max, y_max = np.sum(boxes[indices], axis=0) / len(indices)
+                centroids[i][0], centroids[i][1] = x_max - x_min, y_max - y_min
             else:
                 print("! empty cluster...restarting...")
                 return generate_anchors(boxes, prior_centroids)
@@ -97,7 +102,7 @@ def run_generate_anchors():
 
     anchors = generate_anchors(prior_centroids=np.load("data/anchors.pickle", allow_pickle=True))
     print(anchors)
-    anchors.dump("data/anchors_v2.pickle")
+    anchors.dump("data/anchors.pickle")
 
     print("Time to generate anchors: ", time.time() - start)
 
@@ -108,9 +113,14 @@ def run_generate_anchors():
 def visualize_anchors(path):
     anchors = np.load(path, allow_pickle=True)
     print(anchors)
-    boxes = [BoundingBox(-1, *anchor) for anchor in anchors]
-    img = with_bounding_boxes(np.zeros((IMAGE_SIZE, IMAGE_SIZE, 3)), boxes, 2, (255, 255, 255))
-
+    x_center = IMAGE_SIZE//2
+    y_center = IMAGE_SIZE//2
+    boxes = [BoundingBox(-1,
+                         x_center - width//2, y_center - height//2,
+                         x_center + width//2, y_center + height//2) for width, height in anchors]
+    for b in boxes:
+        print(b.as_coordinates_array())
+    img = with_bounding_boxes(np.zeros((IMAGE_SIZE, IMAGE_SIZE, 3)), boxes, 1, [255, 255, 255]).astype(int)
     plt.imshow(img)
     plt.show()
 
