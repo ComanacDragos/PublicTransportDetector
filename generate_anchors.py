@@ -43,7 +43,7 @@ def generate_centroid():
     return width, height
 
 
-def generate_anchors(bounding_boxes=None, prior_centroids=None):
+def generate_anchors(no_anchors, bounding_boxes=None, prior_centroids=None):
     if not bounding_boxes:
         boxes = read_boxes()
     else:
@@ -51,7 +51,7 @@ def generate_anchors(bounding_boxes=None, prior_centroids=None):
     no_boxes = boxes.shape[0]
     if prior_centroids is None:
         centroids = set()
-        while len(centroids) != ANCHORS:
+        while len(centroids) != no_anchors:
             new_centroid = generate_centroid()
             new_centroid_aspect_ratio = new_centroid[0] / new_centroid[1]
             add = True
@@ -65,7 +65,7 @@ def generate_anchors(bounding_boxes=None, prior_centroids=None):
 
     print(boxes.shape, centroids.shape)
     old_assignments = np.ones(no_boxes) * -1
-    old_distances = np.ones((no_boxes, ANCHORS)) * -1
+    old_distances = np.ones((no_boxes, no_anchors)) * -1
     change = True
     iteration = 1
     while change:
@@ -100,13 +100,13 @@ def generate_anchors(bounding_boxes=None, prior_centroids=None):
 def run_generate_anchors():
     start = time.time()
 
-    anchors = generate_anchors(prior_centroids=np.load("data/anchors.pickle", allow_pickle=True))
+    anchors = generate_anchors(no_anchors=3)
     print(anchors)
-    anchors.dump("data/anchors.pickle")
+    anchors.dump("data/anchors_3.pickle")
 
     print("Time to generate anchors: ", time.time() - start)
 
-    anchors = np.load("data/anchors.pickle", allow_pickle=True)
+    anchors = np.load("data/anchors_3.pickle", allow_pickle=True)
     print(anchors)
 
 
@@ -128,7 +128,7 @@ def visualize_anchors(path):
 if __name__ == '__main__':
     #run_generate_anchors()
 
-    visualize_anchors("data/anchors.pickle")
+    visualize_anchors("data/anchors_3.pickle")
 
     """
     [[114 130 294 280]

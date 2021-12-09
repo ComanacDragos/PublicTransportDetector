@@ -6,8 +6,9 @@ from Image import *
 
 
 class DataGenerator(tf.keras.utils.Sequence):
-    def __init__(self, db_dir, batch_size, input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), anchors_path="data/anchors.pickle",
-                 shuffle=True):
+    def __init__(self, db_dir, batch_size, input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3),
+                 anchors_path="data/anchors_3.pickle",
+                 shuffle=True, limit_batches=None):
         self.input_shape = input_shape
         self.batch_size = batch_size
         self.shuffle = shuffle
@@ -16,16 +17,18 @@ class DataGenerator(tf.keras.utils.Sequence):
 
         self.image_paths = []
         self.db_dir = db_dir
-        self.get_data()
+        self.get_data(limit_batches)
         self.indices = np.arange(len(self.image_paths))
         self.on_epoch_end()
 
-    def get_data(self):
+    def get_data(self, limit_batches):
         """"
         Loads the paths to the images from the database directory
         """
         self.image_paths = os.listdir(self.db_dir)
         self.image_paths.remove("Label")
+        if limit_batches is not None:
+            self.image_paths = self.image_paths[:limit_batches * self.batch_size]
 
     def __len__(self):
         """
@@ -80,7 +83,8 @@ def generate_output_array(image: Image, anchors):
     - tw, th the offesets with respect to the anchor
     - C number of classes
     """
-    output = np.zeros((GRID_SIZE, GRID_SIZE, ANCHORS, (5 + len(ENCODE_LABEL))))
+    no_anchors = anchors.shape[0]
+    output = np.zeros((GRID_SIZE, GRID_SIZE, no_anchors, (5 + len(ENCODE_LABEL))))
     downsample_factor = IMAGE_SIZE / GRID_SIZE
     for bbox in image.bounding_boxes:
         x_center, y_center = bbox.center()
@@ -92,7 +96,7 @@ def generate_output_array(image: Image, anchors):
 
         best_anchor = -1
         best_iou = -1
-        for i in range(ANCHORS):
+        for i in range(no_anchors):
             anchor_width, anchor_height = anchors[i]
             x_min, y_min = x_center - anchor_width // 2, y_center - anchor_height // 2
             x_max, y_max = x_center + anchor_width // 2, y_center + anchor_height // 2
@@ -122,13 +126,13 @@ def generate_output_array(image: Image, anchors):
     return output
 
 
-def interpret_output(output, anchors):
+def interpret_output(output, anchors, obj_threshold=0.5):
     downsample_factor = IMAGE_SIZE / GRID_SIZE
     boxes = []
     for cx in range(GRID_SIZE):
         for cy in range(GRID_SIZE):
             for i, (anchor_width, anchor_height) in enumerate(anchors):
-                if output[cx, cy, i, 4] >= OBJ_THRESHOLD:
+                if output[cx, cy, i, 4] >= obj_threshold:
                     tx, ty, tw, th = output[cx, cy, i, :4]
                     bx = (tx + cx) * downsample_factor
                     by = (ty + cy) * downsample_factor

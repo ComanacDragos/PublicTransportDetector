@@ -2,7 +2,7 @@ import time
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+from tensorflow.keras import backend as K
 from generator import *
 
 
@@ -16,14 +16,14 @@ def conv_layer(x, kernel_size=3, filters=32, reluActivation=True, strides=1):
     return bn
 
 
-def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), trainable=False):
+def build_simple_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3)):
     inputs = tf.keras.layers.Input(shape=input_shape)
     x = tf.cast(inputs, tf.float32)
     x = tf.keras.applications.mobilenet_v2.preprocess_input(x)
 
     mobilenet_v2 = tf.keras.applications.MobileNetV2(input_shape=input_shape, include_top=False)
-    mobilenet_v2.trainable = trainable
-    x = mobilenet_v2(x, training=trainable)
+    mobilenet_v2.trainable = False
+    x = mobilenet_v2(x, training=False)
     x = tf.keras.layers.ReLU()(x)
     x = conv_layer(x, filters=320)
     x = conv_layer(x, filters=320)
@@ -73,6 +73,12 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), trainable=False):
     return tf.keras.Model(inputs=inputs, outputs=output)
 
 
+def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), trainable=False, type="simple"):
+    # if type == "simple":
+    return build_simple_model(input_shape)
+    # return build_unet(input_shape, trainable)
+
+
 def process_prediction(prediction):
     # print(prediction[0, 0, 0, :][[4, 12, 20, 28, 36]])
     # print(prediction[0, 0, 1, :][[4, 12, 20, 28, 36]])
@@ -85,7 +91,7 @@ def process_prediction(prediction):
 
 def plot_history(history):
     plt.plot(history['loss'], label='loss')
-    plt.plot(history['val_loss'], label='val_loss')
+    # plt.plot(history['val_loss'], label='val_loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     # plt.ylim([0, 1])
@@ -109,7 +115,7 @@ class CosineAnnealingScheduler(tf.keras.callbacks.Callback):
 
 
 class YoloLoss(tf.keras.losses.Loss):
-    def __init__(self, anchors, l_coord=5, l_noobj=0.5):
+    def __init__(self, anchors, l_coord=1, l_noobj=0.1, enable_logs=False):
         super(YoloLoss, self).__init__()
         self.l_coord = l_coord
         self.l_noobj = l_noobj
@@ -122,8 +128,9 @@ class YoloLoss(tf.keras.losses.Loss):
             for j in range(GRID_SIZE):
                 self.x_offset[i][j] = i * self.cell_size
                 self.y_offset[i][j] = j * self.cell_size
-        self.x_offset = np.stack([self.x_offset] * ANCHORS, axis=-1)
-        self.y_offset = np.stack([self.y_offset] * ANCHORS, axis=-1)
+        self.x_offset = np.stack([self.x_offset] * anchors.shape[0], axis=-1)
+        self.y_offset = np.stack([self.y_offset] * anchors.shape[0], axis=-1)
+        self.enable_logs = enable_logs
 
     def loss_for_one(self, y_true, y_pred):
         """
@@ -134,9 +141,9 @@ class YoloLoss(tf.keras.losses.Loss):
         5, 6, 7: probabilities
         """
         objectness_scores, objectness_scores_hat = y_true[:, :, :, 4], y_pred[:, :, :, 4]
-        x, x_hat = y_true[:, :, :, 0] * self.cell_size + self.x_offset,\
+        x, x_hat = y_true[:, :, :, 0] * self.cell_size + self.x_offset, \
                    y_pred[:, :, :, 0] * self.cell_size + self.x_offset
-        y, y_hat = y_true[:, :, :, 1] * self.cell_size + self.y_offset,\
+        y, y_hat = y_true[:, :, :, 1] * self.cell_size + self.y_offset, \
                    y_pred[:, :, :, 1] * self.cell_size + self.y_offset
         w, w_hat = tf.exp(y_true[:, :, :, 2]) * self.anchors_width, tf.exp(y_pred[:, :, :, 2]) * self.anchors_width
         h, h_hat = tf.exp(y_true[:, :, :, 3]) * self.anchors_height, tf.exp(y_pred[:, :, :, 3]) * self.anchors_height
@@ -163,16 +170,18 @@ class YoloLoss(tf.keras.losses.Loss):
         class_loss = tf.reduce_sum(
             tf.stack([objectness_scores] * 3, axis=-1) * ((class_scores - class_scores_hat) ** 2))
 
-        #print(np.min(x), np.max(x))
-        #print(np.min(y), np.max(y))
-        #print(np.min(x_hat), np.max(x_hat))
-        #print(np.min(y_hat), np.max(y_hat))
+        # print(np.min(x), np.max(x))
+        # print(np.min(y), np.max(y))
+        # print(np.min(x_hat), np.max(x_hat))
+        # print(np.min(y_hat), np.max(y_hat))
 
-        #print(f"xy : {xy_loss}")
-        #print(f"wh : {wh_loss}")
-        #print(f"obj : {obj_loss}")
-        #print(f"class : {class_loss}")
-        #print()
+        if self.enable_logs:
+            print(f"xy : {xy_loss}")
+            print(f"wh : {wh_loss}")
+            print(f"obj : {obj_loss}")
+            print(f"class : {class_loss}")
+            print()
+        #tf.print(xy_loss + wh_loss + obj_loss + class_loss)
         return xy_loss + wh_loss + obj_loss + class_loss
 
     def call(self, y_true: tf.Tensor, y_pred: tf.Tensor):
@@ -183,11 +192,11 @@ class YoloLoss(tf.keras.losses.Loss):
 
 
 class Train:
-    def __init__(self, epochs=5, batch_size=32, n_min=1e-5, n_max=4e-4, T=None, path_to_model=None):
+    def __init__(self, epochs=5, batch_size=32, n_min=1e-5, n_max=4e-4, T=None, path_to_model=None, limit_batches=None):
         self.epochs = epochs
         self.batch_size = batch_size
-        self.train_generator = DataGenerator(PATH_TO_TRAIN, self.batch_size)
-        self.validation_generator = DataGenerator(PATH_TO_VALIDATION, self.batch_size)
+        self.train_generator = DataGenerator(PATH_TO_TRAIN, self.batch_size, limit_batches=limit_batches)
+        self.validation_generator = DataGenerator(PATH_TO_VALIDATION, self.batch_size, limit_batches=limit_batches)
         self.T = T if T is not None else 2 * batch_size
         self.n_min = n_min
         self.n_max = n_max
@@ -198,25 +207,27 @@ class Train:
             self.load_model(path_to_model)
 
     def train(self, name="model.h5", fine_tune=False):
+        self.model.summary()
+
         if fine_tune:
-            self.model.trainable = fine_tune
+            self.model.trainable = True
         self.model.compile(optimizer=tf.keras.optimizers.Adam(),
-                           loss=YoloLoss(anchors=self.train_generator.anchors, l_noobj=0.1),
+                           loss=YoloLoss(anchors=self.train_generator.anchors),
                            # metrics=[],
                            )
 
         history = self.model.fit(self.train_generator, validation_data=self.validation_generator, epochs=self.epochs,
                                  callbacks=[CosineAnnealingScheduler(self.n_min, self.n_max, self.T),
                                             tf.keras.callbacks.ModelCheckpoint(
-                                                filepath="weights/checkpoint/checkpoint",
-                                                save_best_only=True,
-                                                save_weights_only=True,
-                                                verbose=2
+                                               filepath="weights/checkpoint/checkpoint",
+                                               save_best_only=True,
+                                               save_weights_only=True,
+                                               verbose=2
                                             ),
                                             tf.keras.callbacks.TerminateOnNaN(),
-                                            tf.keras.callbacks.EarlyStopping(patience=3, min_delta=1e-3, verbose=2)
+                                            # tf.keras.callbacks.EarlyStopping(patience=3, min_delta=1e-3, verbose=2)
                                             ], workers=os.cpu_count())
-        self.model.save(f"weights/{name}")
+        tf.keras.models.save_model(self.model, f"weights/{name}")
         plot_history(history.history)
 
     def load_model(self, path):
@@ -225,21 +236,17 @@ class Train:
         }, compile=False)
 
     def new_model(self):
-        self.model = build_unet()
+        self.model = build_model()
 
 
 def visualize_predictions(path):
-    test_generator = DataGenerator(PATH_TO_TEST, 32, shuffle=False)
+    test_generator = DataGenerator(PATH_TO_TEST, 16, shuffle=False)
     images, y_true = test_generator[1]
     model = tf.keras.models.load_model(path, compile=False, custom_objects={
         "YoloLoss": YoloLoss
     })
     y_pred = process_prediction(model.predict(images))
 
-    # print(YoloLoss(test_generator.anchors, l_noobj=0.1).call(y_true, (model.predict(images))))
-    #    print(y_pred[:, :, :, :, 4])
-
-    return
     plt.figure(figsize=(8, 7), dpi=160)
     # fig, axes = plt.subplots(nrows=6, ncols=2)
 
@@ -270,34 +277,64 @@ def visualize_predictions(path):
     plt.show()
 
 
-def test_loss():
-    val_generator = DataGenerator(PATH_TO_VALIDATION, 32, shuffle=False)
-    images, y_true = val_generator[1]
-    model = tf.keras.models.load_model("weights/model.h5", compile=False, custom_objects={
-        "YoloLoss": YoloLoss
-    })
-    y_pred = process_prediction(model.predict(images))
+def train():
+    t = Train(epochs=5, batch_size=8, n_min=1e-7, n_max=4e-4, limit_batches=None)
+    t.train(name="model")
+    fine_tune = Train(epochs=3, batch_size=8, n_min=1e-7, n_max=1e-6, path_to_model="weights/model")
+    fine_tune.train(name="model_fine_tuned", fine_tune=True)
 
-    print(YoloLoss(val_generator.anchors, l_noobj=0.1).call(y_true, (model.predict(images))))
+# 0000599864fd15b3.jpg
+# 0000599864fd15b3.jpg
+def test():
+    t = Train(epochs=20, batch_size=8, n_min=1e-7, n_max=1e-3, limit_batches=1)
+    """
+    model = build_simple_model()
+    model.load_weights("weights/only_weights/model")
+    
+    """
+    model = tf.keras.models.load_model("weights/model", compile=False)
+
+    images, y_true = t.train_generator[0]
+    y_pred = model(images)
+    print(YoloLoss(t.train_generator.anchors, enable_logs=True).call(y_true, y_pred))
+    y_pred = process_prediction(y_pred)
+    # fig, axes = plt.subplots(nrows=6, ncols=2)
+    fig, axs = plt.subplots(2, 2, gridspec_kw={'width_ratios': [2, 2]})
+    for i in range(0, 1):
+        original_boxes = interpret_output(y_true[i - 1], t.train_generator.anchors)
+        predicted_boxes = interpret_output(y_pred[i - 1], t.train_generator.anchors)
+
+        print(f"{i} th image:")
+        for j in original_boxes:
+            print(j)
+        print("Predicted:")
+        for j in predicted_boxes:
+            print(j)
+
+        print()
+        original_image = with_bounding_boxes(images[i - 1], original_boxes, 3, [255, 0, 0])
+        predicted_image = with_bounding_boxes(images[i - 1], predicted_boxes, 3, [255, 0, 0])
+
+        # plt.subplot(6, 2, 2 * i - 1)
+        axs[i][0].imshow(original_image)
+        # axs[i][0].title('Original')
+
+        # plt.subplot(6, 2, 2 * i)
+        axs[i][1].imshow(predicted_image)
+        # axs[i][1].title('Predicted')
+
+    plt.tight_layout()
+    plt.show()
 
 
+# 146.3025
 if __name__ == '__main__':
     # visualize_predictions("weights/model.h5")
     # Train(epochs=1).train()
     # model = build_unet()
     # model.summary()
-    test_loss()
-    #t = Train(epochs=1, batch_size=16, n_min=1e-7, n_max=4e-4)
-    #t.train(name="model.h5")
+    # test_loss()
+    #train()
+    test()
 
-    """
-validation_generator = DataGenerator(PATH_TO_VALIDATION, 32, shuffle=False)
-    images, y_true = validation_generator[1]
-    model = tf.keras.models.load_model("weights/model.h5", compile=False, custom_objects={
-        "YoloLoss": YoloLoss
-    })
-    y_pred = model.predict(images)
-    loss = YoloLoss(validation_generator.anchors)
-    print(loss.call(y_true, y_pred))
-    
-    """
+
