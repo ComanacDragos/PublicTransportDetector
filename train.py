@@ -132,37 +132,57 @@ class YoloLoss(tf.keras.losses.Loss):
         self.y_offset = np.stack([self.y_offset] * anchors.shape[0], axis=-1)
         self.enable_logs = enable_logs
 
-    def loss_for_one(self, y_true, y_pred):
+    def call(self, y_true: tf.Tensor, y_pred_raw: tf.Tensor):
         """
         Each anchor is composed of 8 values:
         0, 1: x, y position
         2, 3: width, height
         4: if there is an object
         5, 6, 7: probabilities
-        """
-        objectness_scores, objectness_scores_hat = y_true[:, :, :, 4], y_pred[:, :, :, 4]
-        x, x_hat = y_true[:, :, :, 0] * self.cell_size + self.x_offset, \
-                   y_pred[:, :, :, 0] * self.cell_size + self.x_offset
-        y, y_hat = y_true[:, :, :, 1] * self.cell_size + self.y_offset, \
-                   y_pred[:, :, :, 1] * self.cell_size + self.y_offset
-        w, w_hat = tf.exp(y_true[:, :, :, 2]) * self.anchors_width, tf.exp(y_pred[:, :, :, 2]) * self.anchors_width
-        h, h_hat = tf.exp(y_true[:, :, :, 3]) * self.anchors_height, tf.exp(y_pred[:, :, :, 3]) * self.anchors_height
-        class_scores, class_scores_hat = y_true[:, :, :, 5:], y_pred[:, :, :, 5:]
-        class_scores_hat = tf.keras.backend.softmax(class_scores_hat)
 
-        xy_loss = self.l_coord * tf.reduce_sum(objectness_scores * ((x - x_hat) ** 2 + (y - y_hat) ** 2))
-        wh_loss = self.l_coord * tf.reduce_sum(objectness_scores * ((tf.sqrt(w) - tf.sqrt(w_hat)) ** 2
-                                                                    + (tf.sqrt(h) - tf.sqrt(h_hat)) ** 2))
+        y_true, y_pred : shape -> (batch_size, grid_size, grid_size, anchors, 8)
+        """
+        y_pred = tf.reshape(y_pred_raw, (-1, GRID_SIZE, GRID_SIZE, len(self.anchors_width), 8))
+
+        conf_true, conf_pred = y_true[..., 4], K.sigmoid(y_pred[..., 4])
+        x, x_hat = y_true[..., 0] * self.cell_size + self.x_offset, K.sigmoid(y_pred[..., 0]) * self.cell_size + self.x_offset
+        y, y_hat = y_true[..., 1] * self.cell_size + self.y_offset, K.sigmoid(y_pred[..., 1]) * self.cell_size + self.y_offset
+        w, w_hat = K.exp(y_true[..., 2]) * self.anchors_width, K.exp(y_pred[..., 2]) * self.anchors_width
+        h, h_hat = K.exp(y_true[..., 3]) * self.anchors_height, K.exp(y_pred[..., 3]) * self.anchors_height
+        class_scores, class_scores_hat = y_true[..., 5:], y_pred[..., 5:]
+
+        axes_to_reduce = [1, 2, 3]
+        no_true_boxes = sum_over_axes(conf_true, axes_to_reduce)
+
+        xywh_loss = (self.l_coord / (no_true_boxes + 1e-9)) * \
+                    (sum_over_axes(conf_true * ((x - x_hat) ** 2 + (y - y_hat) ** 2), axes_to_reduce) +
+                     sum_over_axes(conf_true * ((w - w_hat) ** 2 + (h - h_hat) ** 2), axes_to_reduce))
+
+        class_loss = tf.keras.losses.sparse_categorical_crossentropy(y_true=K.argmax(class_scores),
+                                                                     y_pred=class_scores_hat,
+                                                                     from_logits=True)
+        class_loss = sum_over_axes(conf_true * class_loss, axes_to_reduce) / (no_true_boxes + 1e-9)
 
         truth_area = w * h
         predicted_area = w_hat * h_hat
-        intersection_width = tf.keras.activations.relu((w + w_hat) / 2 - tf.abs(x - x_hat))
-        intersection_height = tf.keras.activations.relu((h + h_hat) / 2 - tf.abs(y - y_hat))
-        intersection = intersection_height * intersection_width
-        union = truth_area + predicted_area - intersection
-        iou = intersection / union
 
-        obj_diff = (objectness_scores * iou - objectness_scores_hat) ** 2
+        x_mins, x_maxes = x - w/2., x + w/2.
+        y_mins, y_maxes = y - h/2., y + h/2.
+
+        x_mins_hat, x_maxes_hat = x_hat - w_hat/2., x_hat + w_hat/2.
+        y_mins_hat, y_maxes_hat = y_hat - h_hat/2., y_hat + h_hat/2.
+
+        x_mins_i, y_mins_i = tf.minimum(x_mins, x_mins_hat), tf.minimum(y_mins, y_mins_hat)
+        x_maxes_i, y_maxes_i = tf.minimum(x_maxes, x_maxes_hat), tf.minimum(y_maxes, y_maxes_hat)
+
+        w_i, h_i = tf.maximum(x_maxes_i - x_mins_i, 0.), tf.maximum(y_maxes_i - y_mins_i, 0.)
+        intersect_area = w_i * h_i
+        union_area = predicted_area + truth_area - intersect_area
+        iou = tf.truediv(intersect_area, union_area)
+
+        print(iou.shape)
+
+        """obj_diff = (objectness_scores * iou - objectness_scores_hat) ** 2
 
         obj_loss = tf.reduce_sum(objectness_scores * obj_diff) + \
                    self.l_noobj * tf.reduce_sum((1 - objectness_scores) * obj_diff)
@@ -181,14 +201,9 @@ class YoloLoss(tf.keras.losses.Loss):
             print(f"obj : {obj_loss}")
             print(f"class : {class_loss}")
             print()
-        #tf.print(xy_loss + wh_loss + obj_loss + class_loss)
-        return xy_loss + wh_loss + obj_loss + class_loss
-
-    def call(self, y_true: tf.Tensor, y_pred: tf.Tensor):
-        return tf.keras.backend.mean(
-            tf.map_fn(lambda x: self.loss_for_one(x[0], x[1]),
-                      (tf.cast(y_true, tf.float32), process_prediction(y_pred)), fn_output_signature=tf.float32)
-        )
+        # tf.print(xy_loss + wh_loss + obj_loss + class_loss)
+        """
+        return 0  # xy_loss + wh_loss + obj_loss + class_loss
 
 
 class Train:
@@ -219,10 +234,10 @@ class Train:
         history = self.model.fit(self.train_generator, validation_data=self.validation_generator, epochs=self.epochs,
                                  callbacks=[CosineAnnealingScheduler(self.n_min, self.n_max, self.T),
                                             tf.keras.callbacks.ModelCheckpoint(
-                                               filepath="weights/checkpoint/checkpoint",
-                                               save_best_only=True,
-                                               save_weights_only=True,
-                                               verbose=2
+                                                filepath="weights/checkpoint/checkpoint",
+                                                save_best_only=True,
+                                                save_weights_only=True,
+                                                verbose=2
                                             ),
                                             tf.keras.callbacks.TerminateOnNaN(),
                                             # tf.keras.callbacks.EarlyStopping(patience=3, min_delta=1e-3, verbose=2)
@@ -283,6 +298,7 @@ def train():
     fine_tune = Train(epochs=3, batch_size=8, n_min=1e-7, n_max=1e-6, path_to_model="weights/model")
     fine_tune.train(name="model_fine_tuned", fine_tune=True)
 
+
 # 0000599864fd15b3.jpg
 # 0000599864fd15b3.jpg
 def test():
@@ -292,13 +308,14 @@ def test():
     model.load_weights("weights/only_weights/model")
     
     """
-    model = tf.keras.models.load_model("weights/model", compile=False)
+    # model = tf.keras.models.load_model("weights/model", compile=False)
 
     images, y_true = t.train_generator[0]
-    y_pred = model(images)
-    print(YoloLoss(t.train_generator.anchors, enable_logs=True).call(y_true, y_pred))
-    y_pred = process_prediction(y_pred)
+    # y_pred = model(images)
+    print(YoloLoss(t.train_generator.anchors, l_coord=1, enable_logs=True).call(y_true, y_true))
+    # y_pred = process_prediction(y_pred)
     # fig, axes = plt.subplots(nrows=6, ncols=2)
+    return
     fig, axs = plt.subplots(2, 2, gridspec_kw={'width_ratios': [2, 2]})
     for i in range(0, 1):
         original_boxes = interpret_output(y_true[i - 1], t.train_generator.anchors)
@@ -312,8 +329,8 @@ def test():
             print(j)
 
         print()
-        original_image = with_bounding_boxes(images[i - 1], original_boxes, 3, [255, 0, 0])
-        predicted_image = with_bounding_boxes(images[i - 1], predicted_boxes, 3, [255, 0, 0])
+        original_image = with_bounding_boxes(images[i - 1], original_boxes, 3)
+        predicted_image = with_bounding_boxes(images[i - 1], predicted_boxes, 3)
 
         # plt.subplot(6, 2, 2 * i - 1)
         axs[i][0].imshow(original_image)
@@ -334,7 +351,5 @@ if __name__ == '__main__':
     # model = build_unet()
     # model.summary()
     # test_loss()
-    #train()
+    # train()
     test()
-
-

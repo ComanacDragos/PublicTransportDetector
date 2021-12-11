@@ -46,6 +46,10 @@ class DataGenerator(tf.keras.utils.Sequence):
         for i in range(len(batch_indices)):
             index = batch_indices[i]
             image = Image(self.db_dir, self.image_paths[index])
+            for bb in image.bounding_boxes:
+                w, h = bb.width_height()
+                if w == 0 or h == 0:
+                    print(self.db_dir + "/" + self.image_paths[index], bb.as_coordinates_array())
             batch_x.append(image.image)
             batch_y.append(generate_output_array(image, self.anchors))
         return np.asarray(batch_x), np.asarray(batch_y)
@@ -173,7 +177,7 @@ def test_generator():
     print(labels.shape, last_labels.shape)
 
     boxes = interpret_output(labels[0], generator.anchors)
-    image = with_bounding_boxes(data[0], boxes, 3, (255, 0, 0))
+    image = with_bounding_boxes(data[0], boxes, 3)
 
     plt.imshow(image)
     plt.show()
@@ -182,4 +186,4 @@ def test_generator():
 if __name__ == '__main__':
     print("starting...")
     # test_generate_output_array()
-    test_generator()
+    #test_generator()
