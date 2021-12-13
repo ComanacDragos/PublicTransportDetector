@@ -43,16 +43,15 @@ class DataGenerator(tf.keras.utils.Sequence):
         batch_indices = self.indices[index * self.batch_size: (index + 1) * self.batch_size]
         batch_x = []
         batch_y = []
+        batch_true_boxes = []
         for i in range(len(batch_indices)):
             index = batch_indices[i]
             image = Image(self.db_dir, self.image_paths[index])
-            for bb in image.bounding_boxes:
-                w, h = bb.width_height()
-                if w == 0 or h == 0:
-                    print(self.db_dir + "/" + self.image_paths[index], bb.as_coordinates_array())
+            output, true_boxes = generate_output_array(image, self.anchors)
             batch_x.append(image.image)
-            batch_y.append(generate_output_array(image, self.anchors))
-        return np.asarray(batch_x), np.asarray(batch_y)
+            batch_true_boxes.append(true_boxes)
+            batch_y.append(output)
+        return [np.asarray(batch_x), np.asarray(batch_true_boxes)], np.asarray(batch_y)
 
     def on_epoch_end(self):
         """"
@@ -90,13 +89,14 @@ def generate_output_array(image: Image, anchors):
     no_anchors = anchors.shape[0]
     output = np.zeros((GRID_SIZE, GRID_SIZE, no_anchors, (5 + len(ENCODE_LABEL))))
     downsample_factor = IMAGE_SIZE / GRID_SIZE
-    for bbox in image.bounding_boxes:
+    true_boxes = np.zeros((1, 1, 1, MAX_BOXES_PER_IMAGES, 4))
+    for box_index, bbox in enumerate(image.bounding_boxes):
         x_center, y_center = bbox.center()
         cx = int(x_center / downsample_factor)
         cy = int(y_center / downsample_factor)
 
-        tx = (x_center - cx * downsample_factor) / downsample_factor
-        ty = (y_center - cy * downsample_factor) / downsample_factor
+        tx = (x_center - cx * downsample_factor) / downsample_factor + cx
+        ty = (y_center - cy * downsample_factor) / downsample_factor + cy
 
         best_anchor = -1
         best_iou = -1
@@ -116,18 +116,20 @@ def generate_output_array(image: Image, anchors):
                 best_anchor = i
                 best_iou = current_iou
 
-        anchor_width, anchor_height = anchors[best_anchor]
+        # anchor_width, anchor_height = anchors[best_anchor]
         box_width, box_height = bbox.width_height()
-        tw = np.log(box_width) - np.log(anchor_width)
-        th = np.log(box_height) - np.log(anchor_height)
+        tw = box_width  # np.log(box_width) - np.log(anchor_width)
+        th = box_height  # np.log(box_height) - np.log(anchor_height)
 
         output[cx, cy, best_anchor, 0] = tx
         output[cx, cy, best_anchor, 1] = ty
         output[cx, cy, best_anchor, 2] = tw
         output[cx, cy, best_anchor, 3] = th
-        output[cx, cy, best_anchor, 4] = 1.0
-        output[cx, cy, best_anchor, 5 + bbox.c] = 1
-    return output
+        output[cx, cy, best_anchor, 4] = 1.
+        output[cx, cy, best_anchor, 5 + bbox.c] = 1.
+
+        true_boxes[0, 0, 0, box_index] = [tx, ty, tw, th]
+    return output, true_boxes
 
 
 def interpret_output(output, anchors, obj_threshold=0.5):
@@ -169,21 +171,22 @@ def test_generate_output_array():
 def test_generator():
     generator = DataGenerator(PATH_TO_VALIDATION, 32, (IMAGE_SIZE, IMAGE_SIZE, 3), "data/anchors.pickle")
     start = time.time()
-    data, labels = generator[0]
+    ground_truth, labels = generator[0]
     print("Time to load: ", time.time() - start)
+    data, true_boxes = ground_truth[0], ground_truth[1]
     print(len(generator), len(generator.image_paths))
-    last_data, last_labels = generator[len(generator) - 1]
-    print(data.shape, last_data.shape)
-    print(labels.shape, last_labels.shape)
+    ground_truth, last_labels = generator[len(generator) - 1]
+    last_data, last_true_boxes = ground_truth[0], ground_truth[1]
+    print(data.shape, last_data.shape, true_boxes.shape)
+    print(labels.shape, last_labels.shape, last_true_boxes.shape)
 
-    boxes = interpret_output(labels[0], generator.anchors)
-    image = with_bounding_boxes(data[0], boxes, 3)
+    #boxes = interpret_output(labels[0], generator.anchors)
+    #image = with_bounding_boxes(data[0], boxes, 3)
 
-    plt.imshow(image)
-    plt.show()
+    #plt.imshow(image)
+    #plt.show()
 
 
 if __name__ == '__main__':
     print("starting...")
-    # test_generate_output_array()
-    #test_generator()
+    test_generator()
