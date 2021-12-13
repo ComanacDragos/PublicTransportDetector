@@ -71,6 +71,7 @@ class BoundingBox:
     def __str__(self):
         return str(self.as_coordinates_array_with_class())
 
+
 def iou(bbox, other_bbox):
     """
     :param bbox: array of coordinates x_min, y_min, x_max, y_max
@@ -96,6 +97,10 @@ def iou_bbox(bbox, other_bbox):
 
 
 if __name__ == '__main__':
+    box1 = (2, 1, 4, 3)
+    box2 = (1, 2, 3, 4)
+    print("iou = " + str(iou(box1, box2)))
+
     bbox = BoundingBox(-1, 1, 1, 5, 5)
     other_bbox = BoundingBox(-1, 3, 3, 6, 6)
     print(iou_bbox(bbox, other_bbox))

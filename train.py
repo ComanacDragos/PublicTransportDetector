@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tensorflow.keras import backend as K
 from generator import *
-from YoloLoss import YoloLoss
+from loss import YoloLoss
 tf.compat.v1.disable_eager_execution()
 
 

@@ -1,7 +1,7 @@
 import threading
 import time
 
-from Image import Image
+from image import Image
 from utils import *
 
 from settings import *

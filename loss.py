@@ -29,16 +29,9 @@ class YoloLoss(tf.keras.losses.Loss):
 
         self.anchors = anchors
         self.true_boxes = true_boxes
-        self.x_offset = np.zeros((GRID_SIZE, GRID_SIZE))
-        self.y_offset = np.zeros((GRID_SIZE, GRID_SIZE))
         self.cell_size = IMAGE_SIZE / GRID_SIZE
-        for i in range(GRID_SIZE):
-            for j in range(GRID_SIZE):
-                self.x_offset[i][j] = i  # * self.cell_size
-                self.y_offset[i][j] = j  # * self.cell_size
-        self.x_offset = np.stack([self.x_offset] * anchors.shape[0], axis=-1)
-        self.y_offset = np.stack([self.y_offset] * anchors.shape[0], axis=-1)
-        self.cell_grid = tf.cast(tf.stack([self.x_offset, self.y_offset], -1), tf.float32)
+
+        self.cell_grid = create_cell_grid(len(anchors))
 
         self.nb_box = len(anchors) // 2
         self.enable_logs = enable_logs

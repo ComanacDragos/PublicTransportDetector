@@ -3,7 +3,7 @@ import time
 
 import numpy as np
 
-from Image import *
+from image import *
 
 
 def _worker(paths, boxes, dir, mutex):

@@ -24,3 +24,4 @@ IMAGE_SIZE = 416
 GRID_SIZE = 13
 
 MAX_BOXES_PER_IMAGES = 112
+ANCHORS_PATH = "data/anchors_3.pickle"

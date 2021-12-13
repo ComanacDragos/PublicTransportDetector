@@ -3,7 +3,7 @@ import os
 import albumentations
 import matplotlib.pyplot as plt
 
-from Image import *
+from image import *
 
 
 def resize_image(image: Image, h=IMAGE_SIZE, w=IMAGE_SIZE):

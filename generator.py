@@ -2,12 +2,12 @@ import time
 
 import numpy as np
 import tensorflow as tf
-from Image import *
+from image import *
 
 
 class DataGenerator(tf.keras.utils.Sequence):
     def __init__(self, db_dir, batch_size, input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3),
-                 anchors_path="data/anchors_3.pickle",
+                 anchors_path=ANCHORS_PATH,
                  shuffle=True, limit_batches=None):
         self.input_shape = input_shape
         self.batch_size = batch_size
