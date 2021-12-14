@@ -49,12 +49,13 @@ class Image:
 
 
 class BoundingBox:
-    def __init__(self, c, x_min, y_min, x_max, y_max):
-        self.x_min = x_min
-        self.y_min = y_min
-        self.x_max = x_max
-        self.y_max = y_max
-        self.c = c
+    def __init__(self, c, x_min, y_min, x_max, y_max, score=None):
+        self.x_min = int(x_min)
+        self.y_min = int(y_min)
+        self.x_max = int(x_max)
+        self.y_max = int(y_max)
+        self.c = int(c)
+        self.score = score
 
     def width_height(self):
         return self.x_max - self.x_min, self.y_max - self.y_min

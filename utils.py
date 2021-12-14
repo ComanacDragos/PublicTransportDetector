@@ -35,7 +35,7 @@ def run_task(items, target, args):
         t.join()
 
 
-def with_bounding_boxes(img, bounding_boxes, width):
+def with_bounding_boxes(img, bounding_boxes, width=3):
     copy = np.copy(img)
     for bbox in bounding_boxes:
         color = [0, 0, 0]
