@@ -115,12 +115,12 @@ def visualize_anchors(path):
     print(anchors)
     x_center = IMAGE_SIZE//2
     y_center = IMAGE_SIZE//2
-    boxes = [BoundingBox(-1,
+    boxes = [BoundingBox(0,
                          x_center - width//2, y_center - height//2,
                          x_center + width//2, y_center + height//2) for width, height in anchors]
     for b in boxes:
         print(b.as_coordinates_array())
-    img = with_bounding_boxes(np.zeros((IMAGE_SIZE, IMAGE_SIZE, 3)), boxes, 1, [255, 255, 255]).astype(int)
+    img = with_bounding_boxes(np.zeros((IMAGE_SIZE, IMAGE_SIZE, 3)), boxes, 1).astype(int)
     plt.imshow(img)
     plt.show()
 

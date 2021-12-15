@@ -38,10 +38,13 @@ def voc_ap(rec, prec):
 
 def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_threshold, score_threshold, max_boxes,
                            no_classes=3, enable_logs=False):
+    start = time.time()
     true_boxes_all = extract_boxes(*process_ground_truth(y_true, len(anchors)))
     pred_boxes_all = extract_boxes(
         *non_max_suppression(y_pred, anchors, max_boxes, nms_iou_threshold, score_threshold, enable_logs))
+    print(f"NMS time: {time.time() - start}")
 
+    start = time.time()
     mAP_list = []
     for true_boxes, pred_boxes in zip(true_boxes_all, pred_boxes_all):
         class_to_box = {c: [] for c in range(no_classes)}
@@ -72,6 +75,7 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
                     recall.append(running_corrects / total_positives[c])
             ap_list.append(voc_ap(recall, precision))
         mAP_list.append(np.mean(ap_list))
+    print(f"Compute mAP time: {time.time()-start}")
     return np.mean(mAP_list)
 
 
@@ -79,6 +83,7 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_threshol
                    score_threshold, max_boxes,
                    no_classes=3, enable_logs=False):
     mAPs = []
+
     for i in range(len(generator)):
         data, y_true = generator[i]
         y_pred = model(data)
@@ -86,16 +91,15 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_threshol
         mAP = mean_average_precision(y_true, y_pred, generator.anchors, iou_threshold, nms_iou_threshold,
                                      score_threshold, max_boxes, no_classes, enable_logs)
 
-        print(f"{i}/{len(generator)} - mAP: {mAP} - time: {time.time()-start}")
+        print(f"{i+1}/{len(generator)} - mAP: {mAP} - time: {time.time()-start}")
         mAPs.append(mAP)
-
     return np.mean(mAPs)
 
 
 if __name__ == '__main__':
-    model, true_boxes = build_mobilenet_model()
+    model, true_boxes = build_model(alpha=0.5)
     model.load_weights("weights/model.h5")
-    generator = DataGenerator(PATH_TO_VALIDATION, 8, shuffle=False)
+    generator = DataGenerator(PATH_TO_TEST, 8, shuffle=False, limit_batches=5)
 
     mAP = evaluate_model(model, generator, 0.5, 0.5, 0.5, MAX_BOXES_PER_IMAGES)
     print(mAP)

@@ -3,7 +3,7 @@ import time
 import numpy as np
 import tensorflow as tf
 from generator import *
-from train import build_mobilenet_model
+from train import *
 from generator import process_anchors
 from loss import create_cell_grid, YoloLoss
 from tensorflow.keras import backend as K
@@ -66,8 +66,8 @@ def non_max_suppression_for_one(scores, boxes, classes, max_boxes, iou_threshold
                                            tf.keras.backend.flatten(classes),
                                            max_boxes, iou_threshold, score_threshold)
 
-
-def non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs=False):
+def non_max_suppression_slow(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs=False):
+    start = time.time()
     scores, boxes, classes = output_processor(y_pred, anchors)
 
     if enable_logs:
@@ -76,7 +76,7 @@ def non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_thresho
         print(K.get_value(tf.keras.backend.min(y_pred[..., 3])), K.get_value(tf.keras.backend.max(y_pred[..., 3])))
 
     scores, boxes, classes = K.get_value(scores), K.get_value(boxes), K.get_value(classes)
-
+    print(f"Process time: {time.time()-start}")
     if enable_logs:
         print(scores.shape, boxes.shape, classes.shape)
         print(K.get_value(tf.keras.backend.min(scores)), K.get_value(tf.keras.backend.max(scores)))
@@ -86,6 +86,7 @@ def non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_thresho
         print(K.get_value(y))
 
     output_scores, output_boxes, output_classes = [], [], []
+    start_for = time.time()
     for i in range(len(boxes)):
         start = time.time()
         scores_i, boxes_i, classes_i = non_max_suppression_for_one(scores[i], boxes[i], classes[i],
@@ -106,7 +107,12 @@ def non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_thresho
                                                             (scores, boxes, classes)
                                                             )
     """
+    print(f"For time: {time.time()-start_for}")
     return output_scores, output_boxes, output_classes
+
+
+def non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs=False):
+    return non_max_suppression_slow(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs=False)
 
 
 def inference(model, inputs, score_threshold=0.6, iou_threshold=0.5, max_boxes=MAX_BOXES_PER_IMAGES,
@@ -149,7 +155,7 @@ def draw_images(images, scores, boxes, classes):
 
 def test():
     generator = DataGenerator(PATH_TO_TRAIN, 8, shuffle=False)
-    model, true_boxes = build_mobilenet_model()
+    model, true_boxes = build_model(alpha=0.5)
     model.load_weights("weights/model.h5")
     model.summary()
     model.compile(optimizer=tf.keras.optimizers.Adam(),
@@ -162,7 +168,7 @@ def test():
     print(f"loss: {loss}")
 
     start = time.time()
-    scores, boxes, classes = inference(model, images, score_threshold=0.0, iou_threshold=0.1,
+    scores, boxes, classes = inference(model, images, score_threshold=0.6, iou_threshold=0.1,
                                        max_boxes=MAX_BOXES_PER_IMAGES, enable_logs=True)
     scores, boxes, classes = K.get_value(scores), K.get_value(boxes), K.get_value(classes)
 
