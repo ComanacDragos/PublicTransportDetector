@@ -88,15 +88,15 @@ def generate_output_array(image: Image, anchors):
     """
     no_anchors = anchors.shape[0]
     output = np.zeros((GRID_SIZE, GRID_SIZE, no_anchors, (5 + len(ENCODE_LABEL))))
-    downsample_factor = IMAGE_SIZE / GRID_SIZE
+    cell_size = IMAGE_SIZE / GRID_SIZE
     true_boxes = np.zeros((1, 1, 1, MAX_BOXES_PER_IMAGES, 4))
     for box_index, bbox in enumerate(image.bounding_boxes):
         x_center, y_center = bbox.center()
-        cx = int(x_center / downsample_factor)
-        cy = int(y_center / downsample_factor)
+        cx = int(x_center / cell_size)
+        cy = int(y_center / cell_size)
 
-        tx = (x_center - cx * downsample_factor) / downsample_factor + cx
-        ty = (y_center - cy * downsample_factor) / downsample_factor + cy
+        tx = x_center / cell_size  # (x_center - cx * cell_size) / cell_size + cx
+        ty = y_center / cell_size  # (y_center - cy * cell_size) / cell_size + cy
 
         best_anchor = -1
         best_iou = -1
@@ -132,18 +132,19 @@ def generate_output_array(image: Image, anchors):
     return output, true_boxes
 
 
-def interpret_output(output, anchors, obj_threshold=0.5):
-    downsample_factor = IMAGE_SIZE / GRID_SIZE
+def interpret_ground_truth(output, anchors, obj_threshold=0.5):
+    cell_size = IMAGE_SIZE / GRID_SIZE
     boxes = []
     for cx in range(GRID_SIZE):
         for cy in range(GRID_SIZE):
             for i, (anchor_width, anchor_height) in enumerate(anchors):
                 if output[cx, cy, i, 4] >= obj_threshold:
                     tx, ty, tw, th = output[cx, cy, i, :4]
-                    bx = (tx + cx) * downsample_factor
-                    by = (ty + cy) * downsample_factor
-                    bw = anchor_width * np.exp(tw)
-                    bh = anchor_height * np.exp(th)
+                    print(tx, ty, tw, th)
+                    bx = tx * cell_size
+                    by = ty * cell_size
+                    bw = tw #anchor_width * np.exp(tw)
+                    bh = th #anchor_height * np.exp(th)
                     x_min, y_min = bx - bw / 2, by - bh / 2
                     x_max, y_max = bx + bw / 2, by + bh / 2
                     boxes.append(BoundingBox(
@@ -159,7 +160,7 @@ def test_generate_output_array():
 
     originalImage = Image(PATH_TO_VALIDATION, "4a23eee283f294b6.jpg")
     output = generate_output_array(originalImage, anchors)
-    boxes = interpret_output(output, anchors)
+    boxes = interpret_ground_truth(output, anchors)
 
     for b in originalImage.bounding_boxes:
         print(b.c, b.as_coordinates_array())
@@ -169,7 +170,7 @@ def test_generate_output_array():
 
 
 def test_generator():
-    generator = DataGenerator(PATH_TO_VALIDATION, 32, (IMAGE_SIZE, IMAGE_SIZE, 3), "data/anchors.pickle")
+    generator = DataGenerator(PATH_TO_TRAIN, 32, (IMAGE_SIZE, IMAGE_SIZE, 3), "data/anchors.pickle", shuffle=False)
     start = time.time()
     ground_truth, labels = generator[0]
     print("Time to load: ", time.time() - start)
@@ -180,11 +181,28 @@ def test_generator():
     print(data.shape, last_data.shape, true_boxes.shape)
     print(labels.shape, last_labels.shape, last_true_boxes.shape)
 
-    #boxes = interpret_output(labels[0], generator.anchors)
-    #image = with_bounding_boxes(data[0], boxes, 3)
+    for i in range(5):
+        box = true_boxes[0, 0, 0, 0, i, :]
+        if np.sum(box) == 0:
+            break
+        print(box)
 
-    #plt.imshow(image)
-    #plt.show()
+    for cx in range(GRID_SIZE):
+        for cy in range(GRID_SIZE):
+            for a in range(len(generator.anchors)):
+                anchor = labels[0, cx, cy, a, :]
+                if anchor[4] == 1:
+                    print(anchor, cx, cy)
+                else:
+                    if np.sum(anchor) != 0:
+                        print("Error!!")
+
+    boxes = interpret_ground_truth(labels[0], generator.anchors)
+    print([b.as_coordinates_array() for b in boxes])
+    image = with_bounding_boxes(data[0], boxes, 3)
+
+    plt.imshow(image)
+    plt.show()
 
 
 if __name__ == '__main__':

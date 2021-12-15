@@ -5,6 +5,7 @@ import numpy as np
 from tensorflow.keras import backend as K
 from generator import *
 from loss import YoloLoss
+
 tf.compat.v1.disable_eager_execution()
 
 
@@ -18,22 +19,26 @@ def conv_layer(x, kernel_size=3, filters=32, reluActivation=True, strides=1):
     return bn
 
 
-def build_simple_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 1, MAX_BOXES_PER_IMAGES, 4), no_classes=3, no_anchors=3):
+def build_mobilenet_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 1, MAX_BOXES_PER_IMAGES, 4),
+                          no_classes=3, no_anchors=3, alpha=1.0):
     inputs = tf.keras.layers.Input(shape=input_shape)
     true_boxes = tf.keras.layers.Input(shape=true_boxes_shape)
     x = tf.cast(inputs, tf.float32)
     x = tf.keras.applications.mobilenet_v2.preprocess_input(x)
-
-    mobilenet_v2 = tf.keras.applications.MobileNetV2(input_shape=input_shape, include_top=False)
+    mobilenet_v2 = tf.keras.applications.MobileNetV2(input_shape=input_shape, include_top=False, alpha=alpha)
     mobilenet_v2.trainable = False
-    x = mobilenet_v2(x, training=False)
+    smaller_version = tf.keras.Model(inputs=mobilenet_v2.input,
+                                     outputs=mobilenet_v2.get_layer("block_13_project_BN").output,
+                                     )
+    x = smaller_version(x, training=False)
     x = tf.keras.layers.ReLU()(x)
-    x = conv_layer(x, filters=320)
-    x = conv_layer(x, filters=320)
-    x = conv_layer(x, filters=160)
-    x = conv_layer(x, filters=160)
-    x = conv_layer(x, filters=no_anchors*(4+1+no_classes), reluActivation=False)
-    x = tf.keras.layers.Reshape((GRID_SIZE, GRID_SIZE, no_anchors, 4+1+no_classes), name="final_output")(x)
+    x = tf.keras.layers.Dropout(0.4)(x)
+    # x = conv_layer(x, filters=320)
+    # x = conv_layer(x, filters=320)
+    # x = conv_layer(x, filters=160)
+    # x = conv_layer(x, filters=160)
+    x = conv_layer(x, filters=no_anchors * (4 + 1 + no_classes), reluActivation=False)
+    x = tf.keras.layers.Reshape((GRID_SIZE, GRID_SIZE, no_anchors, 4 + 1 + no_classes), name="final_output")(x)
     output = tf.keras.layers.Lambda(lambda args: args[0], name="hack_layer")([x, true_boxes])
     return tf.keras.Model(inputs=[inputs, true_boxes], outputs=output, name="custom_yolo"), true_boxes
 
@@ -80,13 +85,13 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), trainable=False):
 
 def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), trainable=False, type="simple"):
     # if type == "simple":
-    return build_simple_model(input_shape)
+    return build_mobilenet_model(input_shape)
     # return build_unet(input_shape, trainable)
 
 
 def plot_history(history):
     plt.plot(history['loss'], label='loss')
-    # plt.plot(history['val_loss'], label='val_loss')
+    plt.plot(history['val_loss'], label='val_loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     # plt.ylim([0, 1])
@@ -110,7 +115,10 @@ class CosineAnnealingScheduler(tf.keras.callbacks.Callback):
 
 
 class Train:
-    def __init__(self, epochs=5, batch_size=32, n_min=1e-5, n_max=4e-4, T=None, path_to_model=None, limit_batches=None):
+    def __init__(self, epochs=5, batch_size=32,
+                 n_min=1e-5, n_max=4e-4, T=None,
+                 path_to_model=None, alpha=1.0,
+                 limit_batches=None):
         self.epochs = epochs
         self.batch_size = batch_size
         self.train_generator = DataGenerator(PATH_TO_TRAIN, self.batch_size, limit_batches=limit_batches)
@@ -118,6 +126,7 @@ class Train:
         self.T = T if T is not None else 2 * batch_size
         self.n_min = n_min
         self.n_max = n_max
+        self.alpha = alpha
         self.model = None
         self.true_boxes = None
         if path_to_model is None:
@@ -126,10 +135,10 @@ class Train:
             self.load_model(path_to_model)
 
     def train(self, name="model.h5", fine_tune=False):
-        self.model.summary()
-
         if fine_tune:
             self.model.trainable = True
+        self.model.summary()
+
         self.model.compile(optimizer=tf.keras.optimizers.Adam(),
                            loss=YoloLoss(anchors=self.train_generator.anchors, true_boxes=self.true_boxes),
                            # metrics=[],
@@ -143,29 +152,31 @@ class Train:
                                                 verbose=2
                                             ),
                                             tf.keras.callbacks.TerminateOnNaN(),
-                                            # tf.keras.callbacks.EarlyStopping(patience=3, min_delta=1e-3, verbose=2)
+                                            tf.keras.callbacks.EarlyStopping(patience=3, min_delta=1e-3, verbose=2)
                                             ], workers=os.cpu_count())
         # tf.keras.models.save_model(self.model, f"weights/{name}")
         plot_history(history.history)
 
     def load_model(self, path):
-        self.model = tf.keras.models.load_model(path, custom_objects={
-            "YoloLoss": YoloLoss
-        }, compile=False)
+        self.model, self.true_boxes = build_mobilenet_model(alpha=self.alpha)
+        self.model.load_weights(f"weights/{path}")
 
     def new_model(self):
-        self.model, self.true_boxes = build_model()
+        self.model, self.true_boxes = build_mobilenet_model(alpha=self.alpha)
 
 
 def train():
-    t = Train(epochs=2, batch_size=8, n_min=1e-7, n_max=1e-2, limit_batches=None)
-    t.train(name="model")
-    #fine_tune = Train(epochs=3, batch_size=8, n_min=1e-7, n_max=1e-6, path_to_model="weights/model")
-    #fine_tune.train(name="model_fine_tuned", fine_tune=True)
+    t = Train(epochs=5, batch_size=8, n_min=1e-7, n_max=4e-4, limit_batches=None)
+    t.train(name="model.h5")
+
+
+def fine_tune():
+    fine_tune = Train(epochs=3, batch_size=8, n_min=1e-7, n_max=1e-6, path_to_model="model.h5")
+    fine_tune.train(name="model_fine_tuned.h5", fine_tune=True)
 
 
 if __name__ == '__main__':
-    #model, true_boxes = build_simple_model()
-    #model.summary()
-    # test_loss()
+    # model, _ = build_simple_model()
+    # model.summary()
     train()
+    #fine_tune()

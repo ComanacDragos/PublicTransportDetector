@@ -18,7 +18,7 @@ def create_cell_grid(no_anchors):
 
 class YoloLoss(tf.keras.losses.Loss):
     def __init__(self, anchors, true_boxes,
-                 l_coord=1., l_noobj=0.5, l_class=1., l_obj=1.,
+                 l_coord=5., l_noobj=0.5, l_class=1., l_obj=10000.,
                  nb_class=3, iou_threshold=0.6, enable_logs=False):
         super(YoloLoss, self).__init__()
         self.l_coord = l_coord
@@ -140,7 +140,6 @@ class YoloLoss(tf.keras.losses.Loss):
 
         best_ious = tf.reduce_max(iou_scores, axis=4)
         conf_mask = conf_mask + tf.cast(best_ious < 0.6, tf.float32) * (1 - y_true[..., 4]) * self.l_noobj
-
         # penalize the confidence of the boxes, which are reponsible for corresponding ground truth box
         conf_mask = conf_mask + y_true[..., 4] * self.l_obj
 
@@ -155,9 +154,9 @@ class YoloLoss(tf.keras.losses.Loss):
         nb_class_box = tf.reduce_sum(tf.cast(class_mask > 0.0, tf.float32))
         # print((nb_coord_box + 1e-6) / 2.)
         loss_xy = tf.cast(tf.reduce_sum(tf.square(true_box_xy - pred_box_xy) * coord_mask), tf.float32) / (
-                nb_coord_box + 1e-6) / 2. / GRID_SIZE
+                nb_coord_box + 1e-6) / 2. #/ GRID_SIZE
         loss_wh = tf.cast(tf.reduce_sum(tf.square(tf.sqrt(true_box_wh) - tf.sqrt(pred_box_wh)) * coord_mask), tf.float32) / (
-                nb_coord_box + 1e-6) / 2. / IMAGE_SIZE
+                nb_coord_box + 1e-6) / 2. #/ IMAGE_SIZE
         loss_conf = tf.cast(tf.reduce_sum(tf.square(true_box_conf - pred_box_conf) * conf_mask),
                             tf.float32) / (nb_conf_box + 1e-6) / 2.
         loss_class = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=true_box_class, logits=pred_box_class)
