@@ -29,25 +29,28 @@ def process_ground_truth_for_one(ground_truth, no_anchors):
 
 
 def process_ground_truth(ground_truth, no_anchors):
-    conf_scores, boxes, classes = [], [], []
+    conf_scores, boxes, classes, valid_detections = [], [], [], []
     for i in range(ground_truth.shape[0]):
         conf_scores_i, boxes_i, classes_i = process_ground_truth_for_one(ground_truth[i], no_anchors)
         conf_scores.append(conf_scores_i)
         boxes.append(boxes_i)
         classes.append(classes_i)
-    return np.asarray(conf_scores), np.asarray(boxes), np.asarray(classes)
+        valid_detections.append(len(boxes_i))
+    return np.asarray(conf_scores), np.asarray(boxes), np.asarray(classes), np.asarray(valid_detections)
 
 
-def output_processor(output, anchors):
+def output_processor(output, anchors, apply_argmax=True):
     cell_grid = create_cell_grid(len(anchors))
     cell_size = IMAGE_SIZE / GRID_SIZE
     xy = (K.sigmoid(output[..., :2]) + cell_grid) * cell_size
     wh = K.exp(output[..., 2:4]) * anchors
     conf_scores = K.sigmoid(output[..., 4])
     classes = tf.expand_dims(conf_scores, -1) * K.softmax(output[..., 5:])
+    if apply_argmax:
+        classes = K.argmax(classes)
     return conf_scores, \
            K.clip(tf.concat([xy - wh // 2, xy + wh // 2], axis=-1), min_value=0, max_value=IMAGE_SIZE), \
-           K.argmax(classes)
+           classes
 
 
 def non_max_suppression_for_one_aux(scores, boxes, classes, max_boxes, iou_threshold, score_threshold):
@@ -66,6 +69,7 @@ def non_max_suppression_for_one(scores, boxes, classes, max_boxes, iou_threshold
                                            tf.keras.backend.flatten(classes),
                                            max_boxes, iou_threshold, score_threshold)
 
+
 def non_max_suppression_slow(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs=False):
     start = time.time()
     scores, boxes, classes = output_processor(y_pred, anchors)
@@ -76,12 +80,12 @@ def non_max_suppression_slow(y_pred, anchors, max_boxes, iou_threshold, score_th
         print(K.get_value(tf.keras.backend.min(y_pred[..., 3])), K.get_value(tf.keras.backend.max(y_pred[..., 3])))
 
     scores, boxes, classes = K.get_value(scores), K.get_value(boxes), K.get_value(classes)
-    print(f"Process time: {time.time()-start}")
+    print(f"Process time: {time.time() - start}")
     if enable_logs:
         print(scores.shape, boxes.shape, classes.shape)
         print(K.get_value(tf.keras.backend.min(scores)), K.get_value(tf.keras.backend.max(scores)))
         y, _ = K.get_value(tf.unique(K.get_value(K.flatten(y_pred[..., 4]))))
-        print(K.get_value(y))
+        print("unique raw conf scores: ", K.get_value(y))
         y, _ = K.get_value(tf.unique(K.get_value(K.flatten(scores))))
         print(K.get_value(y))
 
@@ -107,12 +111,24 @@ def non_max_suppression_slow(y_pred, anchors, max_boxes, iou_threshold, score_th
                                                             (scores, boxes, classes)
                                                             )
     """
-    print(f"For time: {time.time()-start_for}")
+    print(f"For time: {time.time() - start_for}")
     return output_scores, output_boxes, output_classes
 
 
+def non_max_suppression_fast(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs=False):
+    # boxes : bs, 13, 13, 3, 4
+    _, boxes, classes = output_processor(y_pred, anchors, apply_argmax=False)
+    boxes = tf.reshape(boxes, (-1, GRID_SIZE*GRID_SIZE*len(anchors), 4))
+    boxes = tf.expand_dims(boxes, axis=2)
+    classes = tf.reshape(classes, (-1, GRID_SIZE*GRID_SIZE*len(anchors), len(ENCODE_LABEL)))
+    nms_boxes, nms_scores, nms_classes, nms_valid = tf.image.combined_non_max_suppression(
+        boxes, classes, max_boxes, max_boxes * 8, iou_threshold=iou_threshold,
+        score_threshold=score_threshold, clip_boxes=False)
+    return nms_scores, nms_boxes, nms_classes, nms_valid
+
+
 def non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs=False):
-    return non_max_suppression_slow(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs=False)
+    return non_max_suppression_fast(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs=enable_logs)
 
 
 def inference(model, inputs, score_threshold=0.6, iou_threshold=0.5, max_boxes=MAX_BOXES_PER_IMAGES,
@@ -120,16 +136,24 @@ def inference(model, inputs, score_threshold=0.6, iou_threshold=0.5, max_boxes=M
     anchors = process_anchors(anchors_path)
     dummy_array = np.zeros((1, 1, 1, 1, MAX_BOXES_PER_IMAGES, 4))
     # start = time.time()
-    y_pred = model([inputs, dummy_array], training=True)
+    y_pred = model([inputs, dummy_array])
+    y, _ = K.get_value(tf.unique(K.get_value(K.flatten(y_pred[..., 4]))))
+    print("unique raw conf scores: ", K.get_value(y))
+    y = K.get_value(y_pred)
+
+    ##for i in range(13):
+    #    for j in range(13):
+    #        for a in range(3):
+    #            print(K.get_value(y_pred[0, i,j, a, :]))
     # print("predict time: ", time.time() - start)
     return non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs)
 
 
-def extract_boxes(scores, boxes, classes) -> List[List[BoundingBox]]:
+def extract_boxes(scores, boxes, classes, valid_detections) -> List[List[BoundingBox]]:
     output_boxes = []
     for i in range(len(boxes)):
         bboxes = []
-        for j in range(len(boxes[i])):
+        for j in range(valid_detections[i]):
             bbox = BoundingBox(classes[i][j],
                                boxes[i][j][0],
                                boxes[i][j][1],
@@ -142,38 +166,50 @@ def extract_boxes(scores, boxes, classes) -> List[List[BoundingBox]]:
             cell_size = IMAGE_SIZE / GRID_SIZE
             x = int(x / cell_size)
             y = int(y / cell_size)
-            if w > 50 and h > 50:
-                bboxes.append(bbox)
+            #if w > 50 and h > 50:
+            bboxes.append(bbox)
+            #print(bbox.as_coordinates_array(), bbox.c, bbox.score)
         output_boxes.append(bboxes)
     return output_boxes
 
 
-def draw_images(images, scores, boxes, classes):
-    output_boxes = extract_boxes(scores, boxes, classes)
+def draw_images(images, scores, boxes, classes, valid_detections):
+    output_boxes = extract_boxes(scores, boxes, classes, valid_detections)
     return [with_bounding_boxes(img, bboxes) for img, bboxes in zip(images, output_boxes)]
 
 
 def test():
     generator = DataGenerator(PATH_TO_TRAIN, 8, shuffle=False)
-    model, true_boxes = build_model(alpha=0.5)
+    model, true_boxes = build_model()
+    #model.trainable = True
     model.load_weights("weights/model.h5")
+
     model.summary()
     model.compile(optimizer=tf.keras.optimizers.Adam(),
                   loss=YoloLoss(anchors=generator.anchors, true_boxes=true_boxes, enable_logs=True))
 
-    ground_truth, y_true = generator[0]
+    ground_truth, y_true = generator[10]
     images, true_boxes = ground_truth[0], ground_truth[1]
 
     loss = model.evaluate(ground_truth, y_true, verbose=2)
     print(f"loss: {loss}")
 
     start = time.time()
-    scores, boxes, classes = inference(model, images, score_threshold=0.6, iou_threshold=0.1,
+    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.5, iou_threshold=0.1,
                                        max_boxes=MAX_BOXES_PER_IMAGES, enable_logs=True)
-    scores, boxes, classes = K.get_value(scores), K.get_value(boxes), K.get_value(classes)
+    scores, boxes, classes, valid_detections = K.get_value(scores),\
+                                               K.get_value(boxes),\
+                                               K.get_value(classes),\
+                                               K.get_value(valid_detections)
 
     print("time to run: ", time.time() - start)
-    pred_images_with_boxes = draw_images(images, scores, boxes, classes)
+
+    print(scores[0], "scores")
+    print(boxes[0], "boxes")
+    print(classes[0], "classes")
+    print(valid_detections[0], "detections")
+    print("===============")
+    pred_images_with_boxes = draw_images(images, scores, boxes, classes, valid_detections)
     true_images_with_boxes = draw_images(images, *process_ground_truth(y_true, len(generator.anchors)))
     fig, axs = plt.subplots(3, 2, gridspec_kw={'width_ratios': [1, 1]})
     for i in range(0, 3):
@@ -191,3 +227,19 @@ def test():
 
 if __name__ == '__main__':
     test()
+    """boxes = np.asarray([[[3, 2, 4, 4], [2, 2, 4, 4]]])
+    boxes = np.expand_dims(boxes, 2)
+    print(boxes.shape)
+    classes = np.asarray([[[0.2, 0.6, 0.2], [0.2, 0.7, 0.1]]])
+    print(classes.shape)
+    scores, boxes, classes, valid_detections = tf.image.combined_non_max_suppression(
+        boxes, classes, 2, 4, iou_threshold=0.5,
+        score_threshold=0.5, clip_boxes=False)
+    boxes, scores, classes, valid_detections = K.get_value(scores), \
+                                               K.get_value(boxes), \
+                                               K.get_value(classes), \
+                                               K.get_value(valid_detections)
+    print(boxes)
+    print(scores)
+    print(classes)
+    print(valid_detections)"""
