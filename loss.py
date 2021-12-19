@@ -9,22 +9,16 @@ def create_cell_grid(no_anchors):
 
     for i in range(GRID_SIZE):
         for j in range(GRID_SIZE):
-            x_offset[i][j] = i
-            y_offset[i][j] = j
+            x_offset[i][j] = j
+            y_offset[i][j] = i
     x_offset = np.stack([x_offset] * no_anchors, axis=-1)
     y_offset = np.stack([y_offset] * no_anchors, axis=-1)
     return tf.cast(tf.stack([x_offset, y_offset], -1), tf.float32)
 
 
-"""
-0,0 0,1 0,2 0,3
-
-"""
-
-
 class YoloLoss(tf.keras.losses.Loss):
     def __init__(self, anchors, true_boxes,
-                 l_coord=5., l_noobj=1., l_class=1., l_obj=1.,
+                 l_coord=5., l_noobj=0.5, l_class=1., l_obj=5.,
                  nb_class=3, iou_threshold=0.6, enable_logs=False):
         super(YoloLoss, self).__init__()
         self.l_coord = l_coord
@@ -193,6 +187,24 @@ if __name__ == '__main__':
     # YoloLoss(np.ones((3, 2)), None)
     GRID_SIZE = 2
     g = create_cell_grid(1)
+
+
+    GRID_SIZE = 3
+
+    cell_x = tf.cast(tf.reshape(tf.tile(tf.range(GRID_SIZE), [GRID_SIZE]), (1, GRID_SIZE, GRID_SIZE, 1, 1)), tf.float32)
+    cell_y = tf.transpose(cell_x, (0,2,1,3,4))
+
+    cell_grid = tf.tile(tf.concat([cell_x,cell_y], -1), [32, 1, 1, 3, 1])
+    cell_grid = cell_grid[0]
+    g2 = create_cell_grid(3)
+    for cy in range(GRID_SIZE):
+        for cx in range(GRID_SIZE):
+            print(cx, cy)
+            print(g2[cx, cy, :, :])
+            print("====")
+            print(cell_grid[cx, cy, :, :])
+            print("\n\n")
+
     print(g)
 
     print(list(range(0, 416, 32)))
@@ -201,19 +213,19 @@ if __name__ == '__main__':
     xy[0, 0, 0, 0] = 50 / 208
     xy[0, 0, 0, 1] = 60 / 208
 
-    xy[0, 1, 0, 0] = 50 / 208
-    xy[0, 1, 0, 1] = 260 / 208 - 1
+    xy[0, 1, 0, 1] = 50 / 208
+    xy[0, 1, 0, 0] = 260 / 208 - 1
 
-    xy[1, 0, 0, 0] = 250 / 208 - 1
-    xy[1, 0, 0, 1] = 60 / 208
+    xy[1, 0, 0, 1] = 250 / 208 - 1
+    xy[1, 0, 0, 0] = 60 / 208
 
-    xy[1, 1, 0, 0] = 250 / 208 -1
-    xy[1, 1, 0, 1] = 260 /208 -1
+    xy[1, 1, 0, 0] = 250 / 208 - 1
+    xy[1, 1, 0, 1] = 260 / 208 - 1
 
     print(xy)
     print(xy.shape)
-    xy = (xy + g)*208
+    xy = (xy + g) * 208
     print(xy)
-    print(xy[0,1,0,:])
+    print(xy[0, 1, 0, :])
 
-    print(xy[1,0,0,:])
+    print(xy[1, 0, 0, :])

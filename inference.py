@@ -88,6 +88,8 @@ def non_max_suppression_slow(y_pred, anchors, max_boxes, iou_threshold, score_th
         print("unique raw conf scores: ", K.get_value(y))
         y, _ = K.get_value(tf.unique(K.get_value(K.flatten(scores))))
         print(K.get_value(y))
+        print(K.get_value(K.sigmoid(y)))
+
 
     output_scores, output_boxes, output_classes = [], [], []
     start_for = time.time()
@@ -137,9 +139,11 @@ def inference(model, inputs, score_threshold=0.6, iou_threshold=0.5, max_boxes=M
     dummy_array = np.zeros((1, 1, 1, 1, MAX_BOXES_PER_IMAGES, 4))
     # start = time.time()
     y_pred = model([inputs, dummy_array])
-    y, _ = K.get_value(tf.unique(K.get_value(K.flatten(y_pred[..., 4]))))
+    y, _ = K.get_value(tf.unique((K.flatten(y_pred[..., 4]))))
     print("unique raw conf scores: ", K.get_value(y))
-    y = K.get_value(y_pred)
+    print(K.get_value(K.sigmoid(y)))
+    print("len ", K.get_value(tf.shape(y)))
+    print(K.get_value(K.max(K.sigmoid(y))))
 
     ##for i in range(13):
     #    for j in range(13):
@@ -179,7 +183,7 @@ def draw_images(images, scores, boxes, classes, valid_detections):
 
 
 def test():
-    generator = DataGenerator(PATH_TO_TRAIN, 8, shuffle=False)
+    generator = DataGenerator(PATH_TO_TRAIN, shuffle=False)
     model, true_boxes = build_model()
     #model.trainable = True
     model.load_weights("weights/model.h5")
@@ -188,14 +192,14 @@ def test():
     model.compile(optimizer=tf.keras.optimizers.Adam(),
                   loss=YoloLoss(anchors=generator.anchors, true_boxes=true_boxes, enable_logs=True))
 
-    ground_truth, y_true = generator[10]
+    ground_truth, y_true = generator[0]
     images, true_boxes = ground_truth[0], ground_truth[1]
 
     loss = model.evaluate(ground_truth, y_true, verbose=2)
     print(f"loss: {loss}")
 
     start = time.time()
-    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.5, iou_threshold=0.1,
+    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.5, iou_threshold=0.5,
                                        max_boxes=MAX_BOXES_PER_IMAGES, enable_logs=True)
     scores, boxes, classes, valid_detections = K.get_value(scores),\
                                                K.get_value(boxes),\
@@ -211,8 +215,8 @@ def test():
     print("===============")
     pred_images_with_boxes = draw_images(images, scores, boxes, classes, valid_detections)
     true_images_with_boxes = draw_images(images, *process_ground_truth(y_true, len(generator.anchors)))
-    fig, axs = plt.subplots(3, 2, gridspec_kw={'width_ratios': [1, 1]})
-    for i in range(0, 3):
+    fig, axs = plt.subplots(8, 2, figsize=(20, 20))
+    for i in range(0, 8):
         # plt.subplot(6, 2, 2 * i - 1)
         axs[i][0].imshow(true_images_with_boxes[i])
         # axs[i][0].title('Original')

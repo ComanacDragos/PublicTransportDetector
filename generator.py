@@ -4,7 +4,7 @@ from image import *
 
 
 class DataGenerator(tf.keras.utils.Sequence):
-    def __init__(self, db_dir, batch_size, input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3),
+    def __init__(self, db_dir, batch_size=BATCH_SIZE, input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3),
                  anchors_path=ANCHORS_PATH,
                  shuffle=True, limit_batches=None):
         self.input_shape = input_shape
@@ -119,12 +119,12 @@ def generate_output_array(image: Image, anchors):
         tw = box_width  # np.log(box_width) - np.log(anchor_width)
         th = box_height  # np.log(box_height) - np.log(anchor_height)
 
-        output[cx, cy, best_anchor, 0] = tx
-        output[cx, cy, best_anchor, 1] = ty
-        output[cx, cy, best_anchor, 2] = tw
-        output[cx, cy, best_anchor, 3] = th
-        output[cx, cy, best_anchor, 4] = 1.
-        output[cx, cy, best_anchor, 5 + bbox.c] = 1.
+        output[cy, cx, best_anchor, 0] = tx
+        output[cy, cx, best_anchor, 1] = ty
+        output[cy, cx, best_anchor, 2] = tw
+        output[cy, cx, best_anchor, 3] = th
+        output[cy, cx, best_anchor, 4] = 1.
+        output[cy, cx, best_anchor, 5 + bbox.c] = 1.
 
         true_boxes[0, 0, 0, box_index] = [tx, ty, tw, th]
     return output, true_boxes
@@ -152,23 +152,9 @@ def interpret_ground_truth(output, anchors, obj_threshold=0.5):
     return boxes
 
 
-def test_generate_output_array():
-    anchors = process_anchors("data/anchors.pickle")
-    # print(anchors)
-
-    originalImage = Image(PATH_TO_VALIDATION, "4a23eee283f294b6.jpg")
-    output = generate_output_array(originalImage, anchors)
-    boxes = interpret_ground_truth(output, anchors)
-
-    for b in originalImage.bounding_boxes:
-        print(b.c, b.as_coordinates_array())
-    print("=" * 20)
-    for b in boxes:
-        print(b.c, b.as_coordinates_array())
-
-
+# 0000599864fd15b3
 def test_generator():
-    generator = DataGenerator(PATH_TO_TRAIN, 32, (IMAGE_SIZE, IMAGE_SIZE, 3), "data/anchors.pickle", shuffle=False)
+    generator = DataGenerator(PATH_TO_TRAIN, 32, (IMAGE_SIZE, IMAGE_SIZE, 3), shuffle=False)
     start = time.time()
     ground_truth, labels = generator[0]
     print("Time to load: ", time.time() - start)
