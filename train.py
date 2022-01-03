@@ -19,29 +19,6 @@ def conv_block(x, kernel_size=3, filters=32, reluActivation=True, strides=1):
     return bn
 
 
-def build_mobilenet_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 1, MAX_BOXES_PER_IMAGES, 4),
-                          no_classes=3, no_anchors=3, alpha=1.0):
-    inputs = tf.keras.layers.Input(shape=input_shape)
-    true_boxes = tf.keras.layers.Input(shape=true_boxes_shape)
-    x = tf.cast(inputs, tf.float32)
-    x = tf.keras.applications.mobilenet_v2.preprocess_input(x)
-    mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False, alpha=alpha)
-    mobilenet_v2.trainable = False
-    # smaller_version = tf.keras.Model(inputs=mobilenet_v2.input, outputs=mobilenet_v2.get_layer("block_13_project_BN").output)
-    #x = mobilenet_v2(x, training=False)
-    #x = tf.keras.layers.ReLU()(x)
-    #x = tf.keras.layers.Dropout(0.4)(x)
-    # x = conv_layer(x, filters=320)
-    # x = conv_layer(x, filters=320)
-    # x = conv_layer(x, filters=160)
-    # x = conv_layer(x, filters=160)
-    x = conv_block(x, filters=no_anchors * (4 + 1 + no_classes), reluActivation=False)
-    x = tf.keras.layers.Reshape((GRID_SIZE, GRID_SIZE, no_anchors, 4 + 1 + no_classes), name="final_output")(x)
-
-    output = tf.keras.layers.Lambda(lambda args: args[0], name="hack_layer")([x, true_boxes])
-    return tf.keras.Model(inputs=[inputs, true_boxes], outputs=output, name="custom_yolo"), true_boxes
-
-
 def upsample_block(x, filters, size, stride=2):
     """
     x - the input of the upsample block
@@ -55,12 +32,13 @@ def upsample_block(x, filters, size, stride=2):
 
 
 def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 1, MAX_BOXES_PER_IMAGES, 4),
-               no_classes=3, no_anchors=3, alpha=1.0):
+               no_classes=len(ENCODE_LABEL), no_anchors=3, alpha=1.0):
     inputs = tf.keras.layers.Input(shape=input_shape)
     true_boxes = tf.keras.layers.Input(shape=true_boxes_shape)
     x = tf.cast(inputs, tf.float32)
     x = tf.keras.applications.mobilenet_v2.preprocess_input(x)
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False, alpha=alpha)
+    mobilenet_v2.summary()
     downsample_skip_layer_name = ["block_6_expand_relu",
                                   "block_10_expand_relu",
                                   "block_14_expand_relu"]
@@ -79,12 +57,15 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
 
     x = tf.keras.layers.Dropout(0.5)(x)
     x = conv_block(x, filters=192, strides=2)
+    x = conv_block(x, filters=192)
+    x = conv_block(x, filters=64, strides=2)
     x = conv_block(x, filters=64)
-    x = conv_block(x, filters=64)
+    x = conv_block(x, filters=32)
+    x = conv_block(x, filters=32)
     #x = conv_block(x, filters=no_anchors * (4 + 1 + no_classes), reluActivation=False, strides=2)
     x = tf.keras.layers.Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
                                 padding="same", activation="relu",
-                                strides=2,
+                                #strides=2,
                                 kernel_initializer=tf.keras.initializers.HeNormal())(x)
     x = tf.keras.layers.Reshape((GRID_SIZE, GRID_SIZE, no_anchors, 4 + 1 + no_classes), name="final_output")(x)
     output = tf.keras.layers.Lambda(lambda args: args[0], name="hack_layer")([x, true_boxes])
@@ -92,9 +73,8 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
 
 
 def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 1, MAX_BOXES_PER_IMAGES, 4),
-                no_classes=3, no_anchors=3, alpha=1.0):
+                no_classes=len(ENCODE_LABEL), no_anchors=3, alpha=1.0):
     return build_unet(input_shape, true_boxes_shape, no_classes, no_anchors, alpha)
-    # return build_mobilenet_model(input_shape, true_boxes_shape, no_classes, no_anchors, alpha)
 
 
 def plot_history(history):
@@ -174,8 +154,8 @@ class Train:
 
 
 def train():
-    t = Train(epochs=3, n_min=1e-7, n_max=4e-4, limit_batches=None)
-    t.train(name="model.h5")
+    t = Train(epochs=5, n_min=1e-7, n_max=1e-4, limit_batches=None)
+    t.train(name="model_v3.h5")
 
 
 def fine_tune():
@@ -185,7 +165,7 @@ def fine_tune():
 
 if __name__ == '__main__':
     #tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
-    #model, _ = build_model()
-    #model.summary()
-    train()
+    model, _ = build_model()
+    model.summary()
+    #train()
     #fine_tune()

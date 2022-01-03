@@ -81,7 +81,7 @@ def generate_output_array(image: Image, anchors):
     each example is mapped to the following:
     array of shape C x C x ANCHORS x (tx + ty + tw + th + obj_score + C)
     - tx, ty the offsets with respect to the grid cell
-    - tw, th the offesets with respect to the anchor
+    - tw, th the offsets with respect to the anchor
     - C number of classes
     """
     no_anchors = anchors.shape[0]
@@ -192,3 +192,4 @@ def test_generator():
 if __name__ == '__main__':
     print("starting...")
     test_generator()
+    #print(5/2)

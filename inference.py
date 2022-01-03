@@ -186,7 +186,7 @@ def test():
     generator = DataGenerator(PATH_TO_TRAIN, shuffle=False)
     model, true_boxes = build_model()
     #model.trainable = True
-    model.load_weights("weights/model.h5")
+    model.load_weights("weights/model_v2.h5")
 
     model.summary()
     model.compile(optimizer=tf.keras.optimizers.Adam(),
