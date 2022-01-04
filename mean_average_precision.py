@@ -113,10 +113,10 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_threshol
 if __name__ == '__main__':
     model, true_boxes = build_model()
     #model.trainable = True
-    model.load_weights("weights/model_v2.h5")
+    model.load_weights("weights/model_v3.h5")
     generator = DataGenerator(PATH_TO_TEST, shuffle=False, limit_batches=10)
 
-    mAP, aps = evaluate_model(model, generator, 0.3, 0.3, 0.3, MAX_BOXES_PER_IMAGES, enable_logs=True)
+    mAP, aps = evaluate_model(model, generator, 0.5, 0.5, 0.3, MAX_BOXES_PER_IMAGES, enable_logs=True)
     print("mAP: ", mAP)
     for c in range(3):
         print(f"{DECODE_LABEL[c]} : {aps[c]}")

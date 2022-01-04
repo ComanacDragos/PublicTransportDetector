@@ -88,3 +88,223 @@ Epoch 3/3
 1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 29.2054
 Epoch 00003: val_loss improved from 31.27766 to 31.03371, saving model to weights\model.h5
 1934/1934 [==============================] - 896s 463ms/step - batch: 966.5000 - size: 15.9974 - loss: 29.2054 - val_loss: 31.0337
+
+II
+
+Model: "custom_yolo"
+__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to
+==================================================================================================
+input_1 (InputLayer)            [(None, 416, 416, 3) 0
+__________________________________________________________________________________________________
+tf_op_layer_truediv (TensorFlow [(None, 416, 416, 3) 0           input_1[0][0]
+__________________________________________________________________________________________________
+tf_op_layer_sub (TensorFlowOpLa [(None, 416, 416, 3) 0           tf_op_layer_truediv[0][0]
+__________________________________________________________________________________________________
+mobilenetv2_1.00_224 (Functiona (None, 13, 13, 1280) 2257984     tf_op_layer_sub[0][0]
+__________________________________________________________________________________________________
+conv2d (Conv2D)                 (None, 13, 13, 24)   276504      mobilenetv2_1.00_224[0][0]
+__________________________________________________________________________________________________
+final_output (Reshape)          (None, 13, 13, 3, 8) 0           conv2d[0][0]
+__________________________________________________________________________________________________
+input_2 (InputLayer)            [(None, 1, 1, 1, 111 0
+__________________________________________________________________________________________________
+hack_layer (Lambda)             (None, 13, 13, 3, 8) 0           final_output[0][0]
+                                                                 input_2[0][0]
+==================================================================================================
+Total params: 2,534,488
+Trainable params: 276,504
+Non-trainable params: 2,257,984
+__________________________________________________________________________________________________
+
+Epoch 1: Learning rate is 6e-05.
+Epoch 1/6
+2022-01-03 16:24:25.629694: I tensorflow/stream_executor/platform/default/dso_loader.cc:48] Successfully opened dynamic library cudnn64_7.dll
+2022-01-03 16:24:26.760196: W tensorflow/stream_executor/gpu/redzone_allocator.cc:314] Internal: Invoking GPU asm compilation is supported on Cuda non-Windows platforms only
+Relying on driver to perform ptx compilation.
+Modify $PATH to customize ptxas location.
+This message will be only logged once.
+2022-01-03 16:24:26.834555: I tensorflow/stream_executor/platform/default/dso_loader.cc:48] Successfully opened dynamic library cublas64_10.dll
+1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 181.8536WARNING:tensorflow:From C:\Users\Dragos\AppData\Local\Programs\Python\Python37-64\lib\site-packages\tensorflow\python\keras\engine\training_v1.py:2048: Model.state_updates (from tensorflow.python.keras.engine.training) is deprecated and will be removed in a future version.
+Instructions for updating:
+This property should not be used in TensorFlow 2.0, as updates are applied automatically.
+
+Epoch 00001: val_loss improved from inf to 184.57710, saving model to weights\model_v3.h5
+1934/1934 [==============================] - 408s 211ms/step - batch: 966.5000 - size: 15.9974 - loss: 181.8536 - val_loss: 184.5771
+
+Epoch 2: Learning rate is 5.98557825638323e-05.
+Epoch 2/6
+1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 109.9413
+Epoch 00002: val_loss improved from 184.57710 to 135.31668, saving model to weights\model_v3.h5
+1934/1934 [==============================] - 404s 209ms/step - batch: 966.5000 - size: 15.9974 - loss: 109.9413 - val_loss: 135.3167
+
+Epoch 3: Learning rate is 5.9424519148076753e-05.
+Epoch 3/6
+1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 76.9127
+Epoch 00003: val_loss improved from 135.31668 to 101.66700, saving model to weights\model_v3.h5
+1934/1934 [==============================] - 401s 207ms/step - batch: 966.5000 - size: 15.9974 - loss: 76.9127 - val_loss: 101.6670
+
+Epoch 4: Learning rate is 5.8710363055179655e-05.
+Epoch 4/6
+1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 55.8518
+Epoch 00004: val_loss improved from 101.66700 to 78.57700, saving model to weights\model_v3.h5
+1934/1934 [==============================] - 402s 208ms/step - batch: 966.5000 - size: 15.9974 - loss: 55.8518 - val_loss: 78.5770
+
+Epoch 5: Learning rate is 5.772019199871304e-05.
+Epoch 5/6
+1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 42.2682
+Epoch 00005: val_loss improved from 78.57700 to 63.26646, saving model to weights\model_v3.h5
+1934/1934 [==============================] - 402s 208ms/step - batch: 966.5000 - size: 15.9974 - loss: 42.2682 - val_loss: 63.2665
+
+Epoch 6: Learning rate is 5.646354186723323e-05.
+Epoch 6/6
+1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 33.6047
+Epoch 00006: val_loss improved from 63.26646 to 56.21117, saving model to weights\model_v3.h5
+1934/1934 [==============================] - 403s 208ms/step - batch: 966.5000 - size: 15.9974 - loss: 33.6047 - val_loss: 56.2112
+
+Model: "custom_yolo"
+__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to
+==================================================================================================
+input_1 (InputLayer)            [(None, 416, 416, 3) 0
+__________________________________________________________________________________________________
+tf_op_layer_truediv (TensorFlow [(None, 416, 416, 3) 0           input_1[0][0]
+__________________________________________________________________________________________________
+tf_op_layer_sub (TensorFlowOpLa [(None, 416, 416, 3) 0           tf_op_layer_truediv[0][0]
+__________________________________________________________________________________________________
+down_stack (Functional)         [(None, 52, 52, 192) 274880      tf_op_layer_sub[0][0]
+__________________________________________________________________________________________________
+conv2d_transpose (Conv2DTranspo (None, 52, 52, 192)  663744      down_stack[0][1]
+__________________________________________________________________________________________________
+re_lu (ReLU)                    (None, 52, 52, 192)  0           conv2d_transpose[0][0]
+__________________________________________________________________________________________________
+batch_normalization (BatchNorma (None, 52, 52, 192)  768         re_lu[0][0]
+__________________________________________________________________________________________________
+concatenate (Concatenate)       (None, 52, 52, 384)  0           batch_normalization[0][0]
+                                                                 down_stack[0][0]
+__________________________________________________________________________________________________
+dropout (Dropout)               (None, 52, 52, 384)  0           concatenate[0][0]
+__________________________________________________________________________________________________
+conv2d (Conv2D)                 (None, 26, 26, 192)  663744      dropout[0][0]
+__________________________________________________________________________________________________
+re_lu_1 (ReLU)                  (None, 26, 26, 192)  0           conv2d[0][0]
+__________________________________________________________________________________________________
+batch_normalization_1 (BatchNor (None, 26, 26, 192)  768         re_lu_1[0][0]
+__________________________________________________________________________________________________
+conv2d_1 (Conv2D)               (None, 26, 26, 192)  331968      batch_normalization_1[0][0]
+__________________________________________________________________________________________________
+re_lu_2 (ReLU)                  (None, 26, 26, 192)  0           conv2d_1[0][0]
+__________________________________________________________________________________________________
+batch_normalization_2 (BatchNor (None, 26, 26, 192)  768         re_lu_2[0][0]
+__________________________________________________________________________________________________
+conv2d_2 (Conv2D)               (None, 26, 26, 128)  221312      batch_normalization_2[0][0]
+__________________________________________________________________________________________________
+re_lu_3 (ReLU)                  (None, 26, 26, 128)  0           conv2d_2[0][0]
+__________________________________________________________________________________________________
+batch_normalization_3 (BatchNor (None, 26, 26, 128)  512         re_lu_3[0][0]
+__________________________________________________________________________________________________
+conv2d_3 (Conv2D)               (None, 26, 26, 128)  147584      batch_normalization_3[0][0]
+__________________________________________________________________________________________________
+re_lu_4 (ReLU)                  (None, 26, 26, 128)  0           conv2d_3[0][0]
+__________________________________________________________________________________________________
+batch_normalization_4 (BatchNor (None, 26, 26, 128)  512         re_lu_4[0][0]
+__________________________________________________________________________________________________
+conv2d_4 (Conv2D)               (None, 13, 13, 64)   73792       batch_normalization_4[0][0]
+__________________________________________________________________________________________________
+re_lu_5 (ReLU)                  (None, 13, 13, 64)   0           conv2d_4[0][0]
+__________________________________________________________________________________________________
+batch_normalization_5 (BatchNor (None, 13, 13, 64)   256         re_lu_5[0][0]
+__________________________________________________________________________________________________
+conv2d_5 (Conv2D)               (None, 13, 13, 64)   36928       batch_normalization_5[0][0]
+__________________________________________________________________________________________________
+re_lu_6 (ReLU)                  (None, 13, 13, 64)   0           conv2d_5[0][0]
+__________________________________________________________________________________________________
+batch_normalization_6 (BatchNor (None, 13, 13, 64)   256         re_lu_6[0][0]
+__________________________________________________________________________________________________
+conv2d_6 (Conv2D)               (None, 13, 13, 32)   18464       batch_normalization_6[0][0]
+__________________________________________________________________________________________________
+re_lu_7 (ReLU)                  (None, 13, 13, 32)   0           conv2d_6[0][0]
+__________________________________________________________________________________________________
+batch_normalization_7 (BatchNor (None, 13, 13, 32)   128         re_lu_7[0][0]
+__________________________________________________________________________________________________
+conv2d_7 (Conv2D)               (None, 13, 13, 32)   9248        batch_normalization_7[0][0]
+__________________________________________________________________________________________________
+re_lu_8 (ReLU)                  (None, 13, 13, 32)   0           conv2d_7[0][0]
+__________________________________________________________________________________________________
+batch_normalization_8 (BatchNor (None, 13, 13, 32)   128         re_lu_8[0][0]
+__________________________________________________________________________________________________
+conv2d_8 (Conv2D)               (None, 13, 13, 24)   6936        batch_normalization_8[0][0]
+__________________________________________________________________________________________________
+final_output (Reshape)          (None, 13, 13, 3, 8) 0           conv2d_8[0][0]
+__________________________________________________________________________________________________
+input_2 (InputLayer)            [(None, 1, 1, 1, 111 0
+__________________________________________________________________________________________________
+hack_layer (Lambda)             (None, 13, 13, 3, 8) 0           final_output[0][0]
+                                                                 input_2[0][0]
+==================================================================================================
+Total params: 2,452,696
+Trainable params: 2,175,768
+Non-trainable params: 276,928
+__________________________________________________________________________________________________
+
+Epoch 1: Learning rate is 0.0002.
+Epoch 1/6
+2022-01-03 18:32:16.700634: I tensorflow/stream_executor/platform/default/dso_loader.cc:48] Successfully opened dynamic library cudnn64_7.dll
+2022-01-03 18:32:17.901141: W tensorflow/stream_executor/gpu/redzone_allocator.cc:314] Internal: Invoking GPU asm compilation is supported on Cuda non-Windows platforms only
+Relying on driver to perform ptx compilation.
+Modify $PATH to customize ptxas location.
+This message will be only logged once.
+2022-01-03 18:32:17.973026: I tensorflow/stream_executor/platform/default/dso_loader.cc:48] Successfully opened dynamic library cublas64_10.dll
+   1/1934 [..............................] - ETA: 0s - batch: 0.0000e+00 - size: 16.0000 - loss: 1117.10132022-01-03 18:32:21.454849: I tensorflow/core/profiler/lib/profiler_session.cc:164] Profiler session started.
+2022-01-03 18:32:21.456406: I tensorflow/core/profiler/internal/gpu/cupti_tracer.cc:1391] Profiler found 1 GPUs
+2022-01-03 18:32:21.460820: W tensorflow/stream_executor/platform/default/dso_loader.cc:59] Could not load dynamic library 'cupti64_101.dll'; dlerror: cupti64_101.dll not found
+2022-01-03 18:32:21.462814: W tensorflow/stream_executor/platform/default/dso_loader.cc:59] Could not load dynamic library 'cupti.dll'; dlerror: cupti.dll not found
+2022-01-03 18:32:21.463038: E tensorflow/core/profiler/internal/gpu/cupti_tracer.cc:1441] function cupti_interface_->Subscribe( &subscriber_, (CUpti_CallbackFunc)ApiCallback, this)failed with error CUPTI could not be loaded or symbol could not be found.
+2022-01-03 18:32:21.844619: I tensorflow/core/profiler/internal/gpu/device_tracer.cc:223]  GpuTracer has collected 0 callback api events and 0 activity events.
+2022-01-03 18:32:22.955877: I tensorflow/core/profiler/rpc/client/save_profile.cc:176] Creating directory: info_about_runs/model_v3.h5\plugins\profile\2022_01_03_16_32_21
+2022-01-03 18:32:22.983453: I tensorflow/core/profiler/rpc/client/save_profile.cc:182] Dumped gzipped tool data for trace.json.gz to info_about_runs/model_v3.h5\plugins\profile\2022_01_03_16_32_21\DESKTOP-E94DLUN.trace.json.gz
+2022-01-03 18:32:23.171063: I tensorflow/core/profiler/rpc/client/save_profile.cc:176] Creating directory: info_about_runs/model_v3.h5\plugins\profile\2022_01_03_16_32_21
+2022-01-03 18:32:23.198778: I tensorflow/core/profiler/rpc/client/save_profile.cc:182] Dumped gzipped tool data for memory_profile.json.gz to info_about_runs/model_v3.h5\plugins\profile\2022_01_03_16_32_21\DESKTOP-E94DLUN.memory_profile.json.gz
+2022-01-03 18:32:23.290215: I tensorflow/python/profiler/internal/profiler_wrapper.cc:111] Creating directory: info_about_runs/model_v3.h5\plugins\profile\2022_01_03_16_32_21Dumped tool data for xplane.pb to info_about_runs/model_v3.h5\plugins\profile\2022_01_03_16_32_21\DESKTOP-E94DLUN.xplane.pb
+Dumped tool data for overview_page.pb to info_about_runs/model_v3.h5\plugins\profile\2022_01_03_16_32_21\DESKTOP-E94DLUN.overview_page.pb
+Dumped tool data for input_pipeline.pb to info_about_runs/model_v3.h5\plugins\profile\2022_01_03_16_32_21\DESKTOP-E94DLUN.input_pipeline.pb
+Dumped tool data for tensorflow_stats.pb to info_about_runs/model_v3.h5\plugins\profile\2022_01_03_16_32_21\DESKTOP-E94DLUN.tensorflow_stats.pb
+Dumped tool data for kernel_stats.pb to info_about_runs/model_v3.h5\plugins\profile\2022_01_03_16_32_21\DESKTOP-E94DLUN.kernel_stats.pb
+
+WARNING:tensorflow:Callbacks method `on_train_batch_end` is slow compared to the batch time (batch time: 0.3571s vs `on_train_batch_end` time: 1.4737s). Check your callbacks.
+1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 152.6368WARNING:tensorflow:From C:\Users\Dragos\AppData\Local\Programs\Python\Python37-64\lib\site-packages\tensorflow\python\keras\engine\training_v1.py:2048: Model.state_updates (from tensorflow.python.keras.engine.training) is deprecated and will be removed in a future version.
+Instructions for updating:
+This property should not be used in TensorFlow 2.0, as updates are applied automatically.
+
+Epoch 00001: val_loss improved from inf to 57.39723, saving model to weights\model_v3.h5
+1934/1934 [==============================] - 749s 387ms/step - batch: 966.5000 - size: 15.9974 - loss: 152.6368 - val_loss: 57.3972
+
+Epoch 2: Learning rate is 0.0001995187134308861.
+Epoch 2/6
+1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 30.2598
+Epoch 00002: val_loss improved from 57.39723 to 23.89286, saving model to weights\model_v3.h5
+1934/1934 [==============================] - 748s 387ms/step - batch: 966.5000 - size: 15.9974 - loss: 30.2598 - val_loss: 23.8929
+
+Epoch 3: Learning rate is 0.0001980794887763029.
+Epoch 3/6
+1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 19.8609
+Epoch 00003: val_loss improved from 23.89286 to 17.47802, saving model to weights\model_v3.h5
+1934/1934 [==============================] - 747s 386ms/step - batch: 966.5000 - size: 15.9974 - loss: 19.8609 - val_loss: 17.4780
+
+Epoch 4: Learning rate is 0.0001956961865564343.
+Epoch 4/6
+1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 15.5343
+Epoch 00004: val_loss improved from 17.47802 to 13.81889, saving model to weights\model_v3.h5
+1934/1934 [==============================] - 749s 387ms/step - batch: 966.5000 - size: 15.9974 - loss: 15.5343 - val_loss: 13.8189
+
+Epoch 5: Learning rate is 0.00019239175927450311.
+Epoch 5/6
+1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 12.6191
+Epoch 00005: val_loss improved from 13.81889 to 11.79511, saving model to weights\model_v3.h5
+1934/1934 [==============================] - 744s 385ms/step - batch: 966.5000 - size: 15.9974 - loss: 12.6191 - val_loss: 11.7951
+
+Epoch 6: Learning rate is 0.00018819803037161808.
+Epoch 6/6
+1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 10.6694
+Epoch 00006: val_loss improved from 11.79511 to 8.47740, saving model to weights\model_v3.h5
+1934/1934 [==============================] - 748s 387ms/step - batch: 966.5000 - size: 15.9974 - loss: 10.6694 - val_loss: 8.4774

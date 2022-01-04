@@ -64,9 +64,8 @@ def get_max_labels_per_box():
 
 
 if __name__ == '__main__':
-    """for stage, classes in sizes().items():
+    for stage, classes in sizes().items():
         print(stage, sum(classes.values()))
         for currentClass, occurrences in classes.items():
             print(f"\t{currentClass} : {occurrences}")
-    """
-    get_max_labels_per_box()
+    #get_max_labels_per_box()

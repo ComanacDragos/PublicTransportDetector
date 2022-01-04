@@ -143,7 +143,10 @@ def inference(model, inputs, score_threshold=0.6, iou_threshold=0.5, max_boxes=M
     print("unique raw conf scores: ", K.get_value(y))
     print(K.get_value(K.sigmoid(y)))
     print("len ", K.get_value(tf.shape(y)))
-    print(K.get_value(K.max(K.sigmoid(y))))
+    print("max obj score ", K.get_value(K.max(K.sigmoid(y))))
+    _, boxes, classes = output_processor(y_pred, anchors, apply_argmax=False)
+    print("max class score ", K.get_value(K.max(K.reshape(classes, (BATCH_SIZE, -1)), axis=-1)))
+
 
     ##for i in range(13):
     #    for j in range(13):
@@ -186,7 +189,7 @@ def test():
     generator = DataGenerator(PATH_TO_TRAIN, shuffle=False)
     model, true_boxes = build_model()
     #model.trainable = True
-    model.load_weights("weights/model_v2.h5")
+    model.load_weights("weights/model_v3.h5")
 
     model.summary()
     model.compile(optimizer=tf.keras.optimizers.Adam(),
@@ -199,7 +202,7 @@ def test():
     print(f"loss: {loss}")
 
     start = time.time()
-    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.5, iou_threshold=0.5,
+    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.23, iou_threshold=0.5,
                                        max_boxes=MAX_BOXES_PER_IMAGES, enable_logs=True)
     scores, boxes, classes, valid_detections = K.get_value(scores),\
                                                K.get_value(boxes),\
@@ -215,7 +218,7 @@ def test():
     print("===============")
     pred_images_with_boxes = draw_images(images, scores, boxes, classes, valid_detections)
     true_images_with_boxes = draw_images(images, *process_ground_truth(y_true, len(generator.anchors)))
-    fig, axs = plt.subplots(8, 2, figsize=(20, 20))
+    fig, axs = plt.subplots(8, 2, figsize=(30, 30))
     for i in range(0, 8):
         # plt.subplot(6, 2, 2 * i - 1)
         axs[i][0].imshow(true_images_with_boxes[i])
