@@ -1,15 +1,26 @@
 # Dataset related constants
-# PATH_TO_TRAIN = "E:\\Universitate\\Licenta\\OIDv4\\OID\\PublicTransport\\train\\Bus_Car_Vehicle registration plate"
-PATH_TO_TRAIN = "C:\\Users\\Dragos\\datasets\\PublicTransportProcessed\\train"
-PATH_TO_TRAIN_UNPROCESSED = "C:\\Users\\Dragos\\datasets\\PublicTransport\\train\\Bus_Car_Vehicle registration plate"
+UNDER_SAMPLE = True
+if not UNDER_SAMPLE:
+    # PATH_TO_TRAIN = "E:\\Universitate\\Licenta\\OIDv4\\OID\\PublicTransport\\train\\Bus_Car_Vehicle registration plate"
+    PATH_TO_TRAIN = "C:\\Users\\Dragos\\datasets\\PublicTransportProcessed\\train"
+    PATH_TO_TRAIN_UNPROCESSED = "C:\\Users\\Dragos\\datasets\\PublicTransport\\train\\Bus_Car_Vehicle registration plate"
 
-# PATH_TO_VALIDATION = "E:\\Universitate\\Licenta\\OIDv4\\OID\\PublicTransport\\validation\\Bus_Car_Vehicle registration plate" # hdd
-PATH_TO_VALIDATION = "C:\\Users\\Dragos\\datasets\\PublicTransportProcessed\\validation"  # ssd
-PATH_TO_VALIDATION_UNPROCESSED = "C:\\Users\\Dragos\\datasets\\PublicTransport\\validation\\Bus_Car_Vehicle registration plate"  # ssd
+    # PATH_TO_VALIDATION = "E:\\Universitate\\Licenta\\OIDv4\\OID\\PublicTransport\\validation\\Bus_Car_Vehicle registration plate" # hdd
+    PATH_TO_VALIDATION = "C:\\Users\\Dragos\\datasets\\PublicTransportProcessed\\validation"  # ssd
+    PATH_TO_VALIDATION_UNPROCESSED = "C:\\Users\\Dragos\\datasets\\PublicTransport\\validation\\Bus_Car_Vehicle registration plate"  # ssd
 
-# PATH_TO_TEST = "E:\\Universitate\\Licenta\\OIDv4\\OID\\PublicTransport\\test\\Bus_Car_Vehicle registration plate"
-PATH_TO_TEST = "C:\\Users\\Dragos\\datasets\\PublicTransportProcessed\\test"
-PATH_TO_TEST_UNPROCESSED = "C:\\Users\\Dragos\\datasets\\PublicTransport\\test\\Bus_Car_Vehicle registration plate"
+    # PATH_TO_TEST = "E:\\Universitate\\Licenta\\OIDv4\\OID\\PublicTransport\\test\\Bus_Car_Vehicle registration plate"
+    PATH_TO_TEST = "C:\\Users\\Dragos\\datasets\\PublicTransportProcessed\\test"
+    PATH_TO_TEST_UNPROCESSED = "C:\\Users\\Dragos\\datasets\\PublicTransport\\test\\Bus_Car_Vehicle registration plate"
+else:
+    PATH_TO_TRAIN = "C:\\Users\\Dragos\\datasets\\OID\\OID\\PublicTransportFilteredProcessed\\train"
+    PATH_TO_TRAIN_UNPROCESSED = "C:\\Users\\Dragos\\datasets\\OID\\OID\\PublicTransportFiltered\\train\\Bus_Car_Vehicle registration plate"
+
+    PATH_TO_VALIDATION = "C:\\Users\\Dragos\\datasets\\OID\\OID\\PublicTransportFilteredProcessed\\validation"  # ssd
+    PATH_TO_VALIDATION_UNPROCESSED = "C:\\Users\\Dragos\\datasets\\OID\\OID\\PublicTransportFiltered\\validation\\Bus_Car_Vehicle registration plate"  # ssd
+
+    PATH_TO_TEST = "C:\\Users\\Dragos\\datasets\\OID\\OID\\PublicTransportFilteredProcessed\\test"
+    PATH_TO_TEST_UNPROCESSED = "C:\\Users\\Dragos\\datasets\\OID\\OID\\PublicTransportFiltered\\test\\Bus_Car_Vehicle registration plate"
 
 ENCODE_LABEL = {
     "Bus": 0,
@@ -26,4 +37,4 @@ GRID_SIZE = 13
 MAX_BOXES_PER_IMAGES = 111
 ANCHORS_PATH = "data/anchors_3.pickle"
 
-BATCH_SIZE = 16
+BATCH_SIZE = 8

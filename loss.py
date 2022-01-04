@@ -18,8 +18,8 @@ def create_cell_grid(no_anchors):
 
 class YoloLoss(tf.keras.losses.Loss):
     def __init__(self, anchors, true_boxes,
-                 l_coord=5., l_noobj=0.5, l_class=1., l_obj=5.,
-                 nb_class=3, iou_threshold=0.6, enable_logs=False):
+                 l_coord=5., l_noobj=0.5, l_class=3., l_obj=2.,
+                 nb_class=len(ENCODE_LABEL), iou_threshold=0.6, enable_logs=False):
         super(YoloLoss, self).__init__()
         self.l_coord = l_coord
         self.l_noobj = l_noobj

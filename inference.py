@@ -1,3 +1,5 @@
+import random
+import sys
 import time
 
 import numpy as np
@@ -186,23 +188,25 @@ def draw_images(images, scores, boxes, classes, valid_detections):
 
 
 def test():
-    generator = DataGenerator(PATH_TO_TRAIN, shuffle=False)
+    generator = DataGenerator(PATH_TO_TEST, shuffle=False)
     model, true_boxes = build_model()
     #model.trainable = True
-    model.load_weights("weights/model_v3.h5")
+    model.load_weights("weights/model_v4_2.h5")
 
     model.summary()
     model.compile(optimizer=tf.keras.optimizers.Adam(),
                   loss=YoloLoss(anchors=generator.anchors, true_boxes=true_boxes, enable_logs=True))
 
-    ground_truth, y_true = generator[0]
+    batch = random.randint(0, len(generator))
+    print(f"batch {batch}")
+    ground_truth, y_true = generator[batch]
     images, true_boxes = ground_truth[0], ground_truth[1]
 
     loss = model.evaluate(ground_truth, y_true, verbose=2)
     print(f"loss: {loss}")
 
     start = time.time()
-    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.23, iou_threshold=0.5,
+    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.20, iou_threshold=0.3,
                                        max_boxes=MAX_BOXES_PER_IMAGES, enable_logs=True)
     scores, boxes, classes, valid_detections = K.get_value(scores),\
                                                K.get_value(boxes),\

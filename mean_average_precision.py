@@ -70,6 +70,9 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
         ap_list = []
 
         for c in range(no_classes):
+            #if len(class_to_box[c]) == 0:
+            #    ap_list.append(1.0)
+            #    continue
             sorted_boxes = class_to_box[c]
             sorted_boxes.sort(key=lambda x: x[1], reverse=True)
             recall = []
@@ -113,8 +116,8 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_threshol
 if __name__ == '__main__':
     model, true_boxes = build_model()
     #model.trainable = True
-    model.load_weights("weights/model_v3.h5")
-    generator = DataGenerator(PATH_TO_TEST, shuffle=False, limit_batches=10)
+    model.load_weights("weights/model_v4_2.h5")
+    generator = DataGenerator(PATH_TO_TEST, batch_size=32, shuffle=False)
 
     mAP, aps = evaluate_model(model, generator, 0.5, 0.5, 0.3, MAX_BOXES_PER_IMAGES, enable_logs=True)
     print("mAP: ", mAP)
