@@ -53,8 +53,8 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
         print(f"NMS time: {time.time() - start}")
 
     start = time.time()
-    mAP_list = []
-    ap_all_list = []
+    ap_to_class = {c: [] for c in range(no_classes)}
+
     for true_boxes, pred_boxes in zip(true_boxes_all, pred_boxes_all):
         class_to_box = {c: [] for c in range(no_classes)}
         total_positives = {c: 0 for c in range(no_classes)}
@@ -67,12 +67,10 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
                     break
             class_to_box[pred_box.c].append((correct, pred_box.score))
 
-        ap_list = []
-
         for c in range(no_classes):
-            #if len(class_to_box[c]) == 0:
-            #    ap_list.append(1.0)
-            #    continue
+            if len(class_to_box[c]) == 0:
+                continue
+
             sorted_boxes = class_to_box[c]
             sorted_boxes.sort(key=lambda x: x[1], reverse=True)
             recall = []
@@ -86,38 +84,44 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
                     recall.append(0)
                 else:
                     recall.append(running_corrects / total_positives[c])
-            ap_list.append(voc_ap(recall, precision))
-        ap_all_list.append(ap_list)
-        mAP_list.append(np.mean(ap_list))
+            ap_to_class[c].append(voc_ap(recall, precision))
+
     if enable_logs:
         print(f"Compute mAP time: {time.time()-start}")
-    return np.mean(mAP_list), np.mean(np.asarray(ap_all_list), axis=0)
+    return ap_to_class
 
 
 def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_threshold, nms_iou_threshold,
                    score_threshold, max_boxes,
                    no_classes=3, enable_logs=False):
-    mAPs = []
     average_precisions = []
+    ap_to_class_all = {c: [] for c in range(no_classes)}
     for i in range(len(generator)):
         data, y_true = generator[i]
         y_pred = model(data)
         start = time.time()
-        mAP, aPs = mean_average_precision(y_true, y_pred, generator.anchors, iou_threshold, nms_iou_threshold,
+        ap_to_class = mean_average_precision(y_true, y_pred, generator.anchors, iou_threshold, nms_iou_threshold,
                                      score_threshold, max_boxes, no_classes, enable_logs)
 
         if enable_logs:
-            print(f"{i+1}/{len(generator)} - mAP: {mAP} - ap: {aPs} - time: {time.time()-start}")
-        mAPs.append(mAP)
-        average_precisions.append(aPs)
-    return np.mean(mAPs), np.mean(np.asarray(average_precisions), axis=0)
+            print(f"{i+1}/{len(generator)} time: {time.time()-start}")
+        for c, aps in ap_to_class.items():
+            ap_to_class_all[c] += aps
+
+    for c, aps in ap_to_class_all.items():
+        if len(aps) > 0:
+            average_precisions.append(np.mean(aps))
+        else:
+            average_precisions.append(0.)
+
+    return np.mean(average_precisions), np.asarray(average_precisions)
 
 
 if __name__ == '__main__':
     model, true_boxes = build_model()
     #model.trainable = True
-    model.load_weights("weights/model_v4_2.h5")
-    generator = DataGenerator(PATH_TO_TEST, batch_size=32, shuffle=False)
+    model.load_weights("weights/model_v5.h5")
+    generator = DataGenerator(PATH_TO_TEST, batch_size=8, limit_batches=2)
 
     mAP, aps = evaluate_model(model, generator, 0.5, 0.5, 0.3, MAX_BOXES_PER_IMAGES, enable_logs=True)
     print("mAP: ", mAP)
