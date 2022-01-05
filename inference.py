@@ -170,14 +170,7 @@ def extract_boxes(scores, boxes, classes, valid_detections) -> List[List[Boundin
                                boxes[i][j][3],
                                scores[i][j]
                                )
-            w, h = bbox.width_height()
-            x, y = bbox.center()
-            cell_size = IMAGE_SIZE / GRID_SIZE
-            x = int(x / cell_size)
-            y = int(y / cell_size)
-            #if w > 50 and h > 50:
             bboxes.append(bbox)
-            #print(bbox.as_coordinates_array(), bbox.c, bbox.score)
         output_boxes.append(bboxes)
     return output_boxes
 
@@ -191,7 +184,7 @@ def test():
     generator = DataGenerator(PATH_TO_TEST, shuffle=False)
     model, true_boxes = build_model()
     #model.trainable = True
-    model.load_weights("weights/model_v5.h5")
+    model.load_weights("weights/model_v4_4.h5")
 
     model.summary()
     model.compile(optimizer=tf.keras.optimizers.Adam(),
@@ -206,7 +199,7 @@ def test():
     print(f"loss: {loss}")
 
     start = time.time()
-    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.20, iou_threshold=0.3,
+    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.28, iou_threshold=0.3,
                                        max_boxes=MAX_BOXES_PER_IMAGES, enable_logs=True)
     scores, boxes, classes, valid_detections = K.get_value(scores),\
                                                K.get_value(boxes),\

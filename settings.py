@@ -1,4 +1,6 @@
 # Dataset related constants
+import logging
+
 UNDER_SAMPLE = True
 if not UNDER_SAMPLE:
     # PATH_TO_TRAIN = "E:\\Universitate\\Licenta\\OIDv4\\OID\\PublicTransport\\train\\Bus_Car_Vehicle registration plate"
@@ -38,3 +40,6 @@ MAX_BOXES_PER_IMAGES = 111
 ANCHORS_PATH = "data/anchors_3.pickle"
 
 BATCH_SIZE = 8
+
+
+logging.basicConfig(level=logging.INFO)
