@@ -7,7 +7,7 @@ tf.compat.v1.disable_eager_execution()
 def conv_block(x, kernel_size=3, filters=32, reluActivation=True, strides=1):
     x = tf.keras.layers.Conv2D(kernel_size=kernel_size, filters=filters, padding="same", strides=strides,
                                kernel_initializer=tf.keras.initializers.HeNormal(),
-                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-6, l2=2e-4)
+                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-6, l2=2e-5)
                                )(x)
     if reluActivation:
         x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
@@ -23,7 +23,7 @@ def upsample_block(x, filters, size, stride=2):
     """
     x = tf.keras.layers.Convolution2DTranspose(kernel_size=size, filters=filters, strides=stride, padding="same",
                                                kernel_initializer=tf.keras.initializers.HeNormal(),
-                                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-6, l2=2e-4)
+                                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-6, l2=2e-5)
                                                )(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.BatchNormalization()(x)
@@ -41,7 +41,7 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
     downsample_skip_layer_name = ["block_6_expand_relu",
                                   "block_10_expand_relu",
                                   #"block_13_expand_relu",
-                                  # "block_14_expand_relu"
+                                  "block_14_expand_relu"
                                   ]
 
     down_stack = tf.keras.Model(inputs=mobilenet_v2.input,
@@ -172,13 +172,13 @@ class Train:
 
 
 def train():
-    t = Train(epochs=10, n_min=1e-7, n_max=4e-5, path_to_model="model_v4_4.h5")
-    t.train(name="model_v4_4.h5")
+    t = Train(epochs=5, n_min=1e-7, n_max=1e-4, path_to_model="model_v7.h5")
+    t.train(name="model_v7_2.h5")
 
 
 def fine_tune():
-    fine_tune = Train(epochs=3, n_min=1e-9, n_max=1e-8, path_to_model="model_v6_fine_tuned.h5")
-    fine_tune.train(name="model_v6_fine_tuned.h5", fine_tune=True)
+    fine_tune = Train(epochs=8, n_min=1e-9, n_max=1e-6, path_to_model="model_v4_4.h5")
+    fine_tune.train(name="model_v4_4_fine_tuned.h5", fine_tune=True)
 
 
 if __name__ == '__main__':

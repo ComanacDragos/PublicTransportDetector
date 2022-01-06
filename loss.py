@@ -165,20 +165,11 @@ class YoloLoss(tf.keras.losses.Loss):
 
         loss = loss_xy + loss_wh + loss_conf + loss_class
         if self.enable_logs:
-            nb_true_box = tf.reduce_sum(y_true[..., 4])
-            nb_pred_box = tf.reduce_sum(
-                tf.compat.v1.to_float(true_box_conf > 0.5) * tf.compat.v1.to_float(pred_box_conf > 0.3))
-
-            # current_recall = nb_pred_box / tf.cast(nb_true_box + 1e-6, tf.float32)
-            # total_recall = tf.compat.v1.assign_add(total_recall, current_recall)
-
             loss = tf.compat.v1.Print(loss, [loss_xy], message='Loss XY \t', summarize=1000)
             loss = tf.compat.v1.Print(loss, [loss_wh], message='Loss WH \t', summarize=1000)
             loss = tf.compat.v1.Print(loss, [loss_conf], message='Loss Conf \t', summarize=1000)
             loss = tf.compat.v1.Print(loss, [loss_class], message='Loss Class \t', summarize=1000)
             loss = tf.compat.v1.Print(loss, [loss], message='Total Loss \t', summarize=1000)
-            # loss = tf.compat.v1.Print(loss, [current_recall], message='Current Recall \t', summarize=1000)
-            # loss = tf.compat.v1.Print(loss, [total_recall / seen], message='Average Recall \t', summarize=1000)
 
         return loss
 

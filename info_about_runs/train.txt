@@ -308,3 +308,202 @@ Epoch 6/6
 1934/1934 [==============================] - ETA: 0s - batch: 966.5000 - size: 15.9974 - loss: 10.6694
 Epoch 00006: val_loss improved from 11.79511 to 8.47740, saving model to weights\model_v3.h5
 1934/1934 [==============================] - 748s 387ms/step - batch: 966.5000 - size: 15.9974 - loss: 10.6694 - val_loss: 8.4774
+
+
+
+Model: "custom_yolo"
+__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to
+==================================================================================================
+input_1 (InputLayer)            [(None, 416, 416, 3) 0
+__________________________________________________________________________________________________
+tf_op_layer_truediv (TensorFlow [(None, 416, 416, 3) 0           input_1[0][0]
+__________________________________________________________________________________________________
+tf_op_layer_sub (TensorFlowOpLa [(None, 416, 416, 3) 0           tf_op_layer_truediv[0][0]
+__________________________________________________________________________________________________
+down_stack (Functional)         [(None, 52, 52, 192) 873984      tf_op_layer_sub[0][0]
+__________________________________________________________________________________________________
+conv2d_transpose (Conv2DTranspo (None, 26, 26, 384)  3318144     down_stack[0][2]
+__________________________________________________________________________________________________
+leaky_re_lu (LeakyReLU)         (None, 26, 26, 384)  0           conv2d_transpose[0][0]
+__________________________________________________________________________________________________
+batch_normalization (BatchNorma (None, 26, 26, 384)  1536        leaky_re_lu[0][0]
+__________________________________________________________________________________________________
+concatenate (Concatenate)       (None, 26, 26, 768)  0           batch_normalization[0][0]
+                                                                 down_stack[0][1]
+__________________________________________________________________________________________________
+conv2d_transpose_1 (Conv2DTrans (None, 52, 52, 192)  1327296     concatenate[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_1 (LeakyReLU)       (None, 52, 52, 192)  0           conv2d_transpose_1[0][0]
+__________________________________________________________________________________________________
+batch_normalization_1 (BatchNor (None, 52, 52, 192)  768         leaky_re_lu_1[0][0]
+__________________________________________________________________________________________________
+concatenate_1 (Concatenate)     (None, 52, 52, 384)  0           batch_normalization_1[0][0]
+                                                                 down_stack[0][0]
+__________________________________________________________________________________________________
+dropout (Dropout)               (None, 52, 52, 384)  0           concatenate_1[0][0]
+__________________________________________________________________________________________________
+conv2d (Conv2D)                 (None, 26, 26, 192)  663744      dropout[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_2 (LeakyReLU)       (None, 26, 26, 192)  0           conv2d[0][0]
+__________________________________________________________________________________________________
+batch_normalization_2 (BatchNor (None, 26, 26, 192)  768         leaky_re_lu_2[0][0]
+__________________________________________________________________________________________________
+conv2d_1 (Conv2D)               (None, 26, 26, 192)  331968      batch_normalization_2[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_3 (LeakyReLU)       (None, 26, 26, 192)  0           conv2d_1[0][0]
+__________________________________________________________________________________________________
+batch_normalization_3 (BatchNor (None, 26, 26, 192)  768         leaky_re_lu_3[0][0]
+__________________________________________________________________________________________________
+conv2d_2 (Conv2D)               (None, 26, 26, 192)  331968      batch_normalization_3[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_4 (LeakyReLU)       (None, 26, 26, 192)  0           conv2d_2[0][0]
+__________________________________________________________________________________________________
+batch_normalization_4 (BatchNor (None, 26, 26, 192)  768         leaky_re_lu_4[0][0]
+__________________________________________________________________________________________________
+conv2d_3 (Conv2D)               (None, 26, 26, 192)  331968      batch_normalization_4[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_5 (LeakyReLU)       (None, 26, 26, 192)  0           conv2d_3[0][0]
+__________________________________________________________________________________________________
+batch_normalization_5 (BatchNor (None, 26, 26, 192)  768         leaky_re_lu_5[0][0]
+__________________________________________________________________________________________________
+conv2d_4 (Conv2D)               (None, 26, 26, 128)  221312      batch_normalization_5[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_6 (LeakyReLU)       (None, 26, 26, 128)  0           conv2d_4[0][0]
+__________________________________________________________________________________________________
+batch_normalization_6 (BatchNor (None, 26, 26, 128)  512         leaky_re_lu_6[0][0]
+__________________________________________________________________________________________________
+conv2d_5 (Conv2D)               (None, 26, 26, 128)  147584      batch_normalization_6[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_7 (LeakyReLU)       (None, 26, 26, 128)  0           conv2d_5[0][0]
+__________________________________________________________________________________________________
+batch_normalization_7 (BatchNor (None, 26, 26, 128)  512         leaky_re_lu_7[0][0]
+__________________________________________________________________________________________________
+conv2d_6 (Conv2D)               (None, 26, 26, 128)  147584      batch_normalization_7[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_8 (LeakyReLU)       (None, 26, 26, 128)  0           conv2d_6[0][0]
+__________________________________________________________________________________________________
+batch_normalization_8 (BatchNor (None, 26, 26, 128)  512         leaky_re_lu_8[0][0]
+__________________________________________________________________________________________________
+conv2d_7 (Conv2D)               (None, 26, 26, 128)  147584      batch_normalization_8[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_9 (LeakyReLU)       (None, 26, 26, 128)  0           conv2d_7[0][0]
+__________________________________________________________________________________________________
+batch_normalization_9 (BatchNor (None, 26, 26, 128)  512         leaky_re_lu_9[0][0]
+__________________________________________________________________________________________________
+conv2d_8 (Conv2D)               (None, 13, 13, 64)   73792       batch_normalization_9[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_10 (LeakyReLU)      (None, 13, 13, 64)   0           conv2d_8[0][0]
+__________________________________________________________________________________________________
+batch_normalization_10 (BatchNo (None, 13, 13, 64)   256         leaky_re_lu_10[0][0]
+__________________________________________________________________________________________________
+conv2d_9 (Conv2D)               (None, 13, 13, 64)   36928       batch_normalization_10[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_11 (LeakyReLU)      (None, 13, 13, 64)   0           conv2d_9[0][0]
+__________________________________________________________________________________________________
+batch_normalization_11 (BatchNo (None, 13, 13, 64)   256         leaky_re_lu_11[0][0]
+__________________________________________________________________________________________________
+conv2d_10 (Conv2D)              (None, 13, 13, 64)   36928       batch_normalization_11[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_12 (LeakyReLU)      (None, 13, 13, 64)   0           conv2d_10[0][0]
+__________________________________________________________________________________________________
+batch_normalization_12 (BatchNo (None, 13, 13, 64)   256         leaky_re_lu_12[0][0]
+__________________________________________________________________________________________________
+conv2d_11 (Conv2D)              (None, 13, 13, 64)   36928       batch_normalization_12[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_13 (LeakyReLU)      (None, 13, 13, 64)   0           conv2d_11[0][0]
+__________________________________________________________________________________________________
+batch_normalization_13 (BatchNo (None, 13, 13, 64)   256         leaky_re_lu_13[0][0]
+__________________________________________________________________________________________________
+conv2d_12 (Conv2D)              (None, 13, 13, 32)   18464       batch_normalization_13[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_14 (LeakyReLU)      (None, 13, 13, 32)   0           conv2d_12[0][0]
+__________________________________________________________________________________________________
+batch_normalization_14 (BatchNo (None, 13, 13, 32)   128         leaky_re_lu_14[0][0]
+__________________________________________________________________________________________________
+conv2d_13 (Conv2D)              (None, 13, 13, 32)   9248        batch_normalization_14[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_15 (LeakyReLU)      (None, 13, 13, 32)   0           conv2d_13[0][0]
+__________________________________________________________________________________________________
+batch_normalization_15 (BatchNo (None, 13, 13, 32)   128         leaky_re_lu_15[0][0]
+__________________________________________________________________________________________________
+conv2d_14 (Conv2D)              (None, 13, 13, 32)   9248        batch_normalization_15[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_16 (LeakyReLU)      (None, 13, 13, 32)   0           conv2d_14[0][0]
+__________________________________________________________________________________________________
+batch_normalization_16 (BatchNo (None, 13, 13, 32)   128         leaky_re_lu_16[0][0]
+__________________________________________________________________________________________________
+conv2d_15 (Conv2D)              (None, 13, 13, 32)   9248        batch_normalization_16[0][0]
+__________________________________________________________________________________________________
+leaky_re_lu_17 (LeakyReLU)      (None, 13, 13, 32)   0           conv2d_15[0][0]
+__________________________________________________________________________________________________
+batch_normalization_17 (BatchNo (None, 13, 13, 32)   128         leaky_re_lu_17[0][0]
+__________________________________________________________________________________________________
+conv2d_16 (Conv2D)              (None, 13, 13, 24)   6936        batch_normalization_17[0][0]
+__________________________________________________________________________________________________
+final_output (Reshape)          (None, 13, 13, 3, 8) 0           conv2d_16[0][0]
+__________________________________________________________________________________________________
+input_2 (InputLayer)            [(None, 1, 1, 1, 111 0
+__________________________________________________________________________________________________
+hack_layer (Lambda)             (None, 13, 13, 3, 8) 0           final_output[0][0]
+                                                                 input_2[0][0]
+==================================================================================================
+Total params: 8,089,816
+Trainable params: 7,211,352
+Non-trainable params: 878,464
+__________________________________________________________________________________________________
+
+Epoch 1: Learning rate is 0.001.
+Epoch 1/5
+2022-01-06 19:22:35.492567: I tensorflow/stream_executor/platform/default/dso_loader.cc:48] Successfully opened dynamic library cudnn64_7.dll
+2022-01-06 19:22:36.636640: W tensorflow/stream_executor/gpu/redzone_allocator.cc:314] Internal: Invoking GPU asm compilation is supported on Cuda non-Windows platforms only
+Relying on driver to perform ptx compilation.
+Modify $PATH to customize ptxas location.
+This message will be only logged once.
+2022-01-06 19:22:36.703960: I tensorflow/stream_executor/platform/default/dso_loader.cc:48] Successfully opened dynamic library cublas64_10.dll
+   1/2472 [..............................] - ETA: 0s - batch: 0.0000e+00 - size: 8.0000 - loss: 769.73362022-01-06 19:22:38.766497: I tensorflow/core/profiler/lib/profiler_session.cc:164] Profiler session started.
+2022-01-06 19:22:38.766656: I tensorflow/core/profiler/internal/gpu/cupti_tracer.cc:1391] Profiler found 1 GPUs
+2022-01-06 19:22:38.768546: W tensorflow/stream_executor/platform/default/dso_loader.cc:59] Could not load dynamic library 'cupti64_101.dll'; dlerror: cupti64_101.dll not found
+2022-01-06 19:22:38.770453: W tensorflow/stream_executor/platform/default/dso_loader.cc:59] Could not load dynamic library 'cupti.dll'; dlerror: cupti.dll not found
+2022-01-06 19:22:38.770741: E tensorflow/core/profiler/internal/gpu/cupti_tracer.cc:1441] function cupti_interface_->Subscribe( &subscriber_, (CUpti_CallbackFunc)ApiCallback, this)failed with error CUPTI could not be loaded or symbol could not be found.
+2022-01-06 19:22:39.097701: I tensorflow/core/profiler/internal/gpu/device_tracer.cc:223]  GpuTracer has collected 0 callback api events and 0 activity events.
+2022-01-06 19:22:39.123747: I tensorflow/core/profiler/rpc/client/save_profile.cc:176] Creating directory: info_about_runs/model_v7.h5\plugins\profile\2022_01_06_17_22_39
+2022-01-06 19:22:39.148760: I tensorflow/core/profiler/rpc/client/save_profile.cc:182] Dumped gzipped tool data for trace.json.gz to info_about_runs/model_v7.h5\plugins\profile\2022_01_06_17_22_39\DESKTOP-E94DLUN.trace.json.gz
+2022-01-06 19:22:39.240212: I tensorflow/core/profiler/rpc/client/save_profile.cc:176] Creating directory: info_about_runs/model_v7.h5\plugins\profile\2022_01_06_17_22_39
+2022-01-06 19:22:39.340958: I tensorflow/core/profiler/rpc/client/save_profile.cc:182] Dumped gzipped tool data for memory_profile.json.gz to info_about_runs/model_v7.h5\plugins\profile\2022_01_06_17_22_39\DESKTOP-E94DLUN.memory_profile.json.gz
+2022-01-06 19:22:39.438416: I tensorflow/python/profiler/internal/profiler_wrapper.cc:111] Creating directory: info_about_runs/model_v7.h5\plugins\profile\2022_01_06_17_22_39Dumped tool data for xplane.pb to info_about_runs/model_v7.h5\plugins\profile\2022_01_06_17_22_39\DESKTOP-E94DLUN.xplane.pb
+Dumped tool data for overview_page.pb to info_about_runs/model_v7.h5\plugins\profile\2022_01_06_17_22_39\DESKTOP-E94DLUN.overview_page.pb
+Dumped tool data for input_pipeline.pb to info_about_runs/model_v7.h5\plugins\profile\2022_01_06_17_22_39\DESKTOP-E94DLUN.input_pipeline.pb
+Dumped tool data for tensorflow_stats.pb to info_about_runs/model_v7.h5\plugins\profile\2022_01_06_17_22_39\DESKTOP-E94DLUN.tensorflow_stats.pb
+Dumped tool data for kernel_stats.pb to info_about_runs/model_v7.h5\plugins\profile\2022_01_06_17_22_39\DESKTOP-E94DLUN.kernel_stats.pb
+
+2472/2472 [==============================] - ETA: 0s - batch: 1235.5000 - size: 7.9988 - loss: 40.6836WARNING:tensorflow:From C:\Users\Dragos\AppData\Local\Programs\Python\Python37-64\lib\site-packages\tensorflow\python\keras\engine\training_v1.py:2048: Model.state_updates (from tensorflow.python.keras.engine.training) is deprecated and will be removed in a future version.
+Instructions for updating:
+This property should not be used in TensorFlow 2.0, as updates are applied automatically.
+
+Epoch 00001: val_loss improved from inf to 15.11604, saving model to weights\model_v7.h5
+2472/2472 [==============================] - 814s 329ms/step - batch: 1235.5000 - size: 7.9988 - loss: 40.6836 - val_loss: 15.1160
+
+Epoch 2: Learning rate is 0.000990393600937595.
+Epoch 2/5
+2472/2472 [==============================] - ETA: 0s - batch: 1235.5000 - size: 7.9988 - loss: 16.1439
+Epoch 00002: val_loss improved from 15.11604 to 12.52839, saving model to weights\model_v7.h5
+2472/2472 [==============================] - 807s 327ms/step - batch: 1235.5000 - size: 7.9988 - loss: 16.1439 - val_loss: 12.5284
+
+Epoch 3: Learning rate is 0.0009619435722790177.
+Epoch 3/5
+2472/2472 [==============================] - ETA: 0s - batch: 1235.5000 - size: 7.9988 - loss: 13.7373
+Epoch 00003: val_loss improved from 12.52839 to 10.11250, saving model to weights\model_v7.h5
+2472/2472 [==============================] - 808s 327ms/step - batch: 1235.5000 - size: 7.9988 - loss: 13.7373 - val_loss: 10.1125
+
+Epoch 4: Learning rate is 0.0009157432326706575.
+Epoch 4/5
+2472/2472 [==============================] - ETA: 0s - batch: 1235.5000 - size: 7.9988 - loss: 11.8827
+Epoch 00004: val_loss improved from 10.11250 to 8.92212, saving model to weights\model_v7.h5
+2472/2472 [==============================] - 806s 326ms/step - batch: 1235.5000 - size: 7.9988 - loss: 11.8827 - val_loss: 8.9221
+
+Epoch 5: Learning rate is 0.0008535680352542143.
+Epoch 5/5
+2472/2472 [==============================] - ETA: 0s - batch: 1235.5000 - size: 7.9988 - loss: 10.3744
+Epoch 00005: val_loss improved from 8.92212 to 8.39551, saving model to weights\model_v7.h5
+2472/2472 [==============================] - 806s 326ms/step - batch: 1235.5000 - size: 7.9988 - loss: 10.3744 - val_loss: 8.3955

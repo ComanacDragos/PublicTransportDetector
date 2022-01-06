@@ -1,8 +1,4 @@
-import logging
-import sys
-import time
-
-import numpy as np
+import gc
 
 from inference import *
 
@@ -38,13 +34,13 @@ def voc_ap(rec, prec):
 
 
 def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_threshold, score_threshold, max_boxes,
-                           no_classes=3, enable_logs=False):
+                           no_classes=3):
     start = time.perf_counter()
     true_boxes_all = extract_boxes(*process_ground_truth(y_true, len(anchors)))
-    logging.info(f"Ground truth process: {time.perf_counter() - start}")
+    logging.info(f"Ground truth processing: {time.perf_counter() - start}")
+    start = time.perf_counter()
     scores, boxes, classes, valid_detections = non_max_suppression(y_pred, anchors,
-                                                                   max_boxes, nms_iou_threshold, score_threshold,
-                                                                   enable_logs)
+                                                                   max_boxes, nms_iou_threshold, score_threshold)
     scores, boxes, classes, valid_detections = K.get_value(scores), \
                                                K.get_value(boxes), \
                                                K.get_value(classes), \
@@ -87,23 +83,29 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
                     recall.append(running_corrects / total_positives[c])
             ap_to_class[c].append(voc_ap(recall, precision))
 
-    logging.info(f"Compute mAP time: {time.perf_counter()-start}")
+    logging.info(f"Compute mAP time: {time.perf_counter() - start}")
     return ap_to_class
 
 
-def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_threshold, nms_iou_threshold,
+def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_positive_threshold, nms_iou_threshold,
                    score_threshold, max_boxes,
-                   no_classes=3, enable_logs=False):
+                   no_classes=3):
     average_precisions = []
     ap_to_class_all = {c: [] for c in range(no_classes)}
     for i in range(len(generator)):
+        start_total = time.perf_counter()
+        start = time.perf_counter()
         data, y_true = generator[i]
-        y_pred = model(data)
-        start = time.time()
-        ap_to_class = mean_average_precision(y_true, y_pred, generator.anchors, iou_threshold, nms_iou_threshold,
-                                     score_threshold, max_boxes, no_classes, enable_logs)
+        logging.info(f"Load data time: {time.perf_counter() - start}")
+        y_pred = model.predict(data)
+        start = time.perf_counter()
 
-        logging.info(f"{i+1}/{len(generator)} time: {time.time()-start}")
+        ap_to_class = mean_average_precision(y_true, y_pred, generator.anchors, iou_true_positive_threshold,
+                                             nms_iou_threshold,
+                                             score_threshold, max_boxes, no_classes)
+
+        logging.info(f"time mAP: {time.perf_counter() - start}")
+        logging.info(f"{i + 1}/{len(generator)} time total: {time.perf_counter() - start_total}")
         for c, aps in ap_to_class.items():
             ap_to_class_all[c] += aps
 
@@ -120,11 +122,11 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_threshol
 
 if __name__ == '__main__':
     model, true_boxes = build_model()
-    #model.trainable = True
-    model.load_weights("weights/model_v4_2.h5")
-    generator = DataGenerator(PATH_TO_TEST, batch_size=8, limit_batches=2)
+    # model.trainable = True
+    model.load_weights("weights/model_v4_5.h5")
+    generator = DataGenerator(PATH_TO_TEST, batch_size=8, limit_batches=100)
 
-    mAP, aps, no_items = evaluate_model(model, generator, 0.5, 0.5, 0.3, MAX_BOXES_PER_IMAGES, enable_logs=True)
+    mAP, aps, no_items = evaluate_model(model, generator, 0.5, 0.5, 0.3, MAX_BOXES_PER_IMAGES)
     print("mAP: ", mAP)
     print(f"Number of items: {no_items}")
     for c in range(3):

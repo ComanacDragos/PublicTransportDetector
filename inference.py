@@ -119,7 +119,7 @@ def non_max_suppression_slow(y_pred, anchors, max_boxes, iou_threshold, score_th
     return output_scores, output_boxes, output_classes
 
 
-def non_max_suppression_fast(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs=False):
+def non_max_suppression_fast(y_pred, anchors, max_boxes, iou_threshold, score_threshold):
     # boxes : bs, 13, 13, 3, 4
     _, boxes, classes = output_processor(y_pred, anchors, apply_argmax=False)
     boxes = tf.reshape(boxes, (-1, GRID_SIZE*GRID_SIZE*len(anchors), 4))
@@ -131,16 +131,16 @@ def non_max_suppression_fast(y_pred, anchors, max_boxes, iou_threshold, score_th
     return nms_scores, nms_boxes, nms_classes, nms_valid
 
 
-def non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs=False):
-    return non_max_suppression_fast(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs=enable_logs)
+def non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_threshold):
+    return non_max_suppression_fast(y_pred, anchors, max_boxes, iou_threshold, score_threshold)
 
 
 def inference(model, inputs, score_threshold=0.6, iou_threshold=0.5, max_boxes=MAX_BOXES_PER_IMAGES,
-              anchors_path=ANCHORS_PATH, enable_logs=False):
+              anchors_path=ANCHORS_PATH):
     anchors = process_anchors(anchors_path)
     dummy_array = np.zeros((1, 1, 1, 1, MAX_BOXES_PER_IMAGES, 4))
     # start = time.time()
-    y_pred = model([inputs, dummy_array])
+    y_pred = model.predict([inputs, dummy_array])
     y, _ = K.get_value(tf.unique((K.flatten(y_pred[..., 4]))))
     print("unique raw conf scores: ", K.get_value(y))
     print(K.get_value(K.sigmoid(y)))
@@ -155,7 +155,7 @@ def inference(model, inputs, score_threshold=0.6, iou_threshold=0.5, max_boxes=M
     #        for a in range(3):
     #            print(K.get_value(y_pred[0, i,j, a, :]))
     # print("predict time: ", time.time() - start)
-    return non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_threshold, enable_logs)
+    return non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_threshold)
 
 
 def extract_boxes(scores, boxes, classes, valid_detections) -> List[List[BoundingBox]]:
@@ -184,7 +184,7 @@ def test():
     generator = DataGenerator(PATH_TO_TEST, shuffle=False)
     model, true_boxes = build_model()
     #model.trainable = True
-    model.load_weights("weights/model_v4_4.h5")
+    model.load_weights("weights/model_v7_2.h5")
 
     model.summary()
     model.compile(optimizer=tf.keras.optimizers.Adam(),
@@ -199,8 +199,8 @@ def test():
     print(f"loss: {loss}")
 
     start = time.time()
-    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.28, iou_threshold=0.3,
-                                       max_boxes=MAX_BOXES_PER_IMAGES, enable_logs=True)
+    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.4, iou_threshold=0.5,
+                                                         max_boxes=MAX_BOXES_PER_IMAGES)
     scores, boxes, classes, valid_detections = K.get_value(scores),\
                                                K.get_value(boxes),\
                                                K.get_value(classes),\
