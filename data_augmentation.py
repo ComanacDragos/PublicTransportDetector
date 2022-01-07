@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from tensorflow.python.keras import backend as K
 import numpy as np
 import tensorflow as tf
-from generator import DataGenerator
 from image import Image
 from settings import *
 
@@ -29,25 +28,179 @@ def cutout(x, cropSize):
 
 
 class Cutout(tf.keras.layers.Layer):
-    def __init__(self, cropSize, **kwargs):
+    def __init__(self, crop_size, **kwargs):
         super().__init__(**kwargs)
-        self.cropSize = cropSize  # cropped region will be cropSize*2+1
+        self.crop_size = crop_size  # cropped region will be cropSize*2+1
 
     def call(self, x, training=None):
         if not training:
             return x
-        return tf.map_fn(lambda elem: cutout(elem, self.cropSize), x)
+        return tf.map_fn(lambda elem: cutout(elem, self.crop_size), x)
+
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({
+            'crop_size': self.crop_size
+        })
+        return config
+
+
+class RandomHue(tf.keras.layers.Layer):
+    def __init__(self, delta=0.5, **kwargs):
+        super().__init__(**kwargs)
+        self.delta = delta
+
+    def call(self, x, training=None):
+        if not training:
+            return x
+        return tf.image.random_hue(x, self.delta)
+
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({
+            'delta': self.delta
+        })
+        return config
+
+
+class RandomSaturation(tf.keras.layers.Layer):
+    def __init__(self, lower=5, upper=10, **kwargs):
+        super().__init__(**kwargs)
+        self.lower = lower
+        self.upper = upper
+
+    def call(self, x, training=None):
+        if not training:
+            return x
+        return tf.image.random_saturation(x, self.lower, self.upper)
+
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({
+            'lower': self.lower,
+            'upper': self.upper
+        })
+        return config
+
+
+class RandomBrightness(tf.keras.layers.Layer):
+    def __init__(self, delta=0.3, **kwargs):
+        super().__init__(**kwargs)
+        self.delta = delta
+
+    def call(self, x, training=None):
+        if not training:
+            return x
+        return tf.image.random_brightness(x, self.delta)
+
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({
+            'delta': self.delta
+        })
+        return config
+
+
+class RandomContrast(tf.keras.layers.Layer):
+    def __init__(self, lower=1, upper=2, **kwargs):
+        super().__init__(**kwargs)
+        self.lower = lower
+        self.upper = upper
+
+    def call(self, x, training=None):
+        if not training:
+            return x
+        return tf.image.random_contrast(x, self.lower, self.upper)
+
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({
+            'lower': self.lower,
+            'upper': self.upper
+        })
+        return config
+
+
+class RandomColorAugmentation(tf.keras.layers.Layer):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.layers = [
+            RandomHue(),
+            RandomSaturation(),
+            RandomBrightness(),
+            RandomContrast(),
+        ]
+
+    def call(self, x, training=None):
+        if not training:
+            return x
+        return self.layers[np.random.randint(0, len(self.layers))].call(x, training)
+
+
+class AllColorAugmentation(tf.keras.layers.Layer):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.layers = [
+            RandomHue(),
+            RandomSaturation(),
+            RandomBrightness(),
+            RandomContrast(),
+        ]
+
+    def call(self, x, training=None):
+        if not training:
+            return x
+        for layer in self.layers:
+            x = layer.call(x, training)
+        return x
 
 
 if __name__ == '__main__':
-    img = np.expand_dims(Image(PATH_TO_VALIDATION, "4a23eee283f294b6.jpg").image, 0)
+    img = Image(PATH_TO_VALIDATION, "4a23eee283f294b6.jpg").image
+    img = np.stack([img] * 2)
     cutout_layer = Cutout(50)
+    hue_layer = RandomHue()
+    saturation_layer = RandomSaturation()
+    brightness_layer = RandomBrightness()
+    contrast_layer = RandomContrast()
+    all_layer = AllColorAugmentation()
+    random_layer = RandomColorAugmentation()
 
-    fig, axs = plt.subplots(2, 1, figsize=(30, 30))
-    plt.subplot(2, 1, 1)
+    rows = 4
+    cols = 2
+
+    fig, axs = plt.subplots(rows, cols, figsize=(30, 30))
+    plt.subplot(rows, cols, 1)
     plt.imshow(img[0])
-    plt.subplot(2, 1, 2)
+    plt.title("original")
+
+    plt.subplot(rows, cols, 2)
     plt.imshow(cutout_layer.call(img, training=True)[0])
+    plt.title("cutout")
+
+    plt.subplot(rows, cols, 3)
+    plt.imshow(hue_layer.call(img, training=True)[0])
+    plt.title("hue")
+
+    plt.subplot(rows, cols, 4)
+    plt.imshow(saturation_layer.call(img, training=True)[0])
+    plt.title("saturation")
+
+    plt.subplot(rows, cols, 5)
+    plt.imshow(brightness_layer.call(img, training=True)[0])
+    plt.title("brightness")
+
+    plt.subplot(rows, cols, 6)
+    plt.imshow(contrast_layer.call(img, training=True)[0])
+    plt.title("contrast")
+
+    plt.subplot(rows, cols, 7)
+    plt.imshow(random_layer.call(img, training=True)[0])
+    plt.title("random")
+
+    plt.subplot(rows, cols, 8)
+    plt.imshow(all_layer.call(img, training=True)[0])
+    plt.title("all")
 
     plt.tight_layout()
     plt.show()

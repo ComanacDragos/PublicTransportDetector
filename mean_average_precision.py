@@ -123,10 +123,10 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_pos
 if __name__ == '__main__':
     model, true_boxes = build_model()
     # model.trainable = True
-    model.load_weights("weights/model_v4_5.h5")
+    model.load_weights("weights/model_v8_2.h5")
     generator = DataGenerator(PATH_TO_TEST, batch_size=8, limit_batches=100)
 
-    mAP, aps, no_items = evaluate_model(model, generator, 0.5, 0.5, 0.3, MAX_BOXES_PER_IMAGES)
+    mAP, aps, no_items = evaluate_model(model, generator, 0.5, 0.5, 0.5, MAX_BOXES_PER_IMAGES)
     print("mAP: ", mAP)
     print(f"Number of items: {no_items}")
     for c in range(3):

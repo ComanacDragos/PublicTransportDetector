@@ -1,16 +1,28 @@
 from generator import *
 from loss import YoloLoss
+from data_augmentation import AllColorAugmentation, Cutout
 
 tf.compat.v1.disable_eager_execution()
 
 
-def conv_block(x, kernel_size=3, filters=32, reluActivation=True, strides=1):
+class Mish(tf.keras.layers.Layer):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def call(self, x, training=None):
+        if not training:
+            return x
+        return x * tf.math.tanh(tf.math.softplus(x))
+
+
+def conv_block(x, kernel_size=3, filters=32, activation=True, strides=1):
     x = tf.keras.layers.Conv2D(kernel_size=kernel_size, filters=filters, padding="same", strides=strides,
                                kernel_initializer=tf.keras.initializers.HeNormal(),
                                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-6, l2=2e-5)
                                )(x)
-    if reluActivation:
+    if activation:
         x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
+        #x = tf.keras.layers.Mish()(x)
     x = tf.keras.layers.BatchNormalization()(x)
     return x
 
@@ -34,13 +46,15 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
                no_classes=len(ENCODE_LABEL), no_anchors=3, alpha=1.0):
     inputs = tf.keras.layers.Input(shape=input_shape)
     true_boxes = tf.keras.layers.Input(shape=true_boxes_shape)
-    x = tf.cast(inputs, tf.float32)
+    x = AllColorAugmentation()(inputs)
+    x = Cutout(8)(x)
+    x = tf.cast(x, tf.float32)
     x = tf.keras.applications.mobilenet_v2.preprocess_input(x)
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False,
                                                                   alpha=alpha)
     downsample_skip_layer_name = ["block_6_expand_relu",
                                   "block_10_expand_relu",
-                                  #"block_13_expand_relu",
+                                  # "block_13_expand_relu",
                                   "block_14_expand_relu"
                                   ]
 
@@ -54,9 +68,9 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
 
     for skip_layer in reversed(skips[:-1]):
         x = upsample_block(x, skip_layer.shape[-1], 3)
+        x = tf.keras.layers.Dropout(0.3)(x)
         x = tf.keras.layers.Concatenate()([x, skip_layer])
 
-    x = tf.keras.layers.Dropout(0.3)(x)
     x = conv_block(x, filters=192, strides=2)
     x = conv_block(x, filters=192)
     x = conv_block(x, filters=192)
@@ -76,7 +90,6 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
     x = conv_block(x, filters=32)
     x = conv_block(x, filters=32)
     x = conv_block(x, filters=32)
-    #x = conv_block(x, filters=no_anchors * (4 + 1 + no_classes), reluActivation=False, strides=2)
     x = tf.keras.layers.Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
                                padding="same",
                                # strides=2, activation="relu"
@@ -142,7 +155,7 @@ class Train:
         self.model.summary()
 
         self.model.compile(optimizer=tf.keras.optimizers.Adam(epsilon=0.5,
-                                                              decay=0.0
+                                                              # decay=0.0
                                                               ),
                            loss=YoloLoss(anchors=self.train_generator.anchors, true_boxes=self.true_boxes))
 
@@ -172,8 +185,8 @@ class Train:
 
 
 def train():
-    t = Train(epochs=5, n_min=1e-7, n_max=1e-4, path_to_model="model_v7.h5")
-    t.train(name="model_v7_2.h5")
+    t = Train(epochs=2, n_min=1e-7, n_max=1e-5, path_to_model="model_v8_2.h5")
+    t.train(name="model_v8_3.h5")
 
 
 def fine_tune():
@@ -182,8 +195,8 @@ def fine_tune():
 
 
 if __name__ == '__main__':
-    #tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
-    #model, _ = build_model()
-    #model.summary()
+    # tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
+    # model, _ = build_model()
+    # model.summary()
     train()
-    #fine_tune()
+    # fine_tune()

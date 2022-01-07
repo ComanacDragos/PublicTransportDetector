@@ -155,6 +155,7 @@ def inference(model, inputs, score_threshold=0.6, iou_threshold=0.5, max_boxes=M
     #        for a in range(3):
     #            print(K.get_value(y_pred[0, i,j, a, :]))
     # print("predict time: ", time.time() - start)
+
     return non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_threshold)
 
 
@@ -184,7 +185,7 @@ def test():
     generator = DataGenerator(PATH_TO_TEST, shuffle=False)
     model, true_boxes = build_model()
     #model.trainable = True
-    model.load_weights("weights/model_v7_2.h5")
+    model.load_weights("weights/model_v8_2.h5")
 
     model.summary()
     model.compile(optimizer=tf.keras.optimizers.Adam(),
@@ -199,7 +200,7 @@ def test():
     print(f"loss: {loss}")
 
     start = time.time()
-    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.4, iou_threshold=0.5,
+    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.5, iou_threshold=0.5,
                                                          max_boxes=MAX_BOXES_PER_IMAGES)
     scores, boxes, classes, valid_detections = K.get_value(scores),\
                                                K.get_value(boxes),\

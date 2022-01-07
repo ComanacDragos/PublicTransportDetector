@@ -1,0 +1,7 @@
+model_v8
+dropout after upsample block
+all_color_augmentation
+cutout with 8
+leaky_relu with 0.1
+
+better detection of plates but a lot of false positives
