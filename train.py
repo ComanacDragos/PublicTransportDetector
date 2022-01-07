@@ -1,6 +1,6 @@
 from generator import *
 from loss import YoloLoss
-from data_augmentation import AllColorAugmentation, Cutout
+from data_augmentation import AllColorAugmentation, Cutout, RandomColorAugmentation
 
 tf.compat.v1.disable_eager_execution()
 
@@ -21,8 +21,8 @@ def conv_block(x, kernel_size=3, filters=32, activation=True, strides=1):
                                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-6, l2=2e-5)
                                )(x)
     if activation:
-        x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
-        #x = tf.keras.layers.Mish()(x)
+        #x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
+        x = Mish()(x)
     x = tf.keras.layers.BatchNormalization()(x)
     return x
 
@@ -37,7 +37,8 @@ def upsample_block(x, filters, size, stride=2):
                                                kernel_initializer=tf.keras.initializers.HeNormal(),
                                                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-6, l2=2e-5)
                                                )(x)
-    x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
+    #x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
+    x = Mish()(x)
     x = tf.keras.layers.BatchNormalization()(x)
     return x
 
@@ -47,7 +48,7 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
     inputs = tf.keras.layers.Input(shape=input_shape)
     true_boxes = tf.keras.layers.Input(shape=true_boxes_shape)
     x = AllColorAugmentation()(inputs)
-    x = Cutout(8)(x)
+    x = Cutout(16)(x)
     x = tf.cast(x, tf.float32)
     x = tf.keras.applications.mobilenet_v2.preprocess_input(x)
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False,
@@ -68,7 +69,7 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
 
     for skip_layer in reversed(skips[:-1]):
         x = upsample_block(x, skip_layer.shape[-1], 3)
-        x = tf.keras.layers.Dropout(0.3)(x)
+        # x = tf.keras.layers.Dropout(0.3)(x)
         x = tf.keras.layers.Concatenate()([x, skip_layer])
 
     x = conv_block(x, filters=192, strides=2)
@@ -92,7 +93,6 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
     x = conv_block(x, filters=32)
     x = tf.keras.layers.Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
                                padding="same",
-                               # strides=2, activation="relu"
                                kernel_initializer=tf.keras.initializers.HeNormal())(x)
     x = tf.keras.layers.Reshape((GRID_SIZE, GRID_SIZE, no_anchors, 4 + 1 + no_classes), name="final_output")(x)
     output = tf.keras.layers.Lambda(lambda args: args[0], name="hack_layer")([x, true_boxes])
@@ -171,7 +171,6 @@ class Train:
                                             tf.keras.callbacks.TensorBoard(log_dir=f"info_about_runs/{name}")
                                             ]
                                  , workers=os.cpu_count())
-        # tf.keras.models.save_model(self.model, f"weights/{name}")
         plot_history(history.history)
 
     def load_model(self, path: str):
@@ -185,8 +184,8 @@ class Train:
 
 
 def train():
-    t = Train(epochs=2, n_min=1e-7, n_max=1e-5, path_to_model="model_v8_2.h5")
-    t.train(name="model_v8_3.h5")
+    t = Train(epochs=3, n_min=1e-7, n_max=5e-5, path_to_model="model_v9_2.h5")
+    t.train(name="model_v9_3.h5")
 
 
 def fine_tune():

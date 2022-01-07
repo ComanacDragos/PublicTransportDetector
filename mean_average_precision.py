@@ -124,7 +124,7 @@ if __name__ == '__main__':
     model, true_boxes = build_model()
     # model.trainable = True
     model.load_weights("weights/model_v8_2.h5")
-    generator = DataGenerator(PATH_TO_TEST, batch_size=8, limit_batches=100)
+    generator = DataGenerator(PATH_TO_TEST, batch_size=8, limit_batches=10)
 
     mAP, aps, no_items = evaluate_model(model, generator, 0.5, 0.5, 0.5, MAX_BOXES_PER_IMAGES)
     print("mAP: ", mAP)
