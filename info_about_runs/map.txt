@@ -25,3 +25,51 @@ Number of items: [478, 589, 516]
 Bus : 0.03145048814504882
 Car : 0.3882609750181906
 Vehicle registration plate : 0.07841079032939498
+
+
+model_v10_5 0.5, 0.5, 0.5,
+mAP:  0.43773303504847133
+Number of items: [149, 3, 2]
+Bus : 0.9798657718120806
+Car : 0.3333333333333333
+Vehicle registration plate : 0.0
+
+
+model_v10_5 0.2, 0.4, 0.5,
+mAP:  0.7177479492915735
+Number of items: [149, 3, 2]
+Bus : 0.9865771812080537
+Car : 0.6666666666666666
+Vehicle registration plate : 0.5
+
+
+model_v10_3 0.5, 0.5, 0.5,
+mAP:  0.6059829059829059
+Number of items: [130, 3, 2]
+Bus : 0.9846153846153847
+Car : 0.3333333333333333
+Vehicle registration plate : 0.5
+
+
+model_v10_3 0.4, 0.5, 0.5,
+mAP:  0.6641025641025641
+Number of items: [130, 3, 2]
+Bus : 0.9923076923076923
+Car : 0.5
+Vehicle registration plate : 0.5
+
+
+model_v10_3 0.5, 0.3, 0.2,
+mAP:  0.6165626359878155
+Number of items: [256, 383, 15]
+Bus : 0.8528645833333334
+Car : 0.5968233246301131
+Vehicle registration plate : 0.4
+
+
+model_v10_5 0.5, 0.3, 0.2,
+mAP:  0.6522042416778054
+Number of items: [257, 425, 11]
+Bus : 0.8709468223086899
+Car : 0.6311204481792717
+Vehicle registration plate : 0.45454545454545453

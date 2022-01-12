@@ -21,7 +21,8 @@ else:
     PATH_TO_VALIDATION = "C:\\Users\\Dragos\\datasets\\OID\\OID\\PublicTransportFilteredProcessed\\validation"  # ssd
     PATH_TO_VALIDATION_UNPROCESSED = "C:\\Users\\Dragos\\datasets\\OID\\OID\\PublicTransportFiltered\\validation\\Bus_Car_Vehicle registration plate"  # ssd
 
-    PATH_TO_TEST = "C:\\Users\\Dragos\\datasets\\OID\\OID\\PublicTransportFilteredProcessed\\test"
+    PATH_TO_TEST_FILTERED = "C:\\Users\\Dragos\\datasets\\OID\\OID\\PublicTransportFilteredProcessed\\test_filtered"
+    PATH_TO_TEST = PATH_TO_TEST_FILTERED# "C:\\Users\\Dragos\\datasets\\OID\\OID\\PublicTransportFilteredProcessed\\test"
     PATH_TO_TEST_UNPROCESSED = "C:\\Users\\Dragos\\datasets\\OID\\OID\\PublicTransportFiltered\\test\\Bus_Car_Vehicle registration plate"
 
 ENCODE_LABEL = {

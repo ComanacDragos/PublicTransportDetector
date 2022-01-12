@@ -1,44 +1,41 @@
+from data_augmentation import Cutout, RandomColorAugmentation
 from generator import *
 from loss import YoloLoss
-from data_augmentation import AllColorAugmentation, Cutout, RandomColorAugmentation
 
 tf.compat.v1.disable_eager_execution()
 
-
-class Mish(tf.keras.layers.Layer):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def call(self, x, training=None):
-        if not training:
-            return x
-        return x * tf.math.tanh(tf.math.softplus(x))
+L1 = 2e-5
+L2 = 2e-5
 
 
-def conv_block(x, kernel_size=3, filters=32, activation=True, strides=1):
+def mish(x):
+    return x * tf.math.tanh(tf.math.softplus(x))
+
+
+def conv_block(inputs, kernel_size=3, filters=32, activation=True, add_skip_connection=True, strides=1):
     x = tf.keras.layers.Conv2D(kernel_size=kernel_size, filters=filters, padding="same", strides=strides,
                                kernel_initializer=tf.keras.initializers.HeNormal(),
-                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-6, l2=2e-5)
-                               )(x)
+                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2)
+                               )(inputs)
+    if add_skip_connection:
+        x = tf.keras.layers.Conv2D(kernel_size=kernel_size, filters=filters, padding="same", strides=strides,
+                                   kernel_initializer=tf.keras.initializers.HeNormal(),
+                                   kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2)
+                                   )(x)
+        x = tf.keras.layers.Add()([inputs, x])
     if activation:
-        #x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
-        x = Mish()(x)
+        x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     return x
 
 
-def upsample_block(x, filters, size, stride=2):
-    """
-    x - the input of the upsample block
-    filters - the number of filters to be applied
-    size - the size of the filters
-    """
-    x = tf.keras.layers.Convolution2DTranspose(kernel_size=size, filters=filters, strides=stride, padding="same",
+def upsample_block(x, filters, kernel_size=3, strides=2):
+    x = tf.keras.layers.Convolution2DTranspose(kernel_size=kernel_size, filters=filters, strides=strides,
+                                               padding="same",
                                                kernel_initializer=tf.keras.initializers.HeNormal(),
-                                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-6, l2=2e-5)
+                                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2)
                                                )(x)
-    #x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
-    x = Mish()(x)
+    x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     return x
 
@@ -47,17 +44,16 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
                no_classes=len(ENCODE_LABEL), no_anchors=3, alpha=1.0):
     inputs = tf.keras.layers.Input(shape=input_shape)
     true_boxes = tf.keras.layers.Input(shape=true_boxes_shape)
-    x = AllColorAugmentation()(inputs)
-    x = Cutout(16)(x)
+    x = RandomColorAugmentation()(inputs)
+    x = Cutout(32)(x)
     x = tf.cast(x, tf.float32)
     x = tf.keras.applications.mobilenet_v2.preprocess_input(x)
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False,
                                                                   alpha=alpha)
-    downsample_skip_layer_name = ["block_6_expand_relu",
-                                  "block_10_expand_relu",
-                                  # "block_13_expand_relu",
-                                  "block_14_expand_relu"
-                                  ]
+    downsample_skip_layer_name = [
+        "block_6_expand_relu",
+        "block_10_expand_relu",
+    ]
 
     down_stack = tf.keras.Model(inputs=mobilenet_v2.input,
                                 outputs=[mobilenet_v2.get_layer(name).output for name in downsample_skip_layer_name],
@@ -68,32 +64,35 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
     x = skips[-1]
 
     for skip_layer in reversed(skips[:-1]):
-        x = upsample_block(x, skip_layer.shape[-1], 3)
-        # x = tf.keras.layers.Dropout(0.3)(x)
+        x = upsample_block(x, skip_layer.shape[-1])
         x = tf.keras.layers.Concatenate()([x, skip_layer])
 
-    x = conv_block(x, filters=192, strides=2)
-    x = conv_block(x, filters=192)
-    x = conv_block(x, filters=192)
-    x = conv_block(x, filters=192)
+    x = tf.keras.layers.Dropout(0.3)(x)
+    x = conv_block(x, filters=192, add_skip_connection=False)
+    # x = conv_block(x, filters=192)
+    # x = conv_block(x, filters=192)
+    # x = conv_block(x, filters=192)
 
-    x = conv_block(x, filters=128)
-    x = conv_block(x, filters=128)
-    x = conv_block(x, filters=128)
-    x = conv_block(x, filters=128)
+    x = conv_block(x, filters=128, strides=2, add_skip_connection=False)
+    # x = conv_block(x, filters=128)
+    # x = conv_block(x, filters=128)
+    # x = conv_block(x, filters=128)
 
-    x = conv_block(x, filters=64, strides=2)
-    x = conv_block(x, filters=64)
-    x = conv_block(x, filters=64)
-    x = conv_block(x, filters=64)
+    x = conv_block(x, filters=64, add_skip_connection=False)
+    # x = conv_block(x, filters=64)
+    # x = conv_block(x, filters=64)
+    # x = conv_block(x, filters=64)
 
-    x = conv_block(x, filters=32)
-    x = conv_block(x, filters=32)
-    x = conv_block(x, filters=32)
-    x = conv_block(x, filters=32)
+    x = conv_block(x, filters=32, strides=2, add_skip_connection=False)
+    # x = conv_block(x, filters=32)
+    # x = conv_block(x, filters=32)
+    # x = conv_block(x, filters=32)
+
     x = tf.keras.layers.Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
                                padding="same",
-                               kernel_initializer=tf.keras.initializers.HeNormal())(x)
+                               kernel_initializer=tf.keras.initializers.HeNormal(),
+                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L2, l2=L1))(x)
+
     x = tf.keras.layers.Reshape((GRID_SIZE, GRID_SIZE, no_anchors, 4 + 1 + no_classes), name="final_output")(x)
     output = tf.keras.layers.Lambda(lambda args: args[0], name="hack_layer")([x, true_boxes])
     return tf.keras.Model(inputs=[inputs, true_boxes], outputs=output, name="custom_yolo"), true_boxes
@@ -138,7 +137,7 @@ class Train:
         self.batch_size = batch_size
         self.train_generator = DataGenerator(PATH_TO_TRAIN, self.batch_size, limit_batches=limit_batches)
         self.validation_generator = DataGenerator(PATH_TO_VALIDATION, self.batch_size, limit_batches=limit_batches)
-        self.T = T if T is not None else 2 * batch_size
+        self.T = T if T is not None else 2 * epochs
         self.n_min = n_min
         self.n_max = n_max
         self.alpha = alpha
@@ -154,8 +153,8 @@ class Train:
             self.model.trainable = True
         self.model.summary()
 
-        self.model.compile(optimizer=tf.keras.optimizers.Adam(epsilon=0.5,
-                                                              # decay=0.0
+        self.model.compile(optimizer=tf.keras.optimizers.Adam(epsilon=1e-8,
+                                                              decay=0.0
                                                               ),
                            loss=YoloLoss(anchors=self.train_generator.anchors, true_boxes=self.true_boxes))
 
@@ -184,13 +183,13 @@ class Train:
 
 
 def train():
-    t = Train(epochs=3, n_min=1e-7, n_max=5e-5, path_to_model="model_v9_2.h5")
-    t.train(name="model_v9_3.h5")
+    t = Train(epochs=9, n_min=1e-8, n_max=6e-5, path_to_model="model_v11_2.h5")
+    t.train(name="model_v11_2.h5")
 
 
 def fine_tune():
-    fine_tune = Train(epochs=8, n_min=1e-9, n_max=1e-6, path_to_model="model_v4_4.h5")
-    fine_tune.train(name="model_v4_4_fine_tuned.h5", fine_tune=True)
+    fine_tune = Train(epochs=6, n_min=1e-9, n_max=4.928541435254775e-05, path_to_model="model_v10_2.h5")
+    fine_tune.train(name="model_v10_2_fine_tuned.h5", fine_tune=True)
 
 
 if __name__ == '__main__':

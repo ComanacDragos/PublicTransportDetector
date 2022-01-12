@@ -1,10 +1,6 @@
-import threading
-import time
-
 from image import Image
-from utils import *
-
 from settings import *
+from utils import *
 
 paths = {
     'train': PATH_TO_TRAIN,

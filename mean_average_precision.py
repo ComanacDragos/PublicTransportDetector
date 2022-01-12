@@ -51,7 +51,6 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
 
     start = time.perf_counter()
     ap_to_class = {c: [] for c in range(no_classes)}
-
     for true_boxes, pred_boxes in zip(true_boxes_all, pred_boxes_all):
         class_to_box = {c: [] for c in range(no_classes)}
         total_positives = {c: 0 for c in range(no_classes)}
@@ -66,6 +65,8 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
 
         for c in range(no_classes):
             if len(class_to_box[c]) == 0:
+                if total_positives[c] > 0:
+                    ap_to_class[c].append(0.)
                 continue
 
             sorted_boxes = class_to_box[c]
@@ -123,10 +124,13 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_pos
 if __name__ == '__main__':
     model, true_boxes = build_model()
     # model.trainable = True
-    model.load_weights("weights/model_v8_2.h5")
-    generator = DataGenerator(PATH_TO_TEST, batch_size=8, limit_batches=10)
+    model.load_weights("weights/model_v10_5.h5")
+    generator = DataGenerator(PATH_TO_TEST, shuffle=False)
 
-    mAP, aps, no_items = evaluate_model(model, generator, 0.5, 0.5, 0.5, MAX_BOXES_PER_IMAGES)
+    mAP, aps, no_items = evaluate_model(model, generator, iou_true_positive_threshold=0.5,
+                                                          nms_iou_threshold=0.3,
+                                                          score_threshold=0.2,
+                                                          max_boxes=MAX_BOXES_PER_IMAGES)
     print("mAP: ", mAP)
     print(f"Number of items: {no_items}")
     for c in range(3):

@@ -1,4 +1,5 @@
 import os
+import time
 
 import albumentations
 import matplotlib.pyplot as plt
@@ -66,5 +67,37 @@ def test_resize():
     plt.show()
 
 
+def prune_test_set():
+    paths = os.listdir(PATH_TO_TEST)
+    paths.remove("Label")
+    print(len(paths))
+    car_boxes = 0
+    plate_boxes = 0
+    bus_boxes = 0
+    kept = 0
+    for i, path in enumerate(paths):
+        start = time.perf_counter()
+        img = Image(PATH_TO_TEST, path)
+        keep = False
+        for box in img.bounding_boxes:
+            if box.c == 1 and car_boxes < 354:
+                car_boxes += 1
+                keep = True
+            elif box.c == 2 and plate_boxes < 354:
+                plate_boxes += 1
+                keep = True
+            elif box.c == 0:
+                keep = True
+                bus_boxes += 1
+        if keep:
+            kept += 1
+            img.save_image(PATH_TO_TEST_FILTERED)
+
+        if i % 100 == 0 or i == len(paths) - 1:
+            print(i, time.perf_counter() - start, bus_boxes, car_boxes, plate_boxes, kept)
+
+
+
 if __name__ == '__main__':
-    preprocess_dataset()
+    # preprocess_dataset()
+    prune_test_set()
