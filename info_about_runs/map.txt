@@ -73,3 +73,11 @@ Number of items: [257, 425, 11]
 Bus : 0.8709468223086899
 Car : 0.6311204481792717
 Vehicle registration plate : 0.45454545454545453
+
+
+v12_2
+mAP:  0.5187267082019963
+Number of items: [256, 282, 0]
+Bus : 0.884765625
+Car : 0.671414499605989
+Vehicle registration plate : 0.0

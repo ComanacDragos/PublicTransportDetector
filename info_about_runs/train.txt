@@ -507,3 +507,43 @@ Epoch 5/5
 2472/2472 [==============================] - ETA: 0s - batch: 1235.5000 - size: 7.9988 - loss: 10.3744
 Epoch 00005: val_loss improved from 8.92212 to 8.39551, saving model to weights\model_v7.h5
 2472/2472 [==============================] - 806s 326ms/step - batch: 1235.5000 - size: 7.9988 - loss: 10.3744 - val_loss: 8.3955
+
+
+
+model_v12_3_fine_tuned
+
+
+Epoch 00001: val_loss improved from inf to 5.88540, saving model to weights\model_v12_3_fine_tuned.h5
+2472/2472 [==============================] - 1828s 740ms/step - batch: 1235.5000 - size: 7.9988 - loss: 6.1154 - val_loss: 5.8854
+
+Epoch 2: Learning rate is 4.914984936591225e-07.
+Epoch 2/6
+2472/2472 [==============================] - ETA: 0s - batch: 1235.5000 - size: 7.9988 - loss: 6.0667
+Epoch 00002: val_loss did not improve from 5.88540
+2472/2472 [==============================] - 1752s 709ms/step - batch: 1235.5000 - size: 7.9988 - loss: 6.0667 - val_loss: 5.9014
+
+Epoch 3: Learning rate is 4.665733382442175e-07.
+Epoch 3/6
+2472/2472 [==============================] - ETA: 0s - batch: 1235.5000 - size: 7.9988 - loss: 6.0885
+Epoch 00003: val_loss did not improve from 5.88540
+2472/2472 [==============================] - 1754s 710ms/step - batch: 1235.5000 - size: 7.9988 - loss: 6.0885 - val_loss: 5.8915
+
+Epoch 4: Learning rate is 4.2692314190604364e-07.
+Epoch 4/6
+2472/2472 [==============================] - ETA: 0s - batch: 1235.5000 - size: 7.9988 - loss: 6.0701
+Epoch 00004: val_loss improved from 5.88540 to 5.83065, saving model to weights\model_v12_3_fine_tuned.h5
+2472/2472 [==============================] - 1758s 711ms/step - batch: 1235.5000 - size: 7.9988 - loss: 6.0701 - val_loss: 5.8307
+
+Epoch 5: Learning rate is 3.7525000000000003e-07.
+Epoch 5/6
+2472/2472 [==============================] - ETA: 0s - batch: 1235.5000 - size: 7.9988 - loss: 6.0580
+Epoch 00005: val_loss did not improve from 5.83065
+2472/2472 [==============================] - 1761s 712ms/step - batch: 1235.5000 - size: 7.9988 - loss: 6.0580 - val_loss: 5.9016
+
+Epoch 6: Learning rate is 3.1507535175307895e-07.
+Epoch 6/6
+2472/2472 [==============================] - ETA: 0s - batch: 1235.5000 - size: 7.9988 - loss: 6.0496
+Epoch 00006: val_loss improved from 5.83065 to 5.81352, saving model to weights\model_v12_3_fine_tuned.h5
+2472/2472 [==============================] - 1766s 714ms/step - batch: 1235.5000 - size: 7.9988 - loss: 6.0496 - val_loss: 5.8135
+
+Process finished with exit code 0

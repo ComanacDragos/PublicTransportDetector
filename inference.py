@@ -140,14 +140,13 @@ def inference(model, inputs, score_threshold=0.6, iou_threshold=0.5, max_boxes=M
     y_pred = model.predict([inputs, dummy_array])
     y, _ = K.get_value(tf.unique((K.flatten(y_pred[..., 4]))))
 
-    """
     print("unique raw conf scores: ", K.get_value(y))
     print(K.get_value(K.sigmoid(y)))
     print("len ", K.get_value(tf.shape(y)))
     print("max obj score ", K.get_value(K.max(K.sigmoid(y))))
     _, boxes, classes = output_processor(y_pred, anchors, apply_argmax=False)
     print("max class score ", K.get_value(K.max(K.reshape(classes, (BATCH_SIZE, -1)), axis=-1)))
-    """
+
     return non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_threshold)
 
 
@@ -175,8 +174,9 @@ def draw_images(images, scores, boxes, classes, valid_detections):
 
 def run_on_one_image(path, score_threshold):
     model, true_boxes = build_model()
-    # model.trainable = True
-    model.load_weights("weights/model_v10_5.h5")
+    if "fine_tuned" in PATH_TO_MODEL:
+        model.trainable = True
+    model.load_weights(PATH_TO_MODEL)
     image = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
 
     image = cv2.resize(image, (IMAGE_SIZE, IMAGE_SIZE))
@@ -211,8 +211,9 @@ def run_on_one_image(path, score_threshold):
 def test():
     generator = DataGenerator(PATH_TO_TEST, shuffle=False)
     model, true_boxes = build_model()
-    # model.trainable = True
-    model.load_weights("weights/model_v10_5.h5")
+    if "fine_tuned" in PATH_TO_MODEL:
+        model.trainable = True
+    model.load_weights(PATH_TO_MODEL)
 
     model.summary()
     model.compile(optimizer=tf.keras.optimizers.Adam(),
@@ -265,8 +266,9 @@ def test():
 
 
 if __name__ == '__main__':
+    PATH_TO_MODEL = "weights/model_v12_3_fine_tuned.h5"
     #test()
     #run_on_one_image("documentation\\bus2.jpg", 0.3)
-    run_on_one_image("documentation\\bus3.jpg", 0.2)
+    #run_on_one_image("documentation\\bus3.jpg", 0.2)
     #run_on_one_image("documentation\\busses.jpg", 0.1)
     #run_on_one_image("documentation\\car.jpg", 0.06)

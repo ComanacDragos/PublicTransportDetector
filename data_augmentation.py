@@ -171,7 +171,7 @@ class RandomColorAugmentation(tf.keras.layers.Layer):
 if __name__ == '__main__':
     img = Image(PATH_TO_VALIDATION, "4a23eee283f294b6.jpg").image
     img = np.stack([img] * 2)
-    cutout_layer = Cutout(64)
+    cutout_layer = Cutout(32)
     hue_layer = RandomHue()
     saturation_layer = RandomSaturation()
     brightness_layer = RandomBrightness()

@@ -12,3 +12,6 @@ all_color_augmentation
 cutout with 16
 mish activation
 better plate recognition
+
+v11
+removing convolutional blocks reduces performance

@@ -123,8 +123,8 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_pos
 
 if __name__ == '__main__':
     model, true_boxes = build_model()
-    # model.trainable = True
-    model.load_weights("weights/model_v10_5.h5")
+    model.trainable = True
+    model.load_weights("weights/model_v12_3_fine_tuned.h5")
     generator = DataGenerator(PATH_TO_TEST, shuffle=False)
 
     mAP, aps, no_items = evaluate_model(model, generator, iou_true_positive_threshold=0.5,
