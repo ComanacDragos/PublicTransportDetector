@@ -181,7 +181,7 @@ if __name__ == '__main__':
     rows = 4
     cols = 2
 
-    fig, axs = plt.subplots(rows, cols, figsize=(30, 30))
+    fig, axs = plt.subplots(rows, cols, figsize=(40, 40))
     plt.subplot(rows, cols, 1)
     plt.imshow(img[0])
     plt.title("original")
@@ -215,4 +215,4 @@ if __name__ == '__main__':
     plt.title("random")
 
     plt.tight_layout()
-    plt.show()
+    plt.savefig("documentation/augmentation.jpg")

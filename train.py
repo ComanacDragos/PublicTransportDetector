@@ -51,9 +51,13 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False,
                                                                   alpha=alpha)
     downsample_skip_layer_name = [
-        "block_6_expand_relu",
-        "block_10_expand_relu",
-        "block_14_expand_relu",
+        "block_2_add",
+        "block_5_add",
+        "block_12_add",
+        "block_14_add",
+        #block_6_expand_relu",
+        #block_10_expand_relu",
+        #"block_14_expand_relu",
     ]
 
     down_stack = tf.keras.Model(inputs=mobilenet_v2.input,
@@ -69,25 +73,32 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
         x = tf.keras.layers.Concatenate()([x, skip_layer])
 
     x = tf.keras.layers.Dropout(0.3)(x)
-    x = conv_block(x, filters=192, add_skip_connection=False)
-    #x = conv_block(x, filters=192)
-    # x = conv_block(x, filters=192)
-    # x = conv_block(x, filters=192)
 
+    # x = conv_block(x, filters=192, add_skip_connection=False)
+    # x = conv_block(x, filters=192)
+    # x = conv_block(x, filters=192)
+    # x = conv_block(x, filters=192)
+    #
+    #
     x = conv_block(x, filters=128, strides=2, add_skip_connection=False)
-    #x = conv_block(x, filters=128)
+    # x = conv_block(x, filters=128)
     # x = conv_block(x, filters=128)
     # x = conv_block(x, filters=128)
 
-    x = conv_block(x, filters=64, add_skip_connection=False)
+    x = conv_block(x, filters=64, strides=2, add_skip_connection=False)
     x = conv_block(x, filters=64)
-    # x = conv_block(x, filters=64)
-    # x = conv_block(x, filters=64)
+    x = conv_block(x, filters=64)
+    x = conv_block(x, filters=64)
+
+    # x = conv_block(x, filters=48, strides=2, add_skip_connection=False)
+    # x = conv_block(x, filters=48)
+    # x = conv_block(x, filters=48)
+    # x = conv_block(x, filters=48)
 
     x = conv_block(x, filters=32, strides=2, add_skip_connection=False)
     x = conv_block(x, filters=32)
-    # x = conv_block(x, filters=32)
-    # x = conv_block(x, filters=32)
+    x = conv_block(x, filters=32)
+    x = conv_block(x, filters=32)
 
     x = tf.keras.layers.Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
                                padding="same",
@@ -184,8 +195,8 @@ class Train:
 
 
 def train():
-    t = Train(epochs=10, n_min=1e-8, n_max=1e-5, path_to_model="model_v12_2.h5")
-    t.train(name="model_v12_3.h5")
+    t = Train(epochs=10, n_min=1e-8, n_max=1e-6, path_to_model="model_v13_3.h5")
+    t.train(name="model_v13_4.h5")
 
 
 def fine_tune():
@@ -197,11 +208,7 @@ if __name__ == '__main__':
     #tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
     #model, _ = build_model()
     #model.summary()
-    #train()
-    fine_tune()
+    train()
+    #fine_tune()
 
 
-"""
-state of the art
-license plate detector
-"""
