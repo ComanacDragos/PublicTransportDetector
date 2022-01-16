@@ -51,12 +51,13 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False,
                                                                   alpha=alpha)
     downsample_skip_layer_name = [
-        "block_2_add",
-        "block_5_add",
-        "block_12_add",
-        "block_14_add",
-        #block_6_expand_relu",
-        #block_10_expand_relu",
+        #"block_2_add",
+        #"block_5_add",
+        #"block_12_add",
+        #"block_14_add",
+        #"block_2_expand_relu",
+        "block_6_expand_relu",
+        "block_10_expand_relu",
         #"block_14_expand_relu",
     ]
 
@@ -72,20 +73,19 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
         x = upsample_block(x, skip_layer.shape[-1])
         x = tf.keras.layers.Concatenate()([x, skip_layer])
 
+    x = conv_block(x, filters=192, add_skip_connection=False)
+    x = conv_block(x, filters=192)
+    x = conv_block(x, filters=192)
+    x = conv_block(x, filters=192)
+
     x = tf.keras.layers.Dropout(0.3)(x)
 
-    # x = conv_block(x, filters=192, add_skip_connection=False)
-    # x = conv_block(x, filters=192)
-    # x = conv_block(x, filters=192)
-    # x = conv_block(x, filters=192)
-    #
-    #
     x = conv_block(x, filters=128, strides=2, add_skip_connection=False)
-    # x = conv_block(x, filters=128)
-    # x = conv_block(x, filters=128)
-    # x = conv_block(x, filters=128)
+    x = conv_block(x, filters=128)
+    x = conv_block(x, filters=128)
+    x = conv_block(x, filters=128)
 
-    x = conv_block(x, filters=64, strides=2, add_skip_connection=False)
+    x = conv_block(x, filters=64, add_skip_connection=False)
     x = conv_block(x, filters=64)
     x = conv_block(x, filters=64)
     x = conv_block(x, filters=64)
@@ -195,20 +195,20 @@ class Train:
 
 
 def train():
-    t = Train(epochs=10, n_min=1e-8, n_max=1e-6, path_to_model="model_v13_3.h5")
-    t.train(name="model_v13_4.h5")
+    t = Train(epochs=20, n_min=1e-8, n_max=1e-7, path_to_model="model_v14_2.h5")
+    t.train(name="model_v14_3.h5")
 
 
 def fine_tune():
-    fine_tune = Train(epochs=6, n_min=1e-9, n_max=5e-07, path_to_model="model_v12_3.h5")
-    fine_tune.train(name="model_v12_3_fine_tuned.h5", fine_tune=True)
+    fine_tune = Train(epochs=10, n_min=1e-9, n_max=1e-08, path_to_model="model_v14_3.h5")
+    fine_tune.train(name="model_v14_3_fine_tuned.h5", fine_tune=True)
 
 
 if __name__ == '__main__':
     #tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
     #model, _ = build_model()
     #model.summary()
-    train()
-    #fine_tune()
+    #train()
+    fine_tune()
 
 

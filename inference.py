@@ -145,7 +145,7 @@ def inference(model, inputs, score_threshold=0.6, iou_threshold=0.5, max_boxes=M
     print("len ", K.get_value(tf.shape(y)))
     print("max obj score ", K.get_value(K.max(K.sigmoid(y))))
     _, boxes, classes = output_processor(y_pred, anchors, apply_argmax=False)
-    print("max class score ", K.get_value(K.max(K.reshape(classes, (BATCH_SIZE, -1)), axis=-1)))
+    #print("max class score ", K.get_value(K.max(K.reshape(classes, (BATCH_SIZE, -1)), axis=-1)))
 
     return non_max_suppression(y_pred, anchors, max_boxes, iou_threshold, score_threshold)
 
@@ -266,9 +266,9 @@ def test():
 
 
 if __name__ == '__main__':
-    PATH_TO_MODEL = "weights/model_v12_3_fine_tuned.h5"
+    PATH_TO_MODEL = "weights/model_v14_2.h5"
     #test()
-    #run_on_one_image("documentation\\bus2.jpg", 0.3)
+    run_on_one_image("documentation\\bus2.jpg", 0.2)
     #run_on_one_image("documentation\\bus3.jpg", 0.2)
     #run_on_one_image("documentation\\busses.jpg", 0.1)
     #run_on_one_image("documentation\\car.jpg", 0.06)
