@@ -51,14 +51,8 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False,
                                                                   alpha=alpha)
     downsample_skip_layer_name = [
-        #"block_2_add",
-        #"block_5_add",
-        #"block_12_add",
-        #"block_14_add",
-        #"block_2_expand_relu",
         "block_6_expand_relu",
         "block_10_expand_relu",
-        #"block_14_expand_relu",
     ]
 
     down_stack = tf.keras.Model(inputs=mobilenet_v2.input,
@@ -73,12 +67,11 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
         x = upsample_block(x, skip_layer.shape[-1])
         x = tf.keras.layers.Concatenate()([x, skip_layer])
 
+    x = tf.keras.layers.Dropout(0.3)(x)
     x = conv_block(x, filters=192, add_skip_connection=False)
     x = conv_block(x, filters=192)
     x = conv_block(x, filters=192)
     x = conv_block(x, filters=192)
-
-    x = tf.keras.layers.Dropout(0.3)(x)
 
     x = conv_block(x, filters=128, strides=2, add_skip_connection=False)
     x = conv_block(x, filters=128)
@@ -90,11 +83,6 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
     x = conv_block(x, filters=64)
     x = conv_block(x, filters=64)
 
-    # x = conv_block(x, filters=48, strides=2, add_skip_connection=False)
-    # x = conv_block(x, filters=48)
-    # x = conv_block(x, filters=48)
-    # x = conv_block(x, filters=48)
-
     x = conv_block(x, filters=32, strides=2, add_skip_connection=False)
     x = conv_block(x, filters=32)
     x = conv_block(x, filters=32)
@@ -103,7 +91,7 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
     x = tf.keras.layers.Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
                                padding="same",
                                kernel_initializer=tf.keras.initializers.HeNormal(),
-                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2))(x)
+                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=2e-6, l2=2e-5))(x)
 
     x = tf.keras.layers.Reshape((GRID_SIZE, GRID_SIZE, no_anchors, 4 + 1 + no_classes), name="final_output")(x)
     output = tf.keras.layers.Lambda(lambda args: args[0], name="hack_layer")([x, true_boxes])
@@ -195,13 +183,13 @@ class Train:
 
 
 def train():
-    t = Train(epochs=20, n_min=1e-8, n_max=1e-7, path_to_model="model_v14_2.h5")
-    t.train(name="model_v14_3.h5")
+    t = Train(epochs=10, n_min=1e-8, n_max=1e-7, path_to_model="model_v15_2.h5")
+    t.train(name="model_v15_2.h5")
 
 
 def fine_tune():
-    fine_tune = Train(epochs=10, n_min=1e-9, n_max=1e-08, path_to_model="model_v14_3.h5")
-    fine_tune.train(name="model_v14_3_fine_tuned.h5", fine_tune=True)
+    fine_tune = Train(epochs=10, n_min=1e-10, n_max=1e-08, path_to_model="model_v15_2.h5")
+    fine_tune.train(name="model_v15_2_fine_tuned.h5", fine_tune=True)
 
 
 if __name__ == '__main__':
