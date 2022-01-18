@@ -67,11 +67,12 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
         x = upsample_block(x, skip_layer.shape[-1])
         x = tf.keras.layers.Concatenate()([x, skip_layer])
 
-    x = tf.keras.layers.Dropout(0.3)(x)
     x = conv_block(x, filters=192, add_skip_connection=False)
     x = conv_block(x, filters=192)
     x = conv_block(x, filters=192)
     x = conv_block(x, filters=192)
+
+    x = tf.keras.layers.Dropout(0.3)(x)
 
     x = conv_block(x, filters=128, strides=2, add_skip_connection=False)
     x = conv_block(x, filters=128)
@@ -119,11 +120,23 @@ class CosineAnnealingScheduler(tf.keras.callbacks.Callback):
         self.n_min = n_min
         self.n_max = n_max
         self.T = T
+        if n_max is None:
+            self.learning_rates = {
+                0: 1e-3,
+                2: 1e-4,
+                5: 1e-5,
+                9: 1e-6
+            }
+        else:
+            self.learning_rates = {}
 
     def on_epoch_begin(self, epoch, logs=None):
         if not hasattr(self.model.optimizer, "lr"):
             raise ValueError('Optimizer must have a "lr" attribute.')
-        scheduled_lr = self.n_min + (1 / 2) * (self.n_max - self.n_min) * (1 + np.cos(epoch / self.T * np.pi))
+        if epoch not in self.learning_rates:
+            scheduled_lr = self.n_min + (1 / 2) * (self.n_max - self.n_min) * (1 + np.cos(epoch / self.T * np.pi))
+        else:
+            scheduled_lr = self.learning_rates[epoch]
         tf.keras.backend.set_value(self.model.optimizer.lr, scheduled_lr)
         print(f"\nEpoch {epoch + 1}: Learning rate is {scheduled_lr}.")
 
@@ -183,8 +196,8 @@ class Train:
 
 
 def train():
-    t = Train(epochs=10, n_min=1e-8, n_max=1e-7, path_to_model="model_v15_2.h5")
-    t.train(name="model_v15_2.h5")
+    t = Train(epochs=20, n_min=1e-8, n_max=3.4570172391965425e-05, path_to_model="model_v16_4.h5")
+    t.train(name="model_v16_5.h5")
 
 
 def fine_tune():
@@ -196,7 +209,6 @@ if __name__ == '__main__':
     #tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
     #model, _ = build_model()
     #model.summary()
-    #train()
-    fine_tune()
-
+    train()
+    #fine_tune()
 
