@@ -54,9 +54,11 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
     for true_boxes, pred_boxes in zip(true_boxes_all, pred_boxes_all):
         class_to_box = {c: [] for c in range(no_classes)}
         total_positives = {c: 0 for c in range(no_classes)}
+        contains_class = {c: False for c in range(no_classes)}
         for pred_box in pred_boxes:
             correct = False
             for true_box in true_boxes:
+                contains_class[true_box.c] = True
                 if iou_bbox(pred_box, true_box) >= iou_threshold:
                     correct = True
                     total_positives[pred_box.c] += 1
@@ -65,7 +67,7 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
 
         for c in range(no_classes):
             if len(class_to_box[c]) == 0:
-                if total_positives[c] > 0:
+                if contains_class[c]:
                     ap_to_class[c].append(0.)
                 continue
 
@@ -123,8 +125,8 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_pos
 
 if __name__ == '__main__':
     model, true_boxes = build_model()
-    model.trainable = True
-    model.load_weights("weights/model_v12_3_fine_tuned.h5")
+    #model.trainable = True
+    model.load_weights("weights/model_v17_2.h5")
     generator = DataGenerator(PATH_TO_TEST, shuffle=False)
 
     mAP, aps, no_items = evaluate_model(model, generator, iou_true_positive_threshold=0.5,
