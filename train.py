@@ -45,14 +45,14 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
     inputs = tf.keras.layers.Input(shape=input_shape)
     true_boxes = tf.keras.layers.Input(shape=true_boxes_shape)
     x = RandomColorAugmentation()(inputs)
-    x = Cutout(32)(x)
+    x = Cutout(64)(x)
     x = tf.cast(x, tf.float32)
     x = tf.keras.applications.mobilenet_v2.preprocess_input(x)
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False,
                                                                   alpha=alpha)
     downsample_skip_layer_name = [
         "block_4_expand_relu",
-        #"block_6_expand_relu",
+        "block_6_expand_relu",
         "block_8_expand_relu",
         #"block_10_expand_relu",
         "block_12_expand_relu",
@@ -199,8 +199,8 @@ class Train:
 
 
 def train():
-    t = Train(epochs=20, n_min=1e-8, n_max=1e-05, path_to_model="model_v17_3.h5")
-    t.train(name="model_v17_4.h5")
+    t = Train(epochs=20, n_min=1e-8, n_max=1e-5, path_to_model="model_v18_2.h5")
+    t.train(name="model_v18_3.h5")
 
 
 def fine_tune():
