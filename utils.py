@@ -45,3 +45,7 @@ def with_bounding_boxes(img, bounding_boxes, width=3):
         copy[bbox.y_min:bbox.y_max, bbox.x_min - width:bbox.x_min + width] = color
         copy[bbox.y_min:bbox.y_max, bbox.x_max - width:bbox.x_max + width] = color
     return copy
+
+
+def mish(x):
+    return x * tf.math.tanh(tf.math.softplus(x))

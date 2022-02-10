@@ -4,6 +4,7 @@ import tensorflow as tf
 
 from image import Image
 from settings import *
+from preprocessor import resize_image
 
 
 @tf.function
@@ -12,10 +13,10 @@ def cutout(x, crop_size):
 
     x_coord = tf.random.uniform(shape=[], maxval=IMAGE_SIZE, dtype=tf.int32)
     y_coord = tf.random.uniform(shape=[], maxval=IMAGE_SIZE, dtype=tf.int32)
-    tl_x = tf.keras.backend.clip(tf.math.subtract(x_coord, crop_size), 0, IMAGE_SIZE-1)
-    tl_y = tf.keras.backend.clip(tf.math.subtract(y_coord, crop_size), 0, IMAGE_SIZE-1)
-    br_x = tf.keras.backend.clip(tf.math.add(x_coord, crop_size), 0, IMAGE_SIZE-1)
-    br_y = tf.keras.backend.clip(tf.math.add(y_coord, crop_size), 0, IMAGE_SIZE-1)
+    tl_x = tf.keras.backend.clip(tf.math.subtract(x_coord, crop_size), 0, IMAGE_SIZE - 1)
+    tl_y = tf.keras.backend.clip(tf.math.subtract(y_coord, crop_size), 0, IMAGE_SIZE - 1)
+    br_x = tf.keras.backend.clip(tf.math.add(x_coord, crop_size), 0, IMAGE_SIZE - 1)
+    br_y = tf.keras.backend.clip(tf.math.add(y_coord, crop_size), 0, IMAGE_SIZE - 1)
 
     y_range = tf.range(tl_y, br_y, dtype=tf.int32) * IMAGE_SIZE
     x_range = tf.range(tl_x, br_x, dtype=tf.int32)
@@ -168,7 +169,38 @@ class RandomColorAugmentation(tf.keras.layers.Layer):
         return tf.keras.backend.in_train_phase(apply_transformation(self.layers, x, True), x)
 
 
-if __name__ == '__main__':
+def mosaic(images, min_size=50):
+    x_cut = np.random.randint(min_size, IMAGE_SIZE - min_size)
+    y_cut = np.random.randint(min_size, IMAGE_SIZE - min_size)
+    resize_image(images[0], h=y_cut, w=x_cut)
+    resize_image(images[1], h=y_cut, w=IMAGE_SIZE - x_cut)
+    resize_image(images[2], h=IMAGE_SIZE - y_cut, w=x_cut)
+    resize_image(images[3], h=IMAGE_SIZE - y_cut, w=IMAGE_SIZE - x_cut)
+
+    x_grid = [
+        [0, x_cut],
+        [0, x_cut]
+    ]
+    y_grid = [
+        [0, 0],
+        [y_cut, y_cut]
+    ]
+    new_img = Image()
+    new_img.image = np.zeros((IMAGE_SIZE, IMAGE_SIZE, 3), dtype=np.int)
+    for i, img in enumerate(images):
+        line = i // 2
+        col = i % 2
+        img.shift_boxes(x_grid[line][col], y_grid[line][col])
+        new_img.bounding_boxes += img.bounding_boxes
+    new_img.image[0:y_cut, 0:x_cut, :] = images[0].image
+    new_img.image[0:y_cut, x_cut:IMAGE_SIZE, :] = images[1].image
+    new_img.image[y_cut:IMAGE_SIZE, 0:x_cut, :] = images[2].image
+    new_img.image[y_cut:IMAGE_SIZE, x_cut:IMAGE_SIZE, :] = images[3].image
+
+    return new_img
+
+
+def visualize_augmentations():
     img = Image(PATH_TO_VALIDATION, "4a23eee283f294b6.jpg").image
     img = np.stack([img] * 2)
     cutout_layer = Cutout(32)
@@ -216,3 +248,17 @@ if __name__ == '__main__':
 
     plt.tight_layout()
     plt.savefig("documentation/augmentation.jpg")
+
+
+if __name__ == '__main__':
+    images = [
+        Image(PATH_TO_VALIDATION, "0f4bfc46402a9f52.jpg"),
+        Image(PATH_TO_VALIDATION, "3f10138eb086f2e9.jpg"),
+        Image(PATH_TO_VALIDATION, "3fc5aee11ddb3651.jpg"),
+        Image(PATH_TO_VALIDATION, "4a23eee283f294b6.jpg"),
+    ]
+    img = mosaic(images)
+    plt.imshow(img.with_bboxes(3))
+    plt.show()
+    print(img.image.shape)
+    # visualize_augmentations()

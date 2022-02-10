@@ -1,6 +1,9 @@
 import time
 
+import numpy as np
+
 from image import *
+from data_augmentation import mosaic
 
 
 class DataGenerator(tf.keras.utils.Sequence):
@@ -43,8 +46,12 @@ class DataGenerator(tf.keras.utils.Sequence):
         batch_y = []
         batch_true_boxes = []
         for i in range(len(batch_indices)):
-            index = batch_indices[i]
-            image = Image(self.db_dir, self.image_paths[index])
+            indices = np.random.choice(batch_indices, 4, replace=False)
+            image = mosaic(
+                [Image(self.db_dir, self.image_paths[idx]) for idx in indices]
+            )
+            #index = batch_indices[i]
+            #image = Image(self.db_dir, self.image_paths[index])
             output, true_boxes = generate_output_array(image, self.anchors)
             batch_x.append(image.image)
             batch_true_boxes.append(true_boxes)
@@ -189,7 +196,21 @@ def test_generator():
     plt.show()
 
 
+def visualize_images(no_images=4):
+    generator = DataGenerator(PATH_TO_TRAIN, no_images, (IMAGE_SIZE, IMAGE_SIZE, 3))
+    [images, _], ground_truth = generator[0]
+    print(np.asarray(images).shape)
+    fig, axs = plt.subplots(no_images, 1, figsize=(10, 10))
+    for i in range(0, no_images):
+        plt.subplot(no_images, 1, i+1)
+        img = Image()
+        img.image = images[i]
+        img.bounding_boxes = interpret_ground_truth(ground_truth[i], generator.anchors)
+        plt.imshow(img.with_bboxes())
+    plt.show()
+
 if __name__ == '__main__':
     print("starting...")
     #test_generator()
     #print(5/2)
+    visualize_images()

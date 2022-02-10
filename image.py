@@ -6,12 +6,12 @@ from utils import *
 
 
 class Image:
-    def __init__(self, dir, image_name):
-        self.image_name = image_name
-        self.image = cv2.cvtColor(cv2.imread(f"{dir}\\{image_name}"), cv2.COLOR_BGR2RGB)
+    def __init__(self, dir=None, image_name=None):
         self.bounding_boxes = []
-        self.read_bounding_boxes(f"{dir}\\Label\\{image_name[:-4]}.txt")
-        # self.image = cv2.resize(self.image, (IMAGE_SIZE, IMAGE_SIZE))
+        if dir and image_name:
+            self.image_name = image_name
+            self.image = cv2.cvtColor(cv2.imread(f"{dir}\\{image_name}"), cv2.COLOR_BGR2RGB)
+            self.read_bounding_boxes(f"{dir}\\Label\\{image_name[:-4]}.txt")
 
     def read_bounding_boxes(self, path):
         with open(path) as f:
@@ -22,10 +22,10 @@ class Image:
                 coordinates = [my_round(float(t)) for t in tokens[-4:]]
                 self.bounding_boxes.append(BoundingBox(ENCODE_LABEL[label], *coordinates))
 
-    def with_bboxes(self, width):
+    def with_bboxes(self, width=3):
         img = self.image
         for bbox in self.bounding_boxes:
-            color = [200, 0, 0]
+            color = [0, 0, 0]
             color[bbox.c % 3] = 255
             img[bbox.y_min - width:bbox.y_min + width, bbox.x_min:bbox.x_max] = color
             img[bbox.y_max - width:bbox.y_max + width, bbox.x_min:bbox.x_max] = color
@@ -33,7 +33,16 @@ class Image:
             img[bbox.y_min:bbox.y_max, bbox.x_max - width:bbox.x_max + width] = color
         return img
 
+    def shift_boxes(self, x, y):
+        for bbox in self.bounding_boxes:
+            bbox.x_min += x
+            bbox.x_max += x
+            bbox.y_min += y
+            bbox.y_max += y
+
     def save_image(self, dir):
+        if self.image_name:
+            raise Exception("Image name is not set")
         image_to_save = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
         cv2.imwrite(f"{dir}/{self.image_name}", image_to_save)
         with open(f"{dir}\\Label\\{self.image_name[:-4]}.txt", "w") as f:

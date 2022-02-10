@@ -8,10 +8,6 @@ L1 = 2e-6
 L2 = 2e-5
 
 
-def mish(x):
-    return x * tf.math.tanh(tf.math.softplus(x))
-
-
 def conv_block(inputs, kernel_size=3, filters=32, activation=True, add_skip_connection=True, strides=1):
     x = tf.keras.layers.Conv2D(kernel_size=kernel_size, filters=filters, padding="same", strides=strides,
                                kernel_initializer=tf.keras.initializers.HeNormal(),
@@ -41,7 +37,7 @@ def upsample_block(x, filters, kernel_size=3, strides=2):
 
 
 def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 1, MAX_BOXES_PER_IMAGES, 4),
-               no_classes=len(ENCODE_LABEL), no_anchors=3, alpha=1.0):
+               no_classes=len(ENCODE_LABEL), no_anchors=NO_ANCHORS, alpha=1.0):
     inputs = tf.keras.layers.Input(shape=input_shape)
     true_boxes = tf.keras.layers.Input(shape=true_boxes_shape)
     x = RandomColorAugmentation()(inputs)
@@ -103,7 +99,7 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
 
 
 def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 1, MAX_BOXES_PER_IMAGES, 4),
-                no_classes=len(ENCODE_LABEL), no_anchors=3, alpha=1.0):
+                no_classes=len(ENCODE_LABEL), no_anchors=NO_ANCHORS, alpha=1.0):
     return build_unet(input_shape, true_boxes_shape, no_classes, no_anchors, alpha)
 
 
@@ -199,8 +195,8 @@ class Train:
 
 
 def train():
-    t = Train(epochs=20, n_min=1e-8, n_max=1e-5, path_to_model="model_v18_2.h5")
-    t.train(name="model_v18_3.h5")
+    t = Train(epochs=20, n_min=1e-8, n_max=1e-5, path_to_model=None)
+    t.train(name="model_v19.h5")
 
 
 def fine_tune():
