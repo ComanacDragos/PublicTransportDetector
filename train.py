@@ -1,45 +1,73 @@
 from data_augmentation import Cutout, RandomColorAugmentation
 from generator import *
 from loss import YoloLoss
+from tensorflow.keras.layers import Input, Concatenate, Conv2D, DepthwiseConv2D, Add, LeakyReLU, BatchNormalization, \
+    Convolution2DTranspose, Reshape, Lambda, Dropout
+from tensorflow.keras.initializers import HeNormal
+from tensorflow.keras.regularizers import l1_l2
+from tensorflow.keras.callbacks import ModelCheckpoint, TerminateOnNaN, TensorBoard, EarlyStopping, ReduceLROnPlateau
 
 tf.compat.v1.disable_eager_execution()
 
 L1 = 2e-6
 L2 = 2e-5
+LEAKY_RELU_ALPHA = 0.1
 
 
 def conv_block(inputs, kernel_size=3, filters=32, activation=True, add_skip_connection=True, strides=1):
-    x = tf.keras.layers.Conv2D(kernel_size=kernel_size, filters=filters, padding="same", strides=strides,
-                               kernel_initializer=tf.keras.initializers.HeNormal(),
-                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2)
-                               )(inputs)
+    x = Conv2D(kernel_size=kernel_size, filters=filters, padding="same", strides=strides,
+               kernel_initializer=HeNormal(),
+               kernel_regularizer=l1_l2(l1=L1, l2=L2)
+               )(inputs)
     if add_skip_connection:
-        x = tf.keras.layers.Conv2D(kernel_size=kernel_size, filters=filters, padding="same", strides=strides,
-                                   kernel_initializer=tf.keras.initializers.HeNormal(),
-                                   kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2)
-                                   )(x)
-        x = tf.keras.layers.Add()([inputs, x])
+        x = Conv2D(kernel_size=kernel_size, filters=filters, padding="same", strides=strides,
+                   kernel_initializer=HeNormal(),
+                   kernel_regularizer=l1_l2(l1=L1, l2=L2)
+                   )(x)
+        x = Add()([inputs, x])
     if activation:
-        x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
-    x = tf.keras.layers.BatchNormalization()(x)
+        x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
+    x = BatchNormalization()(x)
     return x
 
 
 def upsample_block(x, filters, kernel_size=3, strides=2):
-    x = tf.keras.layers.Convolution2DTranspose(kernel_size=kernel_size, filters=filters, strides=strides,
-                                               padding="same",
-                                               kernel_initializer=tf.keras.initializers.HeNormal(),
-                                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2)
-                                               )(x)
-    x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
-    x = tf.keras.layers.BatchNormalization()(x)
+    x = Convolution2DTranspose(kernel_size=kernel_size, filters=filters, strides=strides,
+                               padding="same",
+                               kernel_initializer=tf.keras.initializers.HeNormal(),
+                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2)
+                               )(x)
+    x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
+    x = BatchNormalization()(x)
     return x
 
 
-def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 1, MAX_BOXES_PER_IMAGES, 4),
-               no_classes=len(ENCODE_LABEL), no_anchors=NO_ANCHORS, alpha=1.0):
-    inputs = tf.keras.layers.Input(shape=input_shape)
-    true_boxes = tf.keras.layers.Input(shape=true_boxes_shape)
+def inverted_residual_block(inputs, expand, squeeze):
+    x = Conv2D(expand, (1, 1),
+               kernel_initializer=tf.keras.initializers.HeNormal(),
+               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2)
+               )(inputs)
+    x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
+    x = BatchNormalization()(x)
+    x = DepthwiseConv2D((3, 3),
+                        padding="same",
+                        depthwise_initializer=tf.keras.initializers.HeNormal(),
+                        depthwise_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2))(x)
+    x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
+    x = BatchNormalization()(x)
+    x = Conv2D(squeeze, (1, 1),
+               kernel_initializer=tf.keras.initializers.HeNormal(),
+               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2))(x)
+    x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
+    x = BatchNormalization()(x)
+    x = Add()([x, inputs])
+    return x
+
+
+def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 1, MAX_BOXES_PER_IMAGES, 4),
+                no_classes=len(ENCODE_LABEL), no_anchors=NO_ANCHORS, alpha=1.0):
+    inputs = Input(shape=input_shape)
+    true_boxes = Input(shape=true_boxes_shape)
     x = RandomColorAugmentation()(inputs)
     x = Cutout(64)(x)
     x = tf.cast(x, tf.float32)
@@ -47,10 +75,10 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False,
                                                                   alpha=alpha)
     downsample_skip_layer_name = [
-        "block_4_expand_relu",
-        "block_6_expand_relu",
+        #"block_4_expand_relu",
+        #"block_6_expand_relu",
         "block_8_expand_relu",
-        #"block_10_expand_relu",
+        "block_10_expand_relu",
         "block_12_expand_relu",
     ]
 
@@ -63,44 +91,23 @@ def build_unet(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 
     x = skips[-1]
 
     for skip_layer in reversed(skips[:-1]):
-        x = upsample_block(x, skip_layer.shape[-1], strides=int(skip_layer.shape[1]/x.shape[1]))
-        x = tf.keras.layers.Concatenate()([x, skip_layer])
+        x = upsample_block(x, skip_layer.shape[-1], strides=int(skip_layer.shape[1] / x.shape[1]))
+        x = Concatenate()([x, skip_layer])
 
-    x = conv_block(x, filters=192, add_skip_connection=False)
-    x = conv_block(x, filters=192)
-    x = conv_block(x, filters=192)
-    x = conv_block(x, filters=192)
-
-    x = tf.keras.layers.Dropout(0.3)(x)
-
-    x = conv_block(x, filters=128, strides=2, add_skip_connection=False)
-    x = conv_block(x, filters=128)
-    x = conv_block(x, filters=128)
-    x = conv_block(x, filters=128)
-
-    x = conv_block(x, filters=64, add_skip_connection=False)
+    x = Dropout(0.3)(x)
+    x = conv_block(x, filters=64, strides=2, add_skip_connection=False)
+    x = inverted_residual_block(x, 128, 64)
     x = conv_block(x, filters=64)
-    x = conv_block(x, filters=64)
-    x = conv_block(x, filters=64)
+    x = inverted_residual_block(x, 64, 64)
 
-    x = conv_block(x, filters=32, strides=2, add_skip_connection=False)
-    x = conv_block(x, filters=32)
-    x = conv_block(x, filters=32)
-    x = conv_block(x, filters=32)
+    x = Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
+               padding="same",
+               kernel_initializer=tf.keras.initializers.HeNormal(),
+               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2))(x)
 
-    x = tf.keras.layers.Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
-                               padding="same",
-                               kernel_initializer=tf.keras.initializers.HeNormal(),
-                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=2e-6, l2=2e-5))(x)
-
-    x = tf.keras.layers.Reshape((GRID_SIZE, GRID_SIZE, no_anchors, 4 + 1 + no_classes), name="final_output")(x)
-    output = tf.keras.layers.Lambda(lambda args: args[0], name="hack_layer")([x, true_boxes])
+    x = Reshape((GRID_SIZE, GRID_SIZE, no_anchors, 4 + 1 + no_classes), name="final_output")(x)
+    output = Lambda(lambda args: args[0], name="hack_layer")([x, true_boxes])
     return tf.keras.Model(inputs=[inputs, true_boxes], outputs=output, name="custom_yolo"), true_boxes
-
-
-def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 1, MAX_BOXES_PER_IMAGES, 4),
-                no_classes=len(ENCODE_LABEL), no_anchors=NO_ANCHORS, alpha=1.0):
-    return build_unet(input_shape, true_boxes_shape, no_classes, no_anchors, alpha)
 
 
 def plot_history(history):
@@ -119,15 +126,9 @@ class CosineAnnealingScheduler(tf.keras.callbacks.Callback):
         self.n_min = n_min
         self.n_max = n_max
         self.T = T
-        if n_max is None:
-            self.learning_rates = {
-                0: 1e-3,
-                2: 1e-4,
-                5: 1e-5,
-                9: 1e-6
-            }
-        else:
-            self.learning_rates = {}
+        self.learning_rates = {
+            #0: 1e-3
+        }
 
     def on_epoch_begin(self, epoch, logs=None):
         if not hasattr(self.model.optimizer, "lr"):
@@ -147,7 +148,7 @@ class Train:
                  limit_batches=None):
         self.epochs = epochs
         self.batch_size = batch_size
-        self.train_generator = DataGenerator(PATH_TO_TRAIN, self.batch_size, limit_batches=limit_batches)
+        self.train_generator = DataGenerator(PATH_TO_TRAIN, self.batch_size, limit_batches=limit_batches, apply_mosaic=True)
         self.validation_generator = DataGenerator(PATH_TO_VALIDATION, self.batch_size, limit_batches=limit_batches)
         self.T = T if T is not None else 2 * epochs
         self.n_min = n_min
@@ -172,14 +173,15 @@ class Train:
 
         history = self.model.fit(self.train_generator, validation_data=self.validation_generator, epochs=self.epochs,
                                  callbacks=[CosineAnnealingScheduler(self.n_min, self.n_max, self.T),
-                                            tf.keras.callbacks.ModelCheckpoint(
+                                            ModelCheckpoint(
                                                 filepath=f"weights/{name}",
                                                 save_best_only=True,
                                                 verbose=2
                                             ),
-                                            tf.keras.callbacks.TerminateOnNaN(),
-                                            tf.keras.callbacks.EarlyStopping(patience=3, min_delta=1e-3, verbose=2),
-                                            tf.keras.callbacks.TensorBoard(log_dir=f"info_about_runs/{name}")
+                                            TerminateOnNaN(),
+                                            EarlyStopping(patience=6, min_delta=1e-4, verbose=2),
+                                            ReduceLROnPlateau(patience=3),
+                                            TensorBoard(log_dir=f"info_about_runs/{name}")
                                             ]
                                  , workers=os.cpu_count())
         plot_history(history.history)
@@ -195,8 +197,8 @@ class Train:
 
 
 def train():
-    t = Train(epochs=20, n_min=1e-8, n_max=1e-5, path_to_model=None)
-    t.train(name="model_v19.h5")
+    t = Train(epochs=50, n_min=1e-9, n_max=1e-4, path_to_model="model_v19_2.h5")
+    t.train(name="model_v19_3.h5")
 
 
 def fine_tune():
@@ -209,5 +211,4 @@ if __name__ == '__main__':
     #model, _ = build_model()
     #model.summary()
     train()
-    #fine_tune()
-
+    # fine_tune()

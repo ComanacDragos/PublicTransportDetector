@@ -9,10 +9,11 @@ from data_augmentation import mosaic
 class DataGenerator(tf.keras.utils.Sequence):
     def __init__(self, db_dir, batch_size=BATCH_SIZE, input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3),
                  anchors_path=ANCHORS_PATH,
-                 shuffle=True, limit_batches=None):
+                 shuffle=True, limit_batches=None, apply_mosaic=False):
         self.input_shape = input_shape
         self.batch_size = batch_size
         self.shuffle = shuffle
+        self.apply_mosaic = apply_mosaic
 
         self.anchors = process_anchors(anchors_path)
 
@@ -47,11 +48,13 @@ class DataGenerator(tf.keras.utils.Sequence):
         batch_true_boxes = []
         for i in range(len(batch_indices)):
             indices = np.random.choice(batch_indices, 4, replace=False)
-            image = mosaic(
-                [Image(self.db_dir, self.image_paths[idx]) for idx in indices]
-            )
-            #index = batch_indices[i]
-            #image = Image(self.db_dir, self.image_paths[index])
+            if self.apply_mosaic and np.random.rand() < 0.5:
+                image = mosaic(
+                    [Image(self.db_dir, self.image_paths[idx]) for idx in indices]
+                )
+            else:
+                index = batch_indices[i]
+                image = Image(self.db_dir, self.image_paths[index])
             output, true_boxes = generate_output_array(image, self.anchors)
             batch_x.append(image.image)
             batch_true_boxes.append(true_boxes)
@@ -197,7 +200,7 @@ def test_generator():
 
 
 def visualize_images(no_images=4):
-    generator = DataGenerator(PATH_TO_TRAIN, no_images, (IMAGE_SIZE, IMAGE_SIZE, 3))
+    generator = DataGenerator(PATH_TO_TRAIN, no_images, (IMAGE_SIZE, IMAGE_SIZE, 3), apply_mosaic=True)
     [images, _], ground_truth = generator[0]
     print(np.asarray(images).shape)
     fig, axs = plt.subplots(no_images, 1, figsize=(10, 10))

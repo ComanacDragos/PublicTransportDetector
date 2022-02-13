@@ -26,7 +26,8 @@ def resize_image(image: Image, h=IMAGE_SIZE, w=IMAGE_SIZE):
     boxes = []
 
     for boxArray in transformed["bboxes"]:
-        boxes.append(BoundingBox(boxArray[-1], *[my_round(coord) for coord in boxArray[:4]]))
+        coordinates = [my_round(coord) for coord in boxArray[:4]]
+        boxes.append(BoundingBox(boxArray[-1], *coordinates))
     image.bounding_boxes = boxes
 
 

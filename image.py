@@ -18,9 +18,10 @@ class Image:
             for line in f.readlines():
                 tokens = line.split()
                 label = tokens[0] if len(tokens) == 5 else " ".join(tokens[:len(tokens) - 4])
-
                 coordinates = [my_round(float(t)) for t in tokens[-4:]]
-                self.bounding_boxes.append(BoundingBox(ENCODE_LABEL[label], *coordinates))
+                if coordinates[0] < coordinates[2] and coordinates[1] < coordinates[3]:
+                    self.bounding_boxes.append(BoundingBox(ENCODE_LABEL[label], *coordinates))
+            self.clip_boxes()
 
     def with_bboxes(self, width=3):
         img = self.image
@@ -32,6 +33,13 @@ class Image:
             img[bbox.y_min:bbox.y_max, bbox.x_min - width:bbox.x_min + width] = color
             img[bbox.y_min:bbox.y_max, bbox.x_max - width:bbox.x_max + width] = color
         return img
+
+    def clip_boxes(self, min_val=0, max_val=IMAGE_SIZE-1):
+        for bbox in self.bounding_boxes:
+            bbox.x_min = np.clip(bbox.x_min, min_val, max_val)
+            bbox.x_max = np.clip(bbox.x_max, min_val, max_val)
+            bbox.y_min = np.clip(bbox.y_min, min_val, max_val)
+            bbox.y_max = np.clip(bbox.y_max, min_val, max_val)
 
     def shift_boxes(self, x, y):
         for bbox in self.bounding_boxes:

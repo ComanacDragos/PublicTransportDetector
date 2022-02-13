@@ -191,12 +191,13 @@ def mosaic(images, min_size=50):
         line = i // 2
         col = i % 2
         img.shift_boxes(x_grid[line][col], y_grid[line][col])
-        new_img.bounding_boxes += img.bounding_boxes
+        new_img.bounding_boxes += [bbox for bbox in img.bounding_boxes
+                                   if bbox.x_min < bbox.x_max and bbox.y_min < bbox.y_max]
     new_img.image[0:y_cut, 0:x_cut, :] = images[0].image
     new_img.image[0:y_cut, x_cut:IMAGE_SIZE, :] = images[1].image
     new_img.image[y_cut:IMAGE_SIZE, 0:x_cut, :] = images[2].image
     new_img.image[y_cut:IMAGE_SIZE, x_cut:IMAGE_SIZE, :] = images[3].image
-
+    new_img.clip_boxes()
     return new_img
 
 
