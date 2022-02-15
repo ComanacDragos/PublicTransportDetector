@@ -24,4 +24,6 @@ Data augmentation:
 
 Anchors generated using K-means
 
-![anchors_3](https://user-images.githubusercontent.com/46956225/154057057-793e7c63-0a98-485d-a85f-947b14c5e25c.png) ![anchors_4](https://user-images.githubusercontent.com/46956225/154057058-c2fc4be6-78b9-4ee7-8f8d-8885ef730261.png) ![anchors_5](https://user-images.githubusercontent.com/46956225/154057051-71f11858-42ac-4d0e-8ea5-2689cca02412.png) 
+![anchors_3](https://user-images.githubusercontent.com/46956225/154057057-793e7c63-0a98-485d-a85f-947b14c5e25c.png) 
+![anchors_4](https://user-images.githubusercontent.com/46956225/154057058-c2fc4be6-78b9-4ee7-8f8d-8885ef730261.png) 
+![anchors_5](https://user-images.githubusercontent.com/46956225/154057051-71f11858-42ac-4d0e-8ea5-2689cca02412.png) 
