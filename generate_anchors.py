@@ -1,8 +1,6 @@
 import random
 import time
 
-import numpy as np
-
 from image import *
 
 
@@ -97,16 +95,16 @@ def generate_anchors(no_anchors, bounding_boxes=None, prior_centroids=None):
                 return generate_anchors(boxes, prior_centroids)
 
 
-def run_generate_anchors():
+def run_generate_anchors(no_anchors):
     start = time.time()
 
-    anchors = generate_anchors(no_anchors=3)
+    anchors = generate_anchors(no_anchors=no_anchors)
     print(anchors)
-    anchors.dump("data/anchors_3.pickle")
+    anchors.dump(f"data/anchors_{no_anchors}.pickle")
 
     print("Time to generate anchors: ", time.time() - start)
 
-    anchors = np.load("data/anchors_3.pickle", allow_pickle=True)
+    anchors = np.load(f"data/anchors_{no_anchors}.pickle", allow_pickle=True)
     print(anchors)
 
 
@@ -126,9 +124,9 @@ def visualize_anchors(path):
 
 
 if __name__ == '__main__':
-    #run_generate_anchors()
+    #run_generate_anchors(4)
 
-    visualize_anchors("data/anchors_3.pickle")
+    visualize_anchors("data/anchors_4.pickle")
 
     """
     [[114 130 294 280]
@@ -136,4 +134,19 @@ if __name__ == '__main__':
      [ 15 130  86 221]
      [ 65 282 169 353]
      [295 266 376 339]]
+     
+     [[ 62  57]
+     [276 246]
+     [ 18  15]]
+     
+     [[ 84  79]
+     [ 16  14]
+     [  8   6]
+     [ 36  30]
+     [294 260]]
+
+    [[ 10   8]
+     [288 256]
+     [ 76  70]
+     [ 28  24]]
     """
