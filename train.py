@@ -42,7 +42,7 @@ def upsample_block(x, filters, kernel_size=3, strides=2):
     return x
 
 
-def inverted_residual_block(inputs, expand, squeeze):
+def inverted_residual_block(inputs, expand, squeeze, add_skip_connection=True):
     x = Conv2D(expand, (1, 1),
                kernel_initializer=tf.keras.initializers.HeNormal(),
                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2)
@@ -60,7 +60,8 @@ def inverted_residual_block(inputs, expand, squeeze):
                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2))(x)
     x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
     x = BatchNormalization()(x)
-    x = Add()([x, inputs])
+    if add_skip_connection:
+        x = Add()([x, inputs])
     return x
 
 
@@ -75,11 +76,15 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1,
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False,
                                                                   alpha=alpha)
     downsample_skip_layer_name = [
-        #"block_4_expand_relu",
-        #"block_6_expand_relu",
-        "block_8_expand_relu",
+        # "block_4_expand_relu",
+        "block_6_expand_relu",
+        #"block_8_expand_relu",
         "block_10_expand_relu",
-        "block_12_expand_relu",
+        #"block_12_expand_relu",
+        #"block_7_add",
+        #"block_9_add",
+        #"block_12_add",
+        #"block_15_add"
     ]
 
     down_stack = tf.keras.Model(inputs=mobilenet_v2.input,
@@ -95,12 +100,31 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1,
         x = Concatenate()([x, skip_layer])
 
     x = Dropout(0.3)(x)
-    x = conv_block(x, filters=64, strides=2, add_skip_connection=False)
-    x = inverted_residual_block(x, 128, 64)
-    x = conv_block(x, filters=64)
-    x = inverted_residual_block(x, 64, 64)
-    x = inverted_residual_block(x, 64, 64)
 
+    """
+    x = conv_block(x, filters=192, add_skip_connection=False)
+    x = inverted_residual_block(x, 384, 192)
+    x = conv_block(x, filters=192)
+    x = inverted_residual_block(x, 384, 192)
+
+    x = conv_block(x, filters=128, strides=2, add_skip_connection=False)
+    x = inverted_residual_block(x, 512, 128)
+    x = conv_block(x, filters=128)
+    x = inverted_residual_block(x, 512, 128)
+    """
+    x = conv_block(x, filters=64, strides=2, add_skip_connection=False)
+    x = inverted_residual_block(x, 256, 64)
+    x = conv_block(x, filters=64, strides=2, add_skip_connection=False)
+
+    #x = conv_block(x, filters=64)
+    #x = inverted_residual_block(x, 256, 64)
+
+    """
+    x = conv_block(x, filters=32, strides=2, add_skip_connection=False)
+    x = inverted_residual_block(x, 128, 32)
+    x = conv_block(x, filters=32)
+    x = inverted_residual_block(x, 128, 32)
+    """
     x = Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
                padding="same",
                kernel_initializer=tf.keras.initializers.HeNormal(),
@@ -128,7 +152,7 @@ class CosineAnnealingScheduler(tf.keras.callbacks.Callback):
         self.n_max = n_max
         self.T = T
         self.learning_rates = {
-            #0: 1e-3
+            0: 1e-3
         }
 
     def on_epoch_begin(self, epoch, logs=None):
@@ -149,7 +173,8 @@ class Train:
                  limit_batches=None):
         self.epochs = epochs
         self.batch_size = batch_size
-        self.train_generator = DataGenerator(PATH_TO_TRAIN, self.batch_size, limit_batches=limit_batches, apply_mosaic=True)
+        self.train_generator = DataGenerator(PATH_TO_TRAIN, self.batch_size, limit_batches=limit_batches,
+                                             apply_mosaic=True)
         self.validation_generator = DataGenerator(PATH_TO_VALIDATION, self.batch_size, limit_batches=limit_batches)
         self.T = T if T is not None else 2 * epochs
         self.n_min = n_min
@@ -198,8 +223,8 @@ class Train:
 
 
 def train():
-    t = Train(epochs=50, n_min=1e-9, n_max=9.222417987882564e-07, path_to_model="model_v20.h5")
-    t.train(name="model_v20_2.h5")
+    t = Train(epochs=50, n_min=1e-9, n_max=1e-4, path_to_model=None)
+    t.train(name="model_v22.h5")
 
 
 def fine_tune():
@@ -209,7 +234,6 @@ def fine_tune():
 
 if __name__ == '__main__':
     #tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
-    #model, _ = build_model()
-    #model.summary()
+    #build_model()[0].summary()
     train()
     # fine_tune()
