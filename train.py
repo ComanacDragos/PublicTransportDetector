@@ -70,7 +70,7 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1,
     inputs = Input(shape=input_shape)
     true_boxes = Input(shape=true_boxes_shape)
     x = RandomColorAugmentation()(inputs)
-    x = Cutout(64)(x)
+    x = Cutout(32)(x)
     x = tf.cast(x, tf.float32)
     x = tf.keras.applications.mobilenet_v2.preprocess_input(x)
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False,
@@ -103,7 +103,9 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1,
 
     x = conv_block(x, filters=128, strides=2, add_skip_connection=False)
     x = inverted_residual_block(x, 512, 128)
+    x = inverted_residual_block(x, 512, 128)
     x = conv_block(x, filters=64, add_skip_connection=False)
+    x = inverted_residual_block(x, 256, 64)
     x = inverted_residual_block(x, 256, 64)
     x = conv_block(x, filters=64, strides=2, add_skip_connection=False)
 
@@ -206,7 +208,7 @@ class Train:
 
 def train():
     t = Train(epochs=50, n_min=1e-9, n_max=1e-4, path_to_model=None)
-    t.train(name="model_v23.h5")
+    t.train(name="model_v24.h5")
 
 
 def fine_tune():
