@@ -102,12 +102,25 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1,
     x = Dropout(0.3)(x)
 
     x = conv_block(x, filters=128, strides=2, add_skip_connection=False)
+
     x = inverted_residual_block(x, 512, 128)
     x = inverted_residual_block(x, 512, 128)
+    x = inverted_residual_block(x, 512, 128)
+    x = inverted_residual_block(x, 512, 128)
+
     x = conv_block(x, filters=64, add_skip_connection=False)
+
     x = inverted_residual_block(x, 256, 64)
     x = inverted_residual_block(x, 256, 64)
+    x = inverted_residual_block(x, 256, 64)
+    x = inverted_residual_block(x, 256, 64)
+
     x = conv_block(x, filters=64, strides=2, add_skip_connection=False)
+
+    #x = inverted_residual_block(x, 128, 32)
+    #x = inverted_residual_block(x, 128, 32)
+    #x = inverted_residual_block(x, 128, 32)
+    #x = inverted_residual_block(x, 128, 32)
 
     x = Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
                padding="same",
@@ -208,7 +221,7 @@ class Train:
 
 def train():
     t = Train(epochs=50, n_min=1e-9, n_max=1e-4, path_to_model=None)
-    t.train(name="model_v24.h5")
+    t.train(name="model_v25.h5")
 
 
 def fine_tune():
