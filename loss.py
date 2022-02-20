@@ -47,7 +47,7 @@ class YoloLoss(tf.keras.losses.Loss):
         5, 6, 7: probabilities
 
         y_true, y_pred : shape -> (batch_size, grid_size, grid_size, anchors, 8)
-        https://github.com/experiencor/keras-yolo2/blob/master/frontend.py
+        Inspired from: https://github.com/experiencor/keras-yolo2/blob/master/frontend.py
         """
         mask_shape = tf.shape(y_true)[:4]
 
