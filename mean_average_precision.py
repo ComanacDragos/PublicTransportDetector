@@ -124,7 +124,7 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_pos
 
 
 if __name__ == '__main__':
-    model = tf.keras.models.load_model("weights/model_v23.h5", custom_objects={
+    model = tf.keras.models.load_model("weights/model_v26.h5", custom_objects={
         'RandomColorAugmentation': RandomColorAugmentation,
         'Cutout': Cutout
     }, compile=False)
