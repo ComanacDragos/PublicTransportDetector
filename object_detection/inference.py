@@ -138,12 +138,12 @@ def inference(model, inputs, score_threshold=0.6, iou_threshold=0.5, max_boxes=M
     dummy_array = np.zeros((1, 1, 1, 1, MAX_BOXES_PER_IMAGES, 4))
     # start = time.time()
     y_pred = model.predict([inputs, dummy_array])
-    y, _ = K.get_value(tf.unique((K.flatten(y_pred[..., 4]))))
+    #y, _ = K.get_value(tf.unique((K.flatten(y_pred[..., 4]))))
 
-    print("unique raw conf scores: ", K.get_value(y))
-    print(K.get_value(K.sigmoid(y)))
-    print("len ", K.get_value(tf.shape(y)))
-    print("max obj score ", K.get_value(K.max(K.sigmoid(y))))
+    #print("unique raw conf scores: ", K.get_value(y))
+    #print(K.get_value(K.sigmoid(y)))
+    #print("len ", K.get_value(tf.shape(y)))
+    #print("max obj score ", K.get_value(K.max(K.sigmoid(y))))
     _, boxes, classes = output_processor(y_pred, anchors, apply_argmax=False)
     #print("max class score ", K.get_value(K.max(K.reshape(classes, (BATCH_SIZE, -1)), axis=-1)))
 
