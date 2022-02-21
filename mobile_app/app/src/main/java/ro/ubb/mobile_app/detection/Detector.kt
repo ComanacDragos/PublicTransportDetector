@@ -3,6 +3,8 @@ package ro.ubb.mobile_app.detection
 import android.content.Context
 import android.graphics.*
 import android.util.Log
+import android.widget.Toast
+import kotlinx.coroutines.GlobalScope
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
@@ -27,7 +29,7 @@ class Detector(context: Context, modelName: String) {
         )
     }
 
-    fun runDetection(bitmap: Bitmap): MutableList<Detection>? {
+    private fun runDetection(bitmap: Bitmap): MutableList<Detection>? {
         val image = TensorImage.fromBitmap(bitmap)
         val results = detector.detect(image)
         debugPrint(results)
@@ -45,16 +47,17 @@ class Detector(context: Context, modelName: String) {
     }
 
     private fun debugPrint(results : List<Detection>) {
+        Log.v(TAG, "#detections: ${results.size}")
         for ((i, obj) in results.withIndex()) {
             val box = obj.boundingBox
 
-            Log.d(TAG, "Detected object: ${i} ")
-            Log.d(TAG, "  boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})")
+            Log.v(TAG, "Detected object: ${i} ")
+            Log.v(TAG, "  boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})")
 
             for ((j, category) in obj.categories.withIndex()) {
-                Log.d(TAG, "    Label $j: ${category.label}")
+                Log.v(TAG, "    Label $j: ${category.label}")
                 val confidence: Int = category.score.times(100).toInt()
-                Log.d(TAG, "    Confidence: ${confidence}%")
+                Log.v(TAG, "    Confidence: ${confidence}%")
             }
         }
     }

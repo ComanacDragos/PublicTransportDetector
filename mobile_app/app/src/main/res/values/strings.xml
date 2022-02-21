@@ -3,5 +3,5 @@
     <string name="tab_text_image">Image</string>
     <string name="tab_text_video">Live/Video</string>
 
-    <string name="model">model_v26.tflite</string>
+    <string name="model">ssd_mobilenet.tflite</string>
 </resources>

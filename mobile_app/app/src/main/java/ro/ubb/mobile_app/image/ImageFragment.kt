@@ -19,8 +19,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_image.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import ro.ubb.mobile_app.BuildConfig
 import ro.ubb.mobile_app.R
 import ro.ubb.mobile_app.detection.DetectionViewModel
@@ -28,8 +30,7 @@ import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
+
 import ro.ubb.mobile_app.core.TAG
 
 
@@ -90,14 +91,15 @@ class ImageFragment : Fragment() {
         if (resultCode == AppCompatActivity.RESULT_OK) {
             var uri: Uri? = null
             if (requestCode == REQUEST_IMAGE_CAPTURE) {
-                uri = Uri.parse(currentPhotoPath)
+                uri = Uri.fromFile(File(currentPhotoPath))
             }
             else if (requestCode == REQUEST_PICK_IMAGE) {
-                uri = data?.getData()
+                uri = data?.data
             }
-
+            //ivImage.setImageURI(uri)
+            //return
             uri?.let {
-                requireContext().getContentResolver().openInputStream(it)
+                requireContext().contentResolver.openInputStream(it)
             }.also {
                 val bitmap = BitmapFactory.decodeStream(it)
                 lifecycleScope.launch(Dispatchers.Default) {
@@ -139,6 +141,8 @@ class ImageFragment : Fragment() {
         detectionViewModel.detecting.observe(viewLifecycleOwner, {
             Log.v(TAG, "update detecting")
             progressBar.visibility = if (it) View.VISIBLE else View.GONE
+            btCapturePhoto.isEnabled = !it
+            btOpenGallery.isEnabled = !it
         })
 
         detectionViewModel.bitmap.observe(viewLifecycleOwner, {

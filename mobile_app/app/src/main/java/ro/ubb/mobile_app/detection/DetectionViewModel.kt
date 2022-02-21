@@ -27,15 +27,15 @@ class DetectionViewModel(application: Application) : AndroidViewModel(applicatio
      }
 
     fun detect(inputBitmap: Bitmap){
-        mutableDetecting.value = true
-        mutableError.value = null
+        mutableDetecting.postValue(true)
+        mutableError.postValue(null)
         try{
-            mutableBitmap.value = detector.imageWithBoxes(inputBitmap)
+            mutableBitmap.postValue(detector.imageWithBoxes(inputBitmap))
             Log.v(TAG, "done detecting")
         }catch (error: Exception){
-            mutableError.value = error
+            mutableError.postValue(error)
             Log.v(TAG, "ERROR: ${error.stackTrace}")
         }
-        mutableDetecting.value = false
+        mutableDetecting.postValue(false)
     }
 }
