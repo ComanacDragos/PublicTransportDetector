@@ -1,0 +1,236 @@
+model_v4_4_fine_tuned
+mAP:  0.19338975959201377
+Number of items: [67, 226, 139]
+Bus : 0.1044776119402985
+Car : 0.4714950241498915
+Vehicle registration plate : 0.004196642685851318
+
+model_v4_4
+mAP:  0.17816891453607434
+Number of items: [71, 220, 139]
+Bus : 0.09507042253521127
+Car : 0.43703823953823956
+Vehicle registration plate : 0.002398081534772182
+
+mAP:  0.18539254785045486
+Number of items: [1737, 6388, 3796]
+Bus : 0.09593807970319197
+Car : 0.448085792961525
+Vehicle registration plate : 0.012153770886647599
+
+
+model_v8_2
+mAP:  0.16604075116421146
+Number of items: [478, 589, 516]
+Bus : 0.03145048814504882
+Car : 0.3882609750181906
+Vehicle registration plate : 0.07841079032939498
+
+
+model_v10_5 0.5, 0.5, 0.5,
+mAP:  0.43773303504847133
+Number of items: [149, 3, 2]
+Bus : 0.9798657718120806
+Car : 0.3333333333333333
+Vehicle registration plate : 0.0
+
+
+model_v10_5 0.2, 0.4, 0.5,
+mAP:  0.7177479492915735
+Number of items: [149, 3, 2]
+Bus : 0.9865771812080537
+Car : 0.6666666666666666
+Vehicle registration plate : 0.5
+
+
+model_v10_3 0.5, 0.5, 0.5,
+mAP:  0.6059829059829059
+Number of items: [130, 3, 2]
+Bus : 0.9846153846153847
+Car : 0.3333333333333333
+Vehicle registration plate : 0.5
+
+
+model_v10_3 0.4, 0.5, 0.5,
+mAP:  0.6641025641025641
+Number of items: [130, 3, 2]
+Bus : 0.9923076923076923
+Car : 0.5
+Vehicle registration plate : 0.5
+
+
+model_v10_3 0.5, 0.3, 0.2,
+mAP:  0.6165626359878155
+Number of items: [256, 383, 15]
+Bus : 0.8528645833333334
+Car : 0.5968233246301131
+Vehicle registration plate : 0.4
+
+
+model_v10_5 0.5, 0.3, 0.2,
+mAP:  0.6522042416778054
+Number of items: [257, 425, 11]
+Bus : 0.8709468223086899
+Car : 0.6311204481792717
+Vehicle registration plate : 0.45454545454545453
+
+
+for all
+iou_true_positive_threshold=0.5,
+nms_iou_threshold=0.3,
+score_threshold=0.2,
+
+v12_2
+mAP:  0.5187267082019963
+Number of items: [256, 282, 0]
+Bus : 0.884765625
+Car : 0.671414499605989
+Vehicle registration plate : 0.0
+
+v15
+mAP:  0.5075007662619552
+Number of items: [191, 186, 0]
+Bus : 0.8795811518324608
+Car : 0.642921146953405
+Vehicle registration plate : 0.0
+
+v15_2
+mAP:  0.5014601975661483
+Number of items: [194, 202, 0]
+Bus : 0.8814432989690721
+Car : 0.6229372937293729
+Vehicle registration plate : 0.0
+
+v15_2_fine_tuned
+mAP:  0.5022560631697687
+Number of items: [197, 197, 0]
+Bus : 0.8781725888324873
+Car : 0.628595600676819
+Vehicle registration plate : 0.0
+
+v16
+mAP:  0.512949272329939
+Number of items: [107, 67, 6]
+Bus : 0.822429906542056
+Car : 0.7164179104477612
+Vehicle registration plate : 0.0
+
+v16_2
+mAP:  0.5494945559235448
+Number of items: [177, 87, 11]
+Bus : 0.8323917137476459
+Car : 0.8160919540229885
+Vehicle registration plate : 0.0
+
+v16_3
+mAP:  0.5490290405862638
+Number of items: [169, 82, 9]
+Bus : 0.8422090729783036
+Car : 0.8048780487804879
+Vehicle registration plate : 0.0
+
+v16_4
+mAP:  0.5221547332038168
+Number of items: [235, 303, 2]
+Bus : 0.8978723404255319
+Car : 0.6685918591859186
+Vehicle registration plate : 0.0
+
+v16_5
+mAP:  0.6355586279544407
+Number of items: [249, 305, 6]
+Bus : 0.8875502008032129
+Car : 0.6857923497267759
+Vehicle registration plate : 0.3333333333333333
+
+v16_6
+mAP:  0.4941978072522129
+Number of items: [228, 178, 1]
+Bus : 0.9298245614035088
+Car : 0.55276886035313
+Vehicle registration plate : 0.0
+
+v17
+mAP:  0.22678843226788434
+Number of items: [17, 146, 42]
+Bus : 0.0
+Car : 0.680365296803653
+Vehicle registration plate : 0.0
+
+v17_2
+mAP:  0.4969255339112357
+Number of items: [253, 447, 154]
+Bus : 0.8142292490118577
+Car : 0.6765473527218493
+Vehicle registration plate : 0.0
+
+
+v17_3
+mAP:  0.507077183003109
+Number of items: [259, 486, 162]
+Bus : 0.8494208494208494
+Car : 0.6532921810699589
+Vehicle registration plate : 0.018518518518518517
+
+v17_4
+mAP:  0.5071919543487198
+Number of items: [263, 471, 165]
+Bus : 0.8688212927756654
+Car : 0.6466939642098878
+Vehicle registration plate : 0.006060606060606061
+
+v18_3
+mAP:  0.498781936693873
+Number of items: [255, 412, 223]
+Bus : 0.8424836601307188
+Car : 0.5671655879180151
+Vehicle registration plate : 0.0866965620328849
+
+v19_2
+mAP:  0.4112288313984413
+Number of items: [289, 429, 251]
+Bus : 0.6332372164552096
+Car : 0.471963221963222
+Vehicle registration plate : 0.12848605577689243
+
+v20_2
+mAP:  0.32751462148059585
+Number of items: [243, 344, 201]
+Bus : 0.4845679012345679
+Car : 0.49200581395348836
+Vehicle registration plate : 0.005970149253731343
+
+v21
+mAP:  0.26441717913775215
+Number of items: [243, 441, 262]
+Bus : 0.4914266117969821
+Car : 0.2789241622574956
+Vehicle registration plate : 0.022900763358778626
+
+v22
+mAP:  0.25564577250444087
+Number of items: [306, 526, 471]
+Bus : 0.318082788671024
+Car : 0.2748521335023236
+Vehicle registration plate : 0.17400239533997497
+
+v23
+mAP:  0.28695401388696096
+Number of items: [374, 588, 483]
+Bus : 0.26724598930481286
+Car : 0.29559442824748944
+Vehicle registration plate : 0.2980216241085806
+
+v26
+mAP:  0.5319995840589469
+Number of items: [372, 538, 456]
+Bus : 0.6750448028673836
+Car : 0.5941995633445447
+Vehicle registration plate : 0.3267543859649123
+
+score 0.5:
+mAP:  0.5655511458293783
+Number of items: [210, 235, 169]
+Bus : 0.8436507936507938
+Car : 0.5127659574468085
+Vehicle registration plate : 0.34023668639053256

@@ -1,0 +1,27 @@
+C:\Users\Dragos\AppData\Local\Programs\Python\Python37-64\python.exe E:/Universitate/Licenta/PublicTransportDetector/generate_anchors.py
+C:\Users\Dragos\datasets\PublicTransportProcessed\train 30939
+C:\Users\Dragos\datasets\PublicTransportProcessed\test 14894
+C:\Users\Dragos\datasets\PublicTransportProcessed\validation 4967
+(120940, 4) (3, 2)
+1 674719.5346164556 120940
+2 26112.66399572441 16743
+3 13876.67253621586 14088
+4 10514.277462683192 11669
+5 8340.642864503407 9362
+6 5814.34081164381 6631
+7 5180.1488537681535 5954
+8 4414.007732302887 5137
+9 3685.6393085476698 4048
+10 1584.6483564373093 1774
+11 1799.9788739441185 1655
+12 1064.3198248276558 1082
+13 767.6969263752222 827
+14 111.3393251925358 53
+15 0.0 0
+[[ 68  62]
+ [294 251]
+ [ 18  16]]
+Time to generate anchors:  141.60773849487305
+[[ 68  62]
+ [294 251]
+ [ 18  16]]

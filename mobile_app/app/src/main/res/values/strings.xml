@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Public transport access detector</string>
+    <string name="tab_text_image">Image</string>
+    <string name="tab_text_video">Live/Video</string>
+
+    <string name="model">model_v26.tflite</string>
+</resources>
