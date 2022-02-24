@@ -5,7 +5,7 @@ from tflite_support.metadata_writers import writer_utils
 
 from data_augmentation import RandomColorAugmentation, Cutout
 from generator import process_anchors
-from inference import inference, output_processor
+from inference import output_processor
 from settings import *
 from train import build_model
 
@@ -56,6 +56,8 @@ def build_model_for_inference_only(model_name, score_threshold=0.20, iou_thresho
     scores, boxes, classes = output_processor(x, anchors)
     boxes = tf.reshape(boxes, (-1, GRID_SIZE * GRID_SIZE * len(anchors), 4))
     classes = tf.reshape(classes, (-1, GRID_SIZE * GRID_SIZE * len(anchors)))
+    classes = tf.cast(classes, tf.float32)
+
     scores = tf.reshape(scores, (-1, GRID_SIZE * GRID_SIZE * len(anchors)))
 
     hack = tf.keras.Model(inputs=inputs, outputs=[boxes, classes, scores], name="hack_inference_yolo")

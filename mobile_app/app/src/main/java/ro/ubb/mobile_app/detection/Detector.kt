@@ -3,12 +3,13 @@ package ro.ubb.mobile_app.detection
 import android.content.Context
 import android.graphics.*
 import android.util.Log
+import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import ro.ubb.mobile_app.core.TAG
 
-class Detector(val context: Context, val modelName: String) {
+class Detector(context: Context, modelName: String) {
     companion object {
         private const val MAX_FONT_SIZE = 96F
     }
