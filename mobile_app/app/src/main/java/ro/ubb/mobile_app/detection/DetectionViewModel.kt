@@ -34,7 +34,7 @@ class DetectionViewModel(application: Application) : AndroidViewModel(applicatio
             Log.v(TAG, "done detecting")
         }catch (error: Exception){
             mutableError.postValue(error)
-            Log.v(TAG, "ERROR: ${error.stackTrace}")
+            Log.v(TAG, "ERROR:\n${error.stackTraceToString()}")
         }
         mutableDetecting.postValue(false)
     }

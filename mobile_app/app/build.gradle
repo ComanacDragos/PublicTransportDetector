@@ -14,6 +14,10 @@ android {
         versionCode 1
         versionName "1.0"
 
+        //ndk {
+        //    abiFilters 'armeabi-v7a', 'arm64-v8a'
+        //}
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -36,7 +40,13 @@ android {
 }
 
 dependencies {
+    //implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly-SNAPSHOT'
+    //implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:0.0.0-nightly-SNAPSHOT'
+    //implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:2.8.0'
+
+    // https://mvnrepository.com/artifact/org.tensorflow/tensorflow-lite-task-vision
     implementation 'org.tensorflow:tensorflow-lite-task-vision:0.3.1'
+    //implementation 'org.tensorflow:tensorflow-lite-task-vision:0.0.0-nightly-SNAPSHOT'
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
