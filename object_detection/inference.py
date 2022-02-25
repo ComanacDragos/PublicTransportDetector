@@ -54,11 +54,6 @@ def output_processor(output, anchors, apply_argmax=True):
     # classes = tf.expand_dims(conf_scores, -1) * tf.math.softmax(output[..., 5:])
     classes = conf_scores * softmax(output[..., 5:])
 
-    # xy = (K.sigmoid(tf.strided_slice(input=output, begin=[0, 0, 0, 0, 0], size=[-1, -1, -1, -1, 2])) + cell_grid) * cell_size
-    # wh = K.exp(tf.strided_slice(input=output, begin=[0, 0, 0, 0, 2], size=[-1, -1, -1, -1, 2])) * anchors
-    # conf_scores = K.sigmoid(tf.strided_slice(input=output, begin=[0, 0, 0, 0, 4], size=[-1, -1, -1, -1, 1]))
-    # classes = conf_scores * tf.math.softmax(tf.strided_slice(input=output, begin=[0, 0, 0, 0, 5], size=[-1, -1, -1, -1, -1]), axis=-1)
-
     if apply_argmax:
         conf_scores = K.max(classes, axis=-1)
         classes = K.argmax(classes)
@@ -229,28 +224,11 @@ def test():
 
 if __name__ == '__main__':
     PATH_TO_MODEL = "weights/model_v26.h5"
-    test()
-    # run_on_one_image("documentation\\bus2.jpg", 0.2)
-    # run_on_one_image("documentation\\bus3.jpg", 0.2)
-    # run_on_one_image("documentation\\busses.jpg", 0.1)
-    # run_on_one_image("documentation\\car.jpg", 0.06)
+    #test()
+    # run_on_one_image("documentation\\examples\\bus.jpg", 0.5)
 
-    """
-  t = tf.constant([[[1, 1, 1], [2, 2, 2]],
-                   [[3, 3, 3], [4, 4, 4]],
-                   [[5, 5, 5], [6, 6, 6]]])
-  a=tf.raw_ops.Slice(input=t, begin=[0, 0, 0], size=[-1, 1, -1])  # [[[3, 3, 3]]]
-  b=tf.slice(t, [1, 0, 0], [1, 2, 3])  # [[[3, 3, 3],
-  #   [4, 4, 4]]]
-  c=tf.slice(t, [1, 0, 0], [2, 1, 3])  # [[[3, 3, 3]],
-  #  [[5, 5, 5]]]
-
-  print(t.shape)
-  print(f"a {a.shape}")
-  print(a)
-
-  print(f"b {b.shape}")
-  print(b)
-
-  print(f"c {c.shape}")
-  print(c)"""
+    #run_on_one_image("documentation\\examples\\bus2.jpg", 0.5)
+    # run_on_one_image("documentation\\examples\\bus3.jpg", 0.2)
+    # run_on_one_image("documentation\\examples\\busses.jpg", 0.1)
+    # run_on_one_image("documentation\\examples\\car.jpg", 0.06)
+    run_on_one_image("documentation\\examples\\busses2.png", 0.5)

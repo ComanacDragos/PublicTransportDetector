@@ -3,29 +3,34 @@ package ro.ubb.mobile_app.detection
 import android.content.Context
 import android.graphics.*
 import android.util.Log
-import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import ro.ubb.mobile_app.core.TAG
+import ro.ubb.mobile_app.detection.configuration.Configuration
 
-class Detector(context: Context, modelName: String) {
-    companion object {
-        private const val MAX_FONT_SIZE = 96F
-    }
+object Detector {
+    private const val MAX_FONT_SIZE = 96F
 
-    private var detector: ObjectDetector
+    private lateinit var detector: ObjectDetector
+    private lateinit var configuration: Configuration
 
-    init {
+    fun setConfiguration(context: Context, configuration: Configuration){
+        Log.v(TAG, "Detector settings:\n" +
+                "name: ${configuration.modelName}\n" +
+                "maxBoxes: ${configuration.maxNoBoxes}\n" +
+                "minScore: ${configuration.scoreThreshold}\n")
+
         val options = ObjectDetector.ObjectDetectorOptions.builder()
-            .setMaxResults(5)
-            .setScoreThreshold(0.5f)
+            .setMaxResults(configuration.maxNoBoxes)
+            .setScoreThreshold(configuration.scoreThreshold/100)
             .build()
         detector = ObjectDetector.createFromFileAndOptions(
             context,
-            modelName,
+            configuration.modelName,
             options
         )
+        this.configuration = configuration
     }
 
     private fun runDetection(bitmap: Bitmap): MutableList<Detection>? {
@@ -35,12 +40,21 @@ class Detector(context: Context, modelName: String) {
         return results
     }
 
+    private fun scaleBox(boundingBox: RectF, factor: Int=416): RectF{
+        return RectF(
+            boundingBox.left / factor,
+            boundingBox.top / factor,
+            boundingBox.right / factor,
+            boundingBox.bottom / factor
+        )
+    }
+
     fun imageWithBoxes(bitmap: Bitmap): Bitmap{
         val results = runDetection(bitmap)
         val resultToDisplay = results!!.map {
             val category = it.categories.first()
             val text = "${category.label}, ${category.score.times(100).toInt()}%"
-            DetectionResult(it.boundingBox, text)
+            DetectionResult(scaleBox(it.boundingBox), text)
         }
         return drawDetectionResult(bitmap, resultToDisplay)
     }
@@ -48,7 +62,7 @@ class Detector(context: Context, modelName: String) {
     private fun debugPrint(results : List<Detection>) {
         Log.v(TAG, "#detections: ${results.size}")
         for ((i, obj) in results.withIndex()) {
-            val box = obj.boundingBox
+            val box = scaleBox(obj.boundingBox)
 
             Log.v(TAG, "Detected object: ${i} ")
             Log.v(TAG, "  boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})")
@@ -76,6 +90,7 @@ class Detector(context: Context, modelName: String) {
             pen.strokeWidth = 8F
             pen.style = Paint.Style.STROKE
             val box = it.boundingBox
+
             canvas.drawRect(box, pen)
 
 

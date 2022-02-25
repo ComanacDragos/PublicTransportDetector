@@ -3,7 +3,6 @@ package ro.ubb.mobile_app.image
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
@@ -13,7 +12,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -102,10 +100,13 @@ class ImageFragment : Fragment() {
             uri?.let {
                 requireContext().contentResolver.openInputStream(it)
             }.also {
-                val bitmap = Bitmap.createScaledBitmap(
+                /*val bitmap = Bitmap.createScaledBitmap(
                     BitmapFactory.decodeStream(it),
                     416, 416, false
                 )
+                */
+                val bitmap = BitmapFactory.decodeStream(it)
+
                 lifecycleScope.launch(Dispatchers.Default) {
                     Log.v(TAG, "start detection")
                     detectionViewModel.detect(bitmap)
@@ -137,16 +138,15 @@ class ImageFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        btCapturePhoto.setOnClickListener { openCamera() }
-        btOpenGallery.setOnClickListener { openGallery() }
-        detectionViewModel = ViewModelProvider(this).get(DetectionViewModel::class.java)
-        detectionViewModel.initDetector(requireContext())
+        capturePhotoButton.setOnClickListener { openCamera() }
+        openGalleryButton.setOnClickListener { openGallery() }
+        detectionViewModel = ViewModelProvider(this)[DetectionViewModel::class.java]
 
-        detectionViewModel.detecting.observe(viewLifecycleOwner, {
+        detectionViewModel.loading.observe(viewLifecycleOwner, {
             Log.v(TAG, "update detecting")
             progressBar.visibility = if (it) View.VISIBLE else View.GONE
-            btCapturePhoto.isEnabled = !it
-            btOpenGallery.isEnabled = !it
+            capturePhotoButton.isEnabled = !it
+            openGalleryButton.isEnabled = !it
         })
 
         detectionViewModel.bitmap.observe(viewLifecycleOwner, {
@@ -159,6 +159,10 @@ class ImageFragment : Fragment() {
         detectionViewModel.error.observe(viewLifecycleOwner, {
             if(it != null)
                 errorTextView.text = it.message
+        })
+
+        detectionViewModel.configuration.observe(viewLifecycleOwner, {
+            errorTextView.text = "$it"
         })
     }
 }

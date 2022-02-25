@@ -24,17 +24,16 @@
             android:src="#dedede" />
 
         <Button
-            android:id="@+id/btCapturePhoto"
+            android:id="@+id/capturePhotoButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:background="@color/teal_200"
-            android:textColor="@android:color/white"
+            android:background="@color/purple_200"
             android:text="Capture Photo"
-            />
+            android:textColor="@android:color/white" />
 
         <Button
-            android:id="@+id/btOpenGallery"
+            android:id="@+id/openGalleryButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
