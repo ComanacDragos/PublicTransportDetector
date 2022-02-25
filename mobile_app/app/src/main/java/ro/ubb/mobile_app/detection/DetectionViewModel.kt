@@ -32,6 +32,11 @@ class DetectionViewModel(application: Application) : AndroidViewModel(applicatio
         configuration = configurationRepository.configuration
     }
 
+    fun initDetector(context: Context, configuration: Configuration){
+        if(!Detector.isDetectorInitialized())
+            Detector.setConfiguration(context, configuration)
+    }
+
     suspend fun setConfiguration(context: Context, configuration: Configuration) {
         Log.v(TAG, "Setting configuration: $configuration")
         mutableLoading.postValue(true)

@@ -16,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ro.ubb.mobile_app.core.TAG
 import ro.ubb.mobile_app.detection.DetectionViewModel
-import java.lang.Exception
 
 
 class ConfigDialog: DialogFragment() {
@@ -37,7 +36,8 @@ class ConfigDialog: DialogFragment() {
                     Configuration(
                         modelSpinner.selectedItem.toString(),
                         maxNoBoxesSlider.value.toInt(),
-                        minimumScoreSlider.value
+                        minimumScoreSlider.value,
+                        nmsIouThresholdSlider.value
                     )
                 )
                 dismiss()
@@ -68,6 +68,7 @@ class ConfigDialog: DialogFragment() {
             if(it != null){
                 minimumScoreSlider.value = it.scoreThreshold
                 maxNoBoxesSlider.value = it.maxNoBoxes.toFloat()
+                nmsIouThresholdSlider.value = it.nmsIouThreshold
             }
         })
 

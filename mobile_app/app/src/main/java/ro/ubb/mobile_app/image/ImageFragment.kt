@@ -3,6 +3,7 @@ package ro.ubb.mobile_app.image
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
@@ -100,12 +101,12 @@ class ImageFragment : Fragment() {
             uri?.let {
                 requireContext().contentResolver.openInputStream(it)
             }.also {
-                /*val bitmap = Bitmap.createScaledBitmap(
+                val bitmap = Bitmap.createScaledBitmap(
                     BitmapFactory.decodeStream(it),
                     416, 416, false
                 )
-                */
-                val bitmap = BitmapFactory.decodeStream(it)
+
+                //val bitmap = BitmapFactory.decodeStream(it)
 
                 lifecycleScope.launch(Dispatchers.Default) {
                     Log.v(TAG, "start detection")
@@ -163,6 +164,12 @@ class ImageFragment : Fragment() {
 
         detectionViewModel.configuration.observe(viewLifecycleOwner, {
             errorTextView.text = "$it"
+        })
+
+        detectionViewModel.configuration.observe(viewLifecycleOwner, {
+            if(it!=null){
+                detectionViewModel.initDetector(requireContext(), it)
+            }
         })
     }
 }

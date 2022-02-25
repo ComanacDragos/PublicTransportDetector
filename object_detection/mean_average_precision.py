@@ -33,14 +33,12 @@ def voc_ap(rec, prec):
     return ap
 
 
-def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_threshold, score_threshold, max_boxes,
-                           no_classes=3):
+def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_threshold, score_threshold, no_classes=3):
     start = time.perf_counter()
     true_boxes_all = extract_boxes(*process_ground_truth(y_true, len(anchors)))
     logging.info(f"Ground truth processing: {time.perf_counter() - start}")
     start = time.perf_counter()
-    scores, boxes, classes, valid_detections = non_max_suppression(y_pred, anchors,
-                                                                   max_boxes, nms_iou_threshold, score_threshold)
+    scores, boxes, classes, valid_detections = non_max_suppression(y_pred, anchors, nms_iou_threshold, score_threshold)
     scores, boxes, classes, valid_detections = K.get_value(scores), \
                                                K.get_value(boxes), \
                                                K.get_value(classes), \
@@ -91,8 +89,7 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
 
 
 def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_positive_threshold, nms_iou_threshold,
-                   score_threshold, max_boxes,
-                   no_classes=3):
+                   score_threshold, no_classes=3):
     average_precisions = []
     ap_to_class_all = {c: [] for c in range(no_classes)}
     for i in range(len(generator)):
@@ -105,7 +102,7 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_pos
 
         ap_to_class = mean_average_precision(y_true, y_pred, generator.anchors, iou_true_positive_threshold,
                                              nms_iou_threshold,
-                                             score_threshold, max_boxes, no_classes)
+                                             score_threshold, no_classes)
 
         logging.info(f"time mAP: {time.perf_counter() - start}")
         logging.info(f"{i + 1}/{len(generator)} time total: {time.perf_counter() - start_total}")
@@ -131,9 +128,8 @@ if __name__ == '__main__':
     generator = DataGenerator(PATH_TO_TEST, shuffle=False)
 
     mAP, aps, no_items = evaluate_model(model, generator, iou_true_positive_threshold=0.5,
-                                                          nms_iou_threshold=0.3,
-                                                          score_threshold=0.5,
-                                                          max_boxes=MAX_BOXES_PER_IMAGES)
+                                        nms_iou_threshold=0.3,
+                                        score_threshold=0.5)
     print("mAP: ", mAP)
     print(f"Number of items: {no_items}")
     for c in range(3):

@@ -36,6 +36,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:text="Minimum IOU threshold for NMS (%)" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/nmsIouThresholdSlider"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:stepSize="1.0"
+        android:valueFrom="0.0"
+        android:valueTo="100.0"
+        app:tickVisible="false"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:text="Maximum number of boxes" />
 
     <com.google.android.material.slider.Slider

@@ -11,8 +11,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ro.ubb.mobile_app.core.TAG
 import ro.ubb.mobile_app.detection.configuration.Configuration
+import androidx.room.migration.Migration
 
-@Database(entities = [Configuration::class], version = 1)
+
+
+
+@Database(entities = [Configuration::class], version = 2)
 abstract class ConfigurationDatabase: RoomDatabase() {
     abstract fun configurationDao(): ConfigurationDao
 
@@ -33,6 +37,7 @@ abstract class ConfigurationDatabase: RoomDatabase() {
                     "conf_db"
                 )
                     .addCallback(WordDatabaseCallback(scope))
+                    .fallbackToDestructiveMigration()
                     .build()
             INSTANCE = instance
             return instance
@@ -51,6 +56,7 @@ abstract class ConfigurationDatabase: RoomDatabase() {
                                 Configuration(
                                     "model_v26.tflite",
                                     5,
+                                    50f,
                                     50f
                                 )
                             )

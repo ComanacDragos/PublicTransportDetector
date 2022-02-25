@@ -29,16 +29,10 @@ def build_model_for_inference_only(model_name, score_threshold=0.20, iou_thresho
     outputMap.put(2, numDetections);
     outputMap.put(3, outputClasses);
 
-    0 (1, 10, 4)
-    1 (1, 10)
-    2 (1, 10)
+    0 (1, no_boxes, 4)
+    1 (1, no_boxes)
+    2 (1, n0_boxes)
     3 (1,)
-
-    0 (1,)
-    1 (1, 507, 4)
-    2 (1, 507)
-    3 (1, 507)
-
     """
     model: tf.keras.Model = tf.keras.models.load_model(f"weights/{model_name}.h5", custom_objects={
         'RandomColorAugmentation': RandomColorAugmentation,
@@ -54,7 +48,7 @@ def build_model_for_inference_only(model_name, score_threshold=0.20, iou_thresho
     x = pruned_model(inputs)
 
     scores, boxes, classes = output_processor(x, anchors)
-    boxes = tf.reshape(boxes, (-1, GRID_SIZE * GRID_SIZE * len(anchors), 4))
+    boxes = tf.reshape(boxes, (-1, GRID_SIZE * GRID_SIZE * len(anchors), 4)) / IMAGE_SIZE
     classes = tf.reshape(classes, (-1, GRID_SIZE * GRID_SIZE * len(anchors)))
     classes = tf.cast(classes, tf.float32)
 

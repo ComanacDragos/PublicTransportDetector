@@ -70,7 +70,6 @@ def non_max_suppression(y_pred, anchors, iou_threshold, score_threshold, batch_s
     boxes = tf.reshape(boxes, (-1, GRID_SIZE * GRID_SIZE * len(anchors), 4))
     boxes = tf.expand_dims(boxes, axis=2)
     classes = tf.reshape(classes, (-1, GRID_SIZE * GRID_SIZE * len(anchors), len(ENCODE_LABEL)))
-
     nms_boxes, nms_scores, nms_classes, nms_valid = tf.image.combined_non_max_suppression(
         boxes, classes, MAX_BOXES_PER_IMAGES, MAX_BOXES_PER_IMAGES * batch_size, iou_threshold=iou_threshold,
         score_threshold=score_threshold, clip_boxes=False)
@@ -227,8 +226,8 @@ if __name__ == '__main__':
     #test()
     # run_on_one_image("documentation\\examples\\bus.jpg", 0.5)
 
-    #run_on_one_image("documentation\\examples\\bus2.jpg", 0.5)
+    run_on_one_image("documentation\\examples\\bus2.jpg", 0.45)
     # run_on_one_image("documentation\\examples\\bus3.jpg", 0.2)
     # run_on_one_image("documentation\\examples\\busses.jpg", 0.1)
     # run_on_one_image("documentation\\examples\\car.jpg", 0.06)
-    run_on_one_image("documentation\\examples\\busses2.png", 0.5)
+    #run_on_one_image("documentation\\examples\\busses2.png", 0.5)
