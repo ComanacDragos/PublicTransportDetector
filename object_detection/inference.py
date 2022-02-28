@@ -65,7 +65,6 @@ def output_processor(output, anchors, apply_argmax=True):
 
 
 def non_max_suppression(y_pred, anchors, iou_threshold, score_threshold, batch_size=BATCH_SIZE):
-    # boxes : bs, 13, 13, 3, 4
     _, boxes, classes = output_processor(y_pred, anchors, apply_argmax=False)
     boxes = tf.reshape(boxes, (-1, GRID_SIZE * GRID_SIZE * len(anchors), 4))
     boxes = tf.expand_dims(boxes, axis=2)

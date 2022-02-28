@@ -54,23 +54,19 @@ object Detector {
     }
 
     private fun runDetection(bitmap: Bitmap): List<Detection> {
+        var start = System.currentTimeMillis()
         val image = TensorImage.fromBitmap(bitmap)
         val results = detector.detect(image)
+        Log.v(TAG, "Detection time: ${System.currentTimeMillis()-start}ms")
+
         Log.v(TAG, "Before NMS")
         debugPrint(results)
         Log.v(TAG, "after NMS")
+        start = System.currentTimeMillis()
         val nmsResults = nonMaximumSupression(results)
+        Log.v(TAG, "NMS time: ${System.currentTimeMillis()-start}ms")
         debugPrint(nmsResults)
         return nmsResults
-    }
-
-    private fun rotate(box: RectF, angle: Double): RectF {
-        return RectF(
-            (box.left * cos(angle) - box.top * sin(angle)).toFloat(),
-            (box.left * cos(angle) + box.top * sin(angle)).toFloat(),
-            (box.right * cos(angle) - box.bottom * sin(angle)).toFloat(),
-            (box.right * cos(angle) + box.bottom * sin(angle)).toFloat()
-            )
     }
 
     private fun intersectionOverUnion(box: RectF, otherBox: RectF): Float{
@@ -110,7 +106,7 @@ object Detector {
         val resultToDisplay = results.map {
             val category = it.categories.first()
             val text = "${category.label}, ${category.score.times(100).toInt()}%"
-            DetectionResult(it.boundingBox, text)
+            DetectionResult(it.boundingBox, text, category.index)
         }
         return drawDetectionResult(bitmap, resultToDisplay)
     }
@@ -118,7 +114,7 @@ object Detector {
     private fun debugPrint(results : List<Detection>) {
         Log.v(TAG, "#detections: ${results.size}")
         for ((i, obj) in results.withIndex()) {
-            val box = obj.boundingBox //scaleBox(obj.boundingBox)
+            val box = obj.boundingBox
 
             Log.v(TAG, "Detected object: $i ")
             Log.v(TAG, "  boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})")
@@ -142,11 +138,14 @@ object Detector {
 
         detectionResults.forEach {
             // draw bounding box
-            pen.color = Color.RED
+            when(it.classIndex){
+                0-> pen.color = Color.RED
+                1-> pen.color = Color.GREEN
+                2-> pen.color = Color.BLUE
+            }
             pen.strokeWidth = 8F
             pen.style = Paint.Style.STROKE
-            val box = it.boundingBox//rotate(it.boundingBox, -90.0)
-            Log.v(TAG, "${box.left}, ${box.top} - ${box.right}, ${box.bottom}")
+            val box = it.boundingBox
             canvas.drawRect(box, pen)
 
 

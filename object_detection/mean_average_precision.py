@@ -51,7 +51,7 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
     ap_to_class = {c: [] for c in range(no_classes)}
     for true_boxes, pred_boxes in zip(true_boxes_all, pred_boxes_all):
         class_to_box = {c: [] for c in range(no_classes)}
-        total_positives = {c: 0 for c in range(no_classes)}
+        total_true_positives = {c: 0 for c in range(no_classes)}
         contains_class = {c: False for c in range(no_classes)}
         for pred_box in pred_boxes:
             correct = False
@@ -59,7 +59,7 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
                 contains_class[true_box.c] = True
                 if iou_bbox(pred_box, true_box) >= iou_threshold:
                     correct = True
-                    total_positives[pred_box.c] += 1
+                    total_true_positives[pred_box.c] += 1
                     break
             class_to_box[pred_box.c].append((correct, pred_box.score))
 
@@ -78,10 +78,10 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
                 if correct:
                     running_corrects += 1
                 precision.append(running_corrects / i)
-                if total_positives[c] == 0:
+                if total_true_positives[c] == 0:
                     recall.append(0)
                 else:
-                    recall.append(running_corrects / total_positives[c])
+                    recall.append(running_corrects / total_true_positives[c])
             ap_to_class[c].append(voc_ap(recall, precision))
 
     logging.info(f"Compute mAP time: {time.perf_counter() - start}")
@@ -121,16 +121,30 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_pos
 
 
 if __name__ == '__main__':
-    model = tf.keras.models.load_model("weights/model_v26.h5", custom_objects={
+    model_name = "model_v26"
+    iou_true_positive_threshold = 0.5
+    nms_iou_threshold = 0.3
+    score_threshold = 0.2
+
+    model = tf.keras.models.load_model(f"weights/{model_name}.h5", custom_objects={
         'RandomColorAugmentation': RandomColorAugmentation,
         'Cutout': Cutout
     }, compile=False)
     generator = DataGenerator(PATH_TO_TEST, shuffle=False)
 
-    mAP, aps, no_items = evaluate_model(model, generator, iou_true_positive_threshold=0.5,
-                                        nms_iou_threshold=0.3,
-                                        score_threshold=0.5)
-    print("mAP: ", mAP)
-    print(f"Number of items: {no_items}")
+    mAP, aps, no_items = evaluate_model(model, generator, iou_true_positive_threshold=iou_true_positive_threshold,
+                                        nms_iou_threshold=nms_iou_threshold,
+                                        score_threshold=score_threshold)
+
+    file = f"mean_average_precisions/iou_tp={iou_true_positive_threshold}_nms_iou={nms_iou_threshold}_score={score_threshold}.csv"
+    if not os.path.exists(file):
+        with open(file, "w") as f:
+            f.write("model_name,mAP,Bus,Car,Vehicle registration plate,no_items\n")
+
+    mAP = float(mAP)
+    line = f"{model_name},{round(mAP, 4)},"
     for c in range(3):
-        print(f"{DECODE_LABEL[c]} : {aps[c]}")
+        line += f"{round(aps[c], 4)},"
+    line += f"{no_items}/{len(generator.image_paths)}\n".replace(",", " ")
+    with open(file, "a") as f:
+        f.write(line)

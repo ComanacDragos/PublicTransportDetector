@@ -9,26 +9,35 @@ paths = {
 }
 
 
-def process_annotations(files, classes):
+def process_annotations(files, classes, no_files):
     for file in files:
+        contains_class = {}
         with open(file) as f:
             for line in f.readlines():
                 tokens = line.split()
                 currentClass = " ".join(tokens[:len(tokens) - 4])
+                contains_class[currentClass] = True
                 if currentClass in classes:
                     classes[currentClass] += 1
                 else:
                     classes[currentClass] = 1
+        for c, contains in contains_class.items():
+            if contains:
+                if c in no_files:
+                    no_files[c] += 1
+                else:
+                    no_files[c] = 1
 
 
 def sizes():
     stages = {}
     for stage, path in paths.items():
         classes = {}
+        no_files = {}
         files = [f"{path}/label/{file}" for file in os.listdir(path + '/label')]
         print(path, len(files))
-        run_task(files, process_annotations, [classes])
-        stages[stage] = classes
+        run_task(files, process_annotations, [classes, no_files])
+        stages[stage] = classes, no_files
     return stages
 
 
@@ -60,8 +69,12 @@ def get_max_labels_per_box():
 
 
 if __name__ == '__main__':
-    for stage, classes in sizes().items():
+    for stage, (classes, no_files) in sizes().items():
         print(stage, sum(classes.values()))
+        print("\tBounding boxes:")
         for currentClass, occurrences in classes.items():
-            print(f"\t{currentClass} : {occurrences}")
+            print(f"\t\t{currentClass} : {occurrences}")
+        print("\tNumber of files:")
+        for currentClass, occurrences in no_files.items():
+            print(f"\t\t{currentClass} : {occurrences}")
     #get_max_labels_per_box()

@@ -32,6 +32,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 import ro.ubb.mobile_app.core.TAG
+import kotlin.system.measureTimeMillis
 
 
 class ImageFragment : Fragment() {
@@ -101,16 +102,19 @@ class ImageFragment : Fragment() {
             uri?.let {
                 requireContext().contentResolver.openInputStream(it)
             }.also {
-                val bitmap = Bitmap.createScaledBitmap(
-                    BitmapFactory.decodeStream(it),
-                    416, 416, false
-                )
+//                val bitmap = Bitmap.createScaledBitmap(
+//                    BitmapFactory.decodeStream(it),
+//                    416, 416, false
+//                )
 
-                //val bitmap = BitmapFactory.decodeStream(it)
+                val bitmap = BitmapFactory.decodeStream(it)
 
                 lifecycleScope.launch(Dispatchers.Default) {
                     Log.v(TAG, "start detection")
-                    detectionViewModel.detect(bitmap)
+                    val elapsed = measureTimeMillis {
+                        detectionViewModel.detect(bitmap)
+                    }
+                    Log.v(TAG, "Total detection time: ${elapsed}ms")
                 }
                 requireActivity().runOnUiThread{
                     ivImage.setImageBitmap(bitmap)

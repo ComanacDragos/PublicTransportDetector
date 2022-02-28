@@ -1,5 +1,7 @@
 package ro.ubb.mobile_app
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.tabs.TabLayout
@@ -19,16 +21,6 @@ class MainActivity : AppCompatActivity() {
         tabs.setupWithViewPager(viewPager)
 
         settingsFab.setOnClickListener {
-//            val dialog = Dialog(this)
-//            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-//            dialog.setCancelable(true)
-//            dialog.setContentView(R.layout.custom_dialog)
-//
-//            updateButton.setOnClickListener {
-//                dialog.dismiss()
-//            }
-//
-//            dialog.show()
             ConfigDialog().show(supportFragmentManager, "ConfigDialog")
         }
     }

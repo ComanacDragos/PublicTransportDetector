@@ -62,7 +62,7 @@ abstract class ConfigurationDatabase: RoomDatabase() {
                             )
                             Log.v(TAG, "initialize database")
                         }catch (error: Exception){
-                            Log.v(TAG, "ERROR: $error")
+                            Log.v(TAG, "Db already initialized: $error")
                         }
 
 

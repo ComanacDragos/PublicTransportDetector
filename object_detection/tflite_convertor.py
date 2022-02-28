@@ -1,16 +1,19 @@
+import random
+
 import numpy as np
 import tensorflow as tf
+from matplotlib import pyplot as plt
 from tflite_support.metadata_writers import object_detector
 from tflite_support.metadata_writers import writer_utils
 
 from data_augmentation import RandomColorAugmentation, Cutout
-from generator import process_anchors
-from inference import output_processor
+from generator import process_anchors, DataGenerator
+from inference import output_processor, draw_images, process_ground_truth
 from settings import *
 from train import build_model
 
 
-def build_model_for_inference_only(model_name, score_threshold=0.20, iou_threshold=0.3, batch_size=1):
+def build_model_for_tflite(model_name):
     """
     One input:
       image: a float32 tensor of shape[1, height, width, 3] containing the
@@ -60,19 +63,29 @@ def build_model_for_inference_only(model_name, score_threshold=0.20, iou_thresho
     valid_detections = tf.shape(hack_scores)[1:2]
     valid_detections = tf.cast(valid_detections, tf.float32)
 
-    return tf.keras.Model(inputs=inputs, outputs=[hack_boxes, hack_classes, hack_scores, valid_detections], name="inference_yolo")
+    return tf.keras.Model(inputs=inputs, outputs=[hack_boxes, hack_classes, hack_scores, valid_detections],
+                          name="inference_yolo")
+
+
+def representative_data_set_generator(mean=127.5, norm=127.5):
+    generator = DataGenerator(PATH_TO_TRAIN, shuffle=False, batch_size=1)
+    for i in range(len(generator)):
+        (img, _), _ = generator[i]
+        img = (img - mean) / norm
+        yield img
 
 
 def convert_model(model_name):
-    converter = tf.lite.TFLiteConverter.from_keras_model(build_model_for_inference_only("model_v26"))
-    #converter.experimental_new_converter = True
+    converter = tf.lite.TFLiteConverter.from_keras_model(build_model_for_tflite("model_v26"))
+    converter.experimental_new_converter = True
 
-    # converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    #converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
     converter.target_spec.supported_ops = [
         tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
         tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
     ]
+    converter.representative_dataset = representative_data_set_generator
     # converter.inference_input_type = tf.int8  # or tf.uint8
     # converter.inference_output_type = tf.int8  # or tf.uint8
     # converter.allow_custom_ops = True
@@ -128,7 +141,7 @@ if __name__ == '__main__':
     try:
         convert_model(model_name)
         analyze(model_name)
-        #build_model_for_inference_only(model_name).summary()
+        # build_model_for_inference_only(model_name).summary()
     except Exception as e:
         with open("tflite/error.txt", "w") as f:
             f.write(str(e))
