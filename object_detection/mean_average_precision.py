@@ -1,5 +1,6 @@
 import gc
 import logging
+import time
 
 from inference import *
 
@@ -37,7 +38,7 @@ def voc_ap(rec, prec):
 def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_threshold, score_threshold, no_classes=3):
     start = time.perf_counter()
     true_boxes_all = extract_boxes(*process_ground_truth(y_true, len(anchors)))
-    logging.info(f"Ground truth processing: {time.perf_counter() - start}")
+    logging.debug(f"Ground truth processing: {time.perf_counter() - start}")
     start = time.perf_counter()
     scores, boxes, classes, valid_detections = non_max_suppression(y_pred, anchors, nms_iou_threshold, score_threshold)
     scores, boxes, classes, valid_detections = K.get_value(scores), \
@@ -46,7 +47,7 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
                                                K.get_value(valid_detections)
 
     pred_boxes_all = extract_boxes(scores, boxes, classes, valid_detections)
-    logging.info(f"NMS time: {time.perf_counter() - start}")
+    logging.debug(f"NMS time: {time.perf_counter() - start}")
 
     start = time.perf_counter()
     ap_to_class = {c: [] for c in range(no_classes)}
@@ -54,11 +55,15 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
         class_to_box = {c: [] for c in range(no_classes)}
         total_true_positives = {c: 0 for c in range(no_classes)}
         contains_class = {c: False for c in range(no_classes)}
+        if len(pred_boxes) == 0:
+            for true_box in true_boxes:
+                contains_class[true_box.c] = True
+
         for pred_box in pred_boxes:
             correct = False
             for true_box in true_boxes:
                 contains_class[true_box.c] = True
-                if iou_bbox(pred_box, true_box) >= iou_threshold:
+                if true_box.c == pred_box.c and iou_bbox(pred_box, true_box) >= iou_threshold:
                     correct = True
                     total_true_positives[pred_box.c] += 1
                     break
@@ -85,7 +90,7 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
                     recall.append(running_corrects / total_true_positives[c])
             ap_to_class[c].append(voc_ap(recall, precision))
 
-    logging.info(f"Compute mAP time: {time.perf_counter() - start}")
+    logging.debug(f"Compute mAP time: {time.perf_counter() - start}")
     return ap_to_class
 
 
@@ -97,7 +102,7 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_pos
         start_total = time.perf_counter()
         start = time.perf_counter()
         data, y_true = generator[i]
-        logging.info(f"Load data time: {time.perf_counter() - start}")
+        logging.debug(f"Load data time: {time.perf_counter() - start}")
         y_pred = model.predict(data)
         start = time.perf_counter()
 
@@ -105,8 +110,8 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_pos
                                              nms_iou_threshold,
                                              score_threshold, no_classes)
 
-        logging.info(f"time mAP: {time.perf_counter() - start}")
-        logging.info(f"{i + 1}/{len(generator)} time total: {time.perf_counter() - start_total}")
+        logging.debug(f"time mAP: {time.perf_counter() - start}")
+        logging.debug(f"{i + 1}/{len(generator)} time total: {time.perf_counter() - start_total}")
         for c, aps in ap_to_class.items():
             ap_to_class_all[c] += aps
 
@@ -122,8 +127,11 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_pos
 
 
 def log_to_file_map(model, generator, model_name, iou_true_positive_threshold, nms_iou_threshold, score_threshold):
-    file = f"mean_average_precisions/iou_tp={iou_true_positive_threshold}/iou_tp={iou_true_positive_threshold}_nms_iou={nms_iou_threshold}_score={score_threshold}.csv"
+    dir = f"mean_average_precisions/iou_tp={iou_true_positive_threshold}"
+    file = f"{dir}/iou_tp={iou_true_positive_threshold}_nms_iou={nms_iou_threshold}_score={score_threshold}.csv"
     if not os.path.exists(file):
+        if not os.path.exists(dir):
+            os.mkdir(dir)
         with open(file, "w") as f:
             f.write("model_name,mAP,Bus,Car,Vehicle registration plate,no_items\n")
     else:
@@ -146,7 +154,7 @@ def log_to_file_map(model, generator, model_name, iou_true_positive_threshold, n
 
 
 if __name__ == '__main__':
-    model_name = "model_v23"
+    model_name = "model_v25"
     iou_true_positive_thresholds = [0.3, 0.5, 0.7]
     nms_iou_thresholds = [0.3, 0.4, 0.5]
     score_thresholds = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
@@ -160,10 +168,11 @@ if __name__ == '__main__':
     for iou_true_positive_threshold in iou_true_positive_thresholds:
         for nms_iou_threshold in nms_iou_thresholds:
             for score_threshold in score_thresholds:
+                start = time.perf_counter()
                 log_to_file_map(model, generator,
                                 model_name=model_name,
                                 iou_true_positive_threshold=iou_true_positive_threshold,
                                 nms_iou_threshold=nms_iou_threshold,
                                 score_threshold=score_threshold
                                 )
-                logging.info(f"Done with: {iou_true_positive_threshold} - {nms_iou_threshold} - {score_threshold}")
+                logging.info(f"Done with: {iou_true_positive_threshold} - {nms_iou_threshold} - {score_threshold} in {time.perf_counter()-start}")
