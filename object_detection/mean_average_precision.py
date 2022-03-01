@@ -1,4 +1,5 @@
 import gc
+import logging
 
 from inference import *
 
@@ -120,26 +121,20 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_pos
     return np.mean(average_precisions), np.asarray(average_precisions), no_items
 
 
-if __name__ == '__main__':
-    model_name = "model_v26"
-    iou_true_positive_threshold = 0.5
-    nms_iou_threshold = 0.3
-    score_threshold = 0.2
-
-    model = tf.keras.models.load_model(f"weights/{model_name}.h5", custom_objects={
-        'RandomColorAugmentation': RandomColorAugmentation,
-        'Cutout': Cutout
-    }, compile=False)
-    generator = DataGenerator(PATH_TO_TEST, shuffle=False)
-
-    mAP, aps, no_items = evaluate_model(model, generator, iou_true_positive_threshold=iou_true_positive_threshold,
-                                        nms_iou_threshold=nms_iou_threshold,
-                                        score_threshold=score_threshold)
-
-    file = f"mean_average_precisions/iou_tp={iou_true_positive_threshold}_nms_iou={nms_iou_threshold}_score={score_threshold}.csv"
+def log_to_file_map(model, generator, model_name, iou_true_positive_threshold, nms_iou_threshold, score_threshold):
+    file = f"mean_average_precisions/iou_tp={iou_true_positive_threshold}/iou_tp={iou_true_positive_threshold}_nms_iou={nms_iou_threshold}_score={score_threshold}.csv"
     if not os.path.exists(file):
         with open(file, "w") as f:
             f.write("model_name,mAP,Bus,Car,Vehicle registration plate,no_items\n")
+    else:
+        with open(file, "r") as f:
+            for line in f.readlines()[1:]:
+                if model_name in line:
+                    logging.info(f"Already computed for {model_name}")
+                    return
+    mAP, aps, no_items = evaluate_model(model, generator, iou_true_positive_threshold=iou_true_positive_threshold,
+                                        nms_iou_threshold=nms_iou_threshold,
+                                        score_threshold=score_threshold)
 
     mAP = float(mAP)
     line = f"{model_name},{round(mAP, 4)},"
@@ -148,3 +143,27 @@ if __name__ == '__main__':
     line += f"{no_items}/{len(generator.image_paths)}\n".replace(",", " ")
     with open(file, "a") as f:
         f.write(line)
+
+
+if __name__ == '__main__':
+    model_name = "model_v23"
+    iou_true_positive_thresholds = [0.3, 0.5, 0.7]
+    nms_iou_thresholds = [0.3, 0.4, 0.5]
+    score_thresholds = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+
+    model = tf.keras.models.load_model(f"weights/{model_name}.h5", custom_objects={
+        'RandomColorAugmentation': RandomColorAugmentation,
+        'Cutout': Cutout
+    }, compile=False)
+    generator = DataGenerator(PATH_TO_TEST, shuffle=False)
+    logging.Filter()
+    for iou_true_positive_threshold in iou_true_positive_thresholds:
+        for nms_iou_threshold in nms_iou_thresholds:
+            for score_threshold in score_thresholds:
+                log_to_file_map(model, generator,
+                                model_name=model_name,
+                                iou_true_positive_threshold=iou_true_positive_threshold,
+                                nms_iou_threshold=nms_iou_threshold,
+                                score_threshold=score_threshold
+                                )
+                logging.info(f"Done with: {iou_true_positive_threshold} - {nms_iou_threshold} - {score_threshold}")

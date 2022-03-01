@@ -77,7 +77,7 @@ def representative_data_set_generator(mean=127.5, norm=127.5):
 
 def convert_model(model_name):
     converter = tf.lite.TFLiteConverter.from_keras_model(build_model_for_tflite("model_v26"))
-    converter.experimental_new_converter = True
+    #converter.experimental_new_converter = True
 
     #converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
@@ -86,8 +86,7 @@ def convert_model(model_name):
         tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
     ]
     converter.representative_dataset = representative_data_set_generator
-    # converter.inference_input_type = tf.int8  # or tf.uint8
-    # converter.inference_output_type = tf.int8  # or tf.uint8
+  
     # converter.allow_custom_ops = True
 
     tflite_model = converter.convert()
