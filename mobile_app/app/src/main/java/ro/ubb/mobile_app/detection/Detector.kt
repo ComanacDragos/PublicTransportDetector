@@ -9,12 +9,10 @@ import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import ro.ubb.mobile_app.core.TAG
 import ro.ubb.mobile_app.detection.configuration.Configuration
 import java.util.*
-import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sin
 
-object Detector {
+object Detector{
     private const val MAX_FONT_SIZE = 96F
 
     private lateinit var detector: ObjectDetector
@@ -49,6 +47,7 @@ object Detector {
                 configuration.modelName,
                 options
             )
+
         }
         this.configuration = configuration
     }
@@ -61,10 +60,10 @@ object Detector {
 
         Log.v(TAG, "Before NMS")
         debugPrint(results)
-        Log.v(TAG, "after NMS")
         start = System.currentTimeMillis()
         val nmsResults = nonMaximumSupression(results)
         Log.v(TAG, "NMS time: ${System.currentTimeMillis()-start}ms")
+        Log.v(TAG, "after NMS")
         debugPrint(nmsResults)
         return nmsResults
     }

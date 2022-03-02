@@ -221,7 +221,7 @@ def test():
 
 
 if __name__ == '__main__':
-    PATH_TO_MODEL = "weights/model_v26.h5"
+    PATH_TO_MODEL = "weights/model_v27.h5"
     #test()
     # run_on_one_image("documentation\\examples\\bus.jpg", 0.5)
 

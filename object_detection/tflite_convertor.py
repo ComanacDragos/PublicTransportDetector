@@ -76,7 +76,7 @@ def representative_data_set_generator(mean=127.5, norm=127.5):
 
 
 def convert_model(model_name):
-    converter = tf.lite.TFLiteConverter.from_keras_model(build_model_for_tflite("model_v26"))
+    converter = tf.lite.TFLiteConverter.from_keras_model(build_model_for_tflite(model_name))
     #converter.experimental_new_converter = True
 
     #converter.optimizations = [tf.lite.Optimize.DEFAULT]
@@ -136,7 +136,7 @@ def analyze(model_name):
 
 
 if __name__ == '__main__':
-    model_name = "model_v26"
+    model_name = "model_v27"
     try:
         convert_model(model_name)
         analyze(model_name)

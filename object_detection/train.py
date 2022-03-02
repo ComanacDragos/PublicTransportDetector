@@ -79,15 +79,15 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1,
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False,
                                                                   alpha=alpha)
     downsample_skip_layer_name = [
-        # "block_4_expand_relu",
-        "block_6_expand_relu",
+        #"block_4_expand_relu",
+        #"block_6_expand_relu",
         #"block_8_expand_relu",
-        "block_10_expand_relu",
-        #"block_12_expand_relu",
-        #"block_7_add",
-        #"block_9_add",
-        #"block_12_add",
-        #"block_15_add"
+        #"block_10_expand_relu",
+        #"block_14_expand_relu",
+        "block_7_add",
+        "block_9_add",
+        "block_12_add",
+        "block_15_add"
     ]
 
     down_stack = tf.keras.Model(inputs=mobilenet_v2.input,
@@ -104,26 +104,10 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1,
 
     x = Dropout(0.3)(x)
 
-    x = conv_block(x, filters=256, add_skip_connection=False)
-
-    x = inverted_residual_block(x, 512, 256)
-    x = inverted_residual_block(x, 512, 256)
-
     x = conv_block(x, filters=128, strides=2, add_skip_connection=False)
 
     x = inverted_residual_block(x, 512, 128)
     x = inverted_residual_block(x, 512, 128)
-    x = inverted_residual_block(x, 512, 128)
-    x = inverted_residual_block(x, 512, 128)
-
-    x = conv_block(x, filters=64, add_skip_connection=False)
-
-    x = inverted_residual_block(x, 256, 64)
-    x = inverted_residual_block(x, 256, 64)
-    x = inverted_residual_block(x, 256, 64)
-    x = inverted_residual_block(x, 256, 64)
-
-    x = conv_block(x, filters=64, strides=2, add_skip_connection=False)
 
     x = Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
                padding="same",
@@ -226,7 +210,7 @@ class Train:
 
 def train():
     t = Train(epochs=50, n_min=1e-9, n_max=1e-4, path_to_model=None)
-    t.train(name="model_v26.h5")
+    t.train(name="model_v27.h5")
 
 
 def fine_tune():
@@ -235,7 +219,7 @@ def fine_tune():
 
 
 if __name__ == '__main__':
-    #tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
+    # tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
     #build_model()[0].summary()
     train()
     # fine_tune()
