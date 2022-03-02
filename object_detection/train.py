@@ -138,7 +138,7 @@ class CosineAnnealingScheduler(tf.keras.callbacks.Callback):
         self.n_max = n_max
         self.T = T
         self.learning_rates = {
-            0: 1e-3
+            #0: 1e-3
         }
 
     def on_epoch_begin(self, epoch, logs=None):
@@ -214,12 +214,12 @@ def train():
 
 
 def fine_tune():
-    fine_tune = Train(epochs=10, n_min=1e-10, n_max=1e-08, path_to_model="model_v15_2.h5")
-    fine_tune.train(name="model_v15_2_fine_tuned.h5", fine_tune=True)
+    fine_tune = Train(epochs=10, n_min=1e-10, n_max=5e-7, path_to_model="model_v27.h5")
+    fine_tune.train(name="model_v27_fine_tuned.h5", fine_tune=True)
 
 
 if __name__ == '__main__':
     # tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
     #build_model()[0].summary()
-    train()
-    # fine_tune()
+    #train()
+    fine_tune()
