@@ -61,11 +61,13 @@ class ConfigDialog: DialogFragment() {
 
         minimumScoreSlider.setLabelFormatter { "${it.toInt()}%" }
 
-//        minimumScoreSlider.value = detectionViewModel.configuration.value!!.scoreThreshold
-//        maxNoBoxesSlider.value = detectionViewModel.configuration.value!!.maxNoBoxes.toFloat()
-
         detectionViewModel.configuration.observe(viewLifecycleOwner, {
             if(it != null){
+                if(files != null){
+                    modelSpinner.setSelection(files.filter { file ->
+                        file.contains("tflite")
+                    }.indexOf(it.modelName))
+                }
                 minimumScoreSlider.value = it.scoreThreshold
                 maxNoBoxesSlider.value = it.maxNoBoxes.toFloat()
                 nmsIouThresholdSlider.value = it.nmsIouThreshold

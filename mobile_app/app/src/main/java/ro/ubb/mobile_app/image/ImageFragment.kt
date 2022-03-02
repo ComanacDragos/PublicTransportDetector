@@ -3,7 +3,6 @@ package ro.ubb.mobile_app.image
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
@@ -143,14 +142,14 @@ class ImageFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        capturePhotoButton.setOnClickListener { openCamera() }
+        captureVideo.setOnClickListener { openCamera() }
         openGalleryButton.setOnClickListener { openGallery() }
         detectionViewModel = ViewModelProvider(this)[DetectionViewModel::class.java]
 
         detectionViewModel.loading.observe(viewLifecycleOwner, {
             Log.v(TAG, "update detecting")
             progressBar.visibility = if (it) View.VISIBLE else View.GONE
-            capturePhotoButton.isEnabled = !it
+            captureVideo.isEnabled = !it
             openGalleryButton.isEnabled = !it
         })
 
