@@ -33,8 +33,13 @@ class DetectionViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun initDetector(context: Context, configuration: Configuration){
-        if(!Detector.isDetectorInitialized())
-            Detector.setConfiguration(context, configuration)
+        try{
+            if(!Detector.isDetectorInitialized())
+                Detector.setConfiguration(context, configuration)
+        }catch (error: Exception){
+            mutableError.postValue(error)
+            Log.v(TAG, "ERROR:\n${error.stackTraceToString()}")
+        }
     }
 
     suspend fun setConfiguration(context: Context, configuration: Configuration) {

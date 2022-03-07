@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.Log
 import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.task.core.BaseOptions
 import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import ro.ubb.mobile_app.core.TAG
@@ -13,7 +14,8 @@ import kotlin.math.max
 import kotlin.math.min
 
 object Detector{
-    private const val MAX_FONT_SIZE = 96F
+    private const val MAX_FONT_SIZE = 32F
+    private const val MIN_FONT_SIZE = 15f
 
     private lateinit var detector: ObjectDetector
     private lateinit var configuration: Configuration
@@ -35,12 +37,18 @@ object Detector{
             || configuration.maxNoBoxes != this.configuration.maxNoBoxes
             || configuration.scoreThreshold != this.configuration.scoreThreshold
         ) {
-            Log.v(TAG, "reinitializing model")
+            Log.v(TAG, "reinitializing model...available cores: ${Runtime.getRuntime().availableProcessors()}")
             if(isDetectorInitialized())
                 detector.close()
             val options = ObjectDetector.ObjectDetectorOptions.builder()
                 .setMaxResults(configuration.maxNoBoxes)
                 .setScoreThreshold(configuration.scoreThreshold / 100)
+                .setBaseOptions(
+                    BaseOptions.builder()
+//                        .useGpu()
+                        .setNumThreads(Runtime.getRuntime().availableProcessors())
+                        .build()
+                )
                 .build()
             detector = ObjectDetector.createFromFileAndOptions(
                 context,
@@ -59,12 +67,12 @@ object Detector{
         Log.v(TAG, "Detection time: ${System.currentTimeMillis()-start}ms")
 
         Log.v(TAG, "Before NMS")
-        debugPrint(results)
+        logResults(results)
         start = System.currentTimeMillis()
-        val nmsResults = nonMaximumSupression(results)
+        val nmsResults = nonMaximumSuppression(results)
         Log.v(TAG, "NMS time: ${System.currentTimeMillis()-start}ms")
         Log.v(TAG, "after NMS")
-        debugPrint(nmsResults)
+        logResults(nmsResults)
         return nmsResults
     }
 
@@ -78,7 +86,7 @@ object Detector{
         return intersect / union
     }
 
-    private fun nonMaximumSupression(results: List<Detection>): List<Detection>{
+    private fun nonMaximumSuppression(results: List<Detection>): List<Detection>{
         val newResults = LinkedList<Detection>()
         results.sortedByDescending { it.categories.first().score }
             .forEach{
@@ -87,7 +95,6 @@ object Detector{
                 for(result in newResults){
                     if(result.categories.first().label.equals(category.label)){
                         val currentIou = intersectionOverUnion(it.boundingBox, result.boundingBox)
-                        Log.v(TAG, "$currentIou - iou between ${results.indexOf(it)} and ${results.indexOf(result)}")
 
                         if(maxIou < currentIou)
                             maxIou = currentIou
@@ -100,17 +107,25 @@ object Detector{
         return newResults
     }
 
-    fun imageWithBoxes(bitmap: Bitmap): Bitmap{
+    fun detect(bitmap: Bitmap): List<DetectionResult>{
         val results = runDetection(bitmap)
-        val resultToDisplay = results.map {
+        return results.map {
             val category = it.categories.first()
-            val text = "${category.label}, ${category.score.times(100).toInt()}%"
-            DetectionResult(it.boundingBox, text, category.index)
+            val label = category.label
+            val score = category.score
+            DetectionResult(it.boundingBox, label, score, category.index)
         }
-        return drawDetectionResult(bitmap, resultToDisplay)
     }
 
-    private fun debugPrint(results : List<Detection>) {
+    fun imageWithBoxes(bitmap: Bitmap): Bitmap{
+        val resultToDisplay = detect(bitmap)
+        val outputBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+        val canvas = Canvas(outputBitmap)
+        drawDetectionResult(canvas, resultToDisplay)
+        return outputBitmap
+    }
+
+    private fun logResults(results : List<Detection>) {
         Log.v(TAG, "#detections: ${results.size}")
         for ((i, obj) in results.withIndex()) {
             val box = obj.boundingBox
@@ -127,22 +142,19 @@ object Detector{
     }
 
     private fun drawDetectionResult(
-        bitmap: Bitmap,
+        canvas: Canvas,
         detectionResults: List<DetectionResult>
-    ): Bitmap {
-        val outputBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-        val canvas = Canvas(outputBitmap)
+    ) {
         val pen = Paint()
         pen.textAlign = Paint.Align.LEFT
 
         detectionResults.forEach {
-            // draw bounding box
             when(it.classIndex){
                 0-> pen.color = Color.RED
                 1-> pen.color = Color.GREEN
                 2-> pen.color = Color.BLUE
             }
-            pen.strokeWidth = 8F
+            pen.strokeWidth = 3F
             pen.style = Paint.Style.STROKE
             val box = it.boundingBox
             canvas.drawRect(box, pen)
@@ -150,25 +162,24 @@ object Detector{
 
             val tagSize = Rect(0, 0, 0, 0)
 
-            // calculate the right font size
             pen.style = Paint.Style.FILL_AND_STROKE
-            pen.color = Color.YELLOW
+            pen.color = Color.MAGENTA
             pen.strokeWidth = 2F
 
             pen.textSize = MAX_FONT_SIZE
-            pen.getTextBounds(it.text, 0, it.text.length, tagSize)
+
+            val text = it.label + " " + "%,.2f".format(it.score * 100) + "%"
+
+            pen.getTextBounds(text, 0, text.length, tagSize)
             val fontSize: Float = pen.textSize * box.width() / tagSize.width()
 
-            // adjust the font size so texts are inside the bounding box
             if (fontSize < pen.textSize) pen.textSize = fontSize
-
-            var margin = (box.width() - tagSize.width()) / 2.0F
-            if (margin < 0F) margin = 0F
+            if(pen.textSize < MIN_FONT_SIZE) pen.textSize = MIN_FONT_SIZE
             canvas.drawText(
-                it.text, box.left + margin,
-                box.top + tagSize.height().times(1F), pen
+                text,
+                box.left + 2f,
+                box.top - 5f, pen
             )
         }
-        return outputBitmap
     }
 }

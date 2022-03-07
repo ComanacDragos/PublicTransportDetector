@@ -3,7 +3,9 @@ package ro.ubb.mobile_app.image
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -24,25 +26,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ro.ubb.mobile_app.BuildConfig
 import ro.ubb.mobile_app.R
+import ro.ubb.mobile_app.core.TAG
 import ro.ubb.mobile_app.detection.DetectionViewModel
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-
-import ro.ubb.mobile_app.core.TAG
 import kotlin.system.measureTimeMillis
-
+import android.media.ExifInterface
 
 class ImageFragment : Fragment() {
     companion object{
-        private val REQUEST_PERMISSION = 10
-        private val REQUEST_IMAGE_CAPTURE = 1
-        private val REQUEST_PICK_IMAGE = 2
+        private const val REQUEST_PERMISSION = 10
+        private const val REQUEST_IMAGE_CAPTURE = 1
+        private const val REQUEST_PICK_IMAGE = 2
     }
 
-    private lateinit var currentPhotoPath: String
     private lateinit var detectionViewModel: DetectionViewModel
+    private lateinit var imageFragmentViewModel: ImageFragmentViewModel
 
     override fun onResume() {
         super.onResume()
@@ -64,9 +65,10 @@ class ImageFragment : Fragment() {
                 val photoFile: File? = try {
                     createCapturedPhoto()
                 } catch (ex: IOException) {
+                    Log.v(TAG, "ERROR: ${ex.stackTrace}")
                     null
                 }
-                Log.d("MainActivity", "photofile $photoFile");
+                Log.d(TAG, "photo file $photoFile")
                 photoFile?.also {
                     val photoURI = FileProvider.getUriForFile(
                         requireContext(),
@@ -86,40 +88,78 @@ class ImageFragment : Fragment() {
         startActivityForResult(intent, REQUEST_PICK_IMAGE)
     }
 
+    private fun rotateImage(source: Bitmap, angle: Float): Bitmap {
+        Log.v(TAG, "Rotate with angle: $angle")
+        val matrix = Matrix()
+        matrix.postRotate(angle)
+        return Bitmap.createBitmap(
+            source, 0, 0, source.width, source.height,
+            matrix, true
+        )
+    }
+
+    private fun rotateIfPossible(bitmap: Bitmap, uri: Uri): Bitmap{
+        try{
+            val ei = ExifInterface(uri.path!!)
+            val orientation: Int = ei.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_UNDEFINED
+            )
+
+            return when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> rotateImage(bitmap, 90f)
+                ExifInterface.ORIENTATION_ROTATE_180 -> rotateImage(bitmap, 180f)
+                ExifInterface.ORIENTATION_ROTATE_270 -> rotateImage(bitmap, 270f)
+                ExifInterface.ORIENTATION_NORMAL -> bitmap
+                else -> bitmap
+            }
+        }catch (ex: Exception){
+            Log.v(TAG, "COULD NOT ROTATE: ${ex.message}")
+            return bitmap
+        }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == AppCompatActivity.RESULT_OK) {
-            var uri: Uri? = null
-            if (requestCode == REQUEST_IMAGE_CAPTURE) {
-                uri = Uri.fromFile(File(currentPhotoPath))
-            }
-            else if (requestCode == REQUEST_PICK_IMAGE) {
-                uri = data?.data
-            }
-            //ivImage.setImageURI(uri)
-            //return
-            uri?.let {
-                requireContext().contentResolver.openInputStream(it)
-            }.also {
-//                val bitmap = Bitmap.createScaledBitmap(
-//                    BitmapFactory.decodeStream(it),
-//                    416, 416, false
-//                )
+        try{
+            if (resultCode == AppCompatActivity.RESULT_OK) {
+                var uri: Uri? = null
+                if (requestCode == REQUEST_IMAGE_CAPTURE) {
+                    uri = Uri.fromFile(File(imageFragmentViewModel.currentPhotoPath))
+                }
+                else if (requestCode == REQUEST_PICK_IMAGE) {
+                    uri = data?.data
+                }
 
-                val bitmap = BitmapFactory.decodeStream(it)
+                uri?.let {
+                    requireContext().contentResolver.openInputStream(it)
+                }.also {
+                    var bitmap = BitmapFactory.decodeStream(it)
 
-                lifecycleScope.launch(Dispatchers.Default) {
-                    Log.v(TAG, "start detection")
-                    val elapsed = measureTimeMillis {
-                        detectionViewModel.detect(bitmap)
+                    lifecycleScope.launch(Dispatchers.Default) {
+                        bitmap = Bitmap.createScaledBitmap(
+                            bitmap,
+                            416, 416, false
+                        )
+
+                        bitmap = rotateIfPossible(bitmap, uri!!)
+
+                        Log.v(TAG, "width: ${bitmap.width} height: ${bitmap.height} starting detection...")
+
+                        val elapsed = measureTimeMillis {
+                            detectionViewModel.detect(bitmap)
+                        }
+                        Log.v(TAG, "Total detection time: ${elapsed}ms")
                     }
-                    Log.v(TAG, "Total detection time: ${elapsed}ms")
+
+                    requireActivity().runOnUiThread{
+                        ivImage.setImageBitmap(bitmap)
+                    }
+                    it!!.close()
                 }
-                requireActivity().runOnUiThread{
-                    ivImage.setImageBitmap(bitmap)
-                }
-                it!!.close()
             }
+        }catch (ex: Exception){
+            Log.v(TAG, "ERROR: ${ex.stackTraceToString()}")
         }
     }
 
@@ -128,7 +168,7 @@ class ImageFragment : Fragment() {
         val timestamp: String = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
         val storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         return File.createTempFile("PHOTO_${timestamp}",".jpg", storageDir).apply {
-            currentPhotoPath = absolutePath
+            imageFragmentViewModel.currentPhotoPath = absolutePath
         }
     }
 
@@ -145,6 +185,7 @@ class ImageFragment : Fragment() {
         captureVideo.setOnClickListener { openCamera() }
         openGalleryButton.setOnClickListener { openGallery() }
         detectionViewModel = ViewModelProvider(this)[DetectionViewModel::class.java]
+        imageFragmentViewModel = ViewModelProvider(this)[ImageFragmentViewModel::class.java]
 
         detectionViewModel.loading.observe(viewLifecycleOwner, {
             Log.v(TAG, "update detecting")

@@ -3,11 +3,11 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        maven {         // add this repo to use snapshots
-            name 'ossrh-snapshot'
-            url 'https://oss.sonatype.org/content/repositories/snapshots'
-        }
-        //mavenLocal()
+//        maven {         // add this repo to use snapshots
+//            name 'ossrh-snapshot'
+//            url 'https://oss.sonatype.org/content/repositories/snapshots'
+//        }
+        mavenLocal()
     }
     dependencies {
         classpath "com.android.tools.build:gradle:7.0.2"
