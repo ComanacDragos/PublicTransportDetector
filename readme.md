@@ -1,4 +1,4 @@
-# Public transport access detector
+# Public transport object detector
 
 Object detection system inspired from YOLOv2.
 

@@ -4,13 +4,11 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.media.Image
 import android.util.Log
-import android.util.Size
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import ro.ubb.mobile_app.core.TAG
 import ro.ubb.mobile_app.detection.DetectionResult
 import ro.ubb.mobile_app.detection.Detector
-import java.util.*
 
 typealias AnalyzerCallback = (image: List<DetectionResult>) -> Unit
 class Analyzer (
@@ -33,6 +31,9 @@ class Analyzer (
         val targetBitmap =
             Bitmap.createBitmap(targetImage.width, targetImage.height, Bitmap.Config.ARGB_8888)
         yuvToRgbConverter.yuvToRgb(targetImage, targetBitmap)
-        return Detector.detect(targetBitmap)
+        return Detector.detect(Bitmap.createScaledBitmap(
+            targetBitmap,
+            416, 416, false
+        ))
     }
 }

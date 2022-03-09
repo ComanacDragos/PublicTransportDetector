@@ -2,6 +2,7 @@ package ro.ubb.mobile_app.live
 
 import android.os.Bundle
 import android.util.Log
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +20,7 @@ import java.util.concurrent.Executors
 
 
 class LiveFragment : Fragment() {
-    private var fragmentIsChosen: Boolean = false
+    private var cameraIsSetup = false
     private lateinit var cameraExecutor: ExecutorService
     private val yuvToRgbConverter: YuvToRgbConverter by lazy {
         YuvToRgbConverter(requireContext())
@@ -31,7 +32,7 @@ class LiveFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         overlaySurfaceView = OverlaySurfaceView(resultView)
         cameraExecutor = Executors.newSingleThreadExecutor()
-        setupCamera()
+        //setupCamera()
     }
 
     private fun setupCamera(){
@@ -46,6 +47,7 @@ class LiveFragment : Fragment() {
 
             val imageAnalyzer = ImageAnalysis.Builder()
                 .setTargetRotation(cameraView.display.rotation)
+                .setTargetResolution(Size(4000, 4000)) // large numbers so that the highest resolution is picked
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
@@ -64,8 +66,9 @@ class LiveFragment : Fragment() {
                 cameraProvider.unbindAll()
 
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
-            } catch (exc: Exception) {
-                Log.e("ERROR: Camera", "Use case binding failed", exc)
+                cameraIsSetup = true
+            } catch (ex: Exception) {
+                Log.e(TAG, "ERROR: Camera Use case binding failed", ex)
             }
 
         }, ContextCompat.getMainExecutor(requireContext()))
@@ -78,9 +81,22 @@ class LiveFragment : Fragment() {
 
     override fun setMenuVisibility(menuVisible: Boolean) {
         super.setMenuVisibility(menuVisible)
-        fragmentIsChosen = menuVisible
-        Log.v(TAG, "Live fragment visibility: $fragmentIsChosen")
-
+        if(menuVisible && !cameraIsSetup)
+            setupCamera()
+        else{
+            if(!cameraIsSetup)
+                return
+            val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+            cameraProviderFuture.addListener({
+                val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+                try{
+                    cameraProvider.unbindAll()
+                    cameraIsSetup = false
+                }catch (ex: Exception){
+                    Log.v(TAG, "ERROR: on closing camera: \n${ex.stackTraceToString()}")
+                }
+            }, ContextCompat.getMainExecutor(requireContext()))
+        }
     }
 
     override fun onCreateView(

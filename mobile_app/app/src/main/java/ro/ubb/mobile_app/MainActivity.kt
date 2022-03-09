@@ -1,7 +1,5 @@
 package ro.ubb.mobile_app
 
-import android.content.res.ColorStateList
-import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.tabs.TabLayout
@@ -19,9 +17,5 @@ class MainActivity : AppCompatActivity() {
         viewPager.adapter = sectionsPagerAdapter
         val tabs: TabLayout = tabs
         tabs.setupWithViewPager(viewPager)
-
-        settingsFab.setOnClickListener {
-            ConfigDialog().show(supportFragmentManager, "ConfigDialog")
-        }
     }
 }

@@ -34,6 +34,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.system.measureTimeMillis
 import android.media.ExifInterface
+import kotlinx.android.synthetic.main.activity_main.*
+import ro.ubb.mobile_app.detection.configuration.ConfigDialog
 
 class ImageFragment : Fragment() {
     companion object{
@@ -215,5 +217,9 @@ class ImageFragment : Fragment() {
                 detectionViewModel.initDetector(requireContext(), it)
             }
         })
+
+        settingsFab.setOnClickListener {
+            ConfigDialog().show(requireActivity().supportFragmentManager, "ConfigDialog")
+        }
     }
 }
