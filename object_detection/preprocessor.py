@@ -1,8 +1,6 @@
-import os
 import time
 
 import albumentations
-import matplotlib.pyplot as plt
 
 from image import *
 

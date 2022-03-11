@@ -14,55 +14,57 @@ L2 = 2e-5
 LEAKY_RELU_ALPHA = 0.1
 
 
-def conv_block(inputs, kernel_size=3, filters=32, activation=True, add_skip_connection=True, strides=1):
-    x = Conv2D(kernel_size=kernel_size, filters=filters, padding="same", strides=strides,
-               kernel_initializer=HeNormal(),
-               kernel_regularizer=l1_l2(l1=L1, l2=L2)
-               )(inputs)
-    if add_skip_connection:
+class BlockCreator:
+    @staticmethod
+    def conv_block(inputs, kernel_size=3, filters=32, activation=True, add_skip_connection=True, strides=1):
         x = Conv2D(kernel_size=kernel_size, filters=filters, padding="same", strides=strides,
                    kernel_initializer=HeNormal(),
                    kernel_regularizer=l1_l2(l1=L1, l2=L2)
-                   )(x)
-        x = Add()([inputs, x])
-    if activation:
+                   )(inputs)
+        if add_skip_connection:
+            x = Conv2D(kernel_size=kernel_size, filters=filters, padding="same", strides=strides,
+                       kernel_initializer=HeNormal(),
+                       kernel_regularizer=l1_l2(l1=L1, l2=L2)
+                       )(x)
+            x = Add()([inputs, x])
+        if activation:
+            x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
+        x = BatchNormalization()(x)
+        return x
+
+    @staticmethod
+    def upsample_block(x, filters, kernel_size=3, strides=2):
+        x = Convolution2DTranspose(kernel_size=kernel_size, filters=filters, strides=strides,
+                                   padding="same",
+                                   kernel_initializer=tf.keras.initializers.HeNormal(),
+                                   kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2)
+                                   )(x)
         x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
-    x = BatchNormalization()(x)
-    return x
+        x = BatchNormalization()(x)
+        return x
 
-
-def upsample_block(x, filters, kernel_size=3, strides=2):
-    x = Convolution2DTranspose(kernel_size=kernel_size, filters=filters, strides=strides,
-                               padding="same",
-                               kernel_initializer=tf.keras.initializers.HeNormal(),
-                               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2)
-                               )(x)
-    x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
-    x = BatchNormalization()(x)
-    return x
-
-
-def inverted_residual_block(inputs, expand, squeeze, add_skip_connection=True):
-    x = Conv2D(expand, (1, 1),
-               kernel_initializer=tf.keras.initializers.HeNormal(),
-               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2)
-               )(inputs)
-    x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
-    x = BatchNormalization()(x)
-    x = DepthwiseConv2D((3, 3),
-                        padding="same",
-                        depthwise_initializer=tf.keras.initializers.HeNormal(),
-                        depthwise_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2))(x)
-    x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
-    x = BatchNormalization()(x)
-    x = Conv2D(squeeze, (1, 1),
-               kernel_initializer=tf.keras.initializers.HeNormal(),
-               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2))(x)
-    x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
-    x = BatchNormalization()(x)
-    if add_skip_connection:
-        x = Add()([x, inputs])
-    return x
+    @staticmethod
+    def inverted_residual_block(inputs, expand, squeeze, add_skip_connection=True):
+        x = Conv2D(expand, (1, 1),
+                   kernel_initializer=tf.keras.initializers.HeNormal(),
+                   kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2)
+                   )(inputs)
+        x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
+        x = BatchNormalization()(x)
+        x = DepthwiseConv2D((3, 3),
+                            padding="same",
+                            depthwise_initializer=tf.keras.initializers.HeNormal(),
+                            depthwise_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2))(x)
+        x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
+        x = BatchNormalization()(x)
+        x = Conv2D(squeeze, (1, 1),
+                   kernel_initializer=tf.keras.initializers.HeNormal(),
+                   kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2))(x)
+        x = LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x)
+        x = BatchNormalization()(x)
+        if add_skip_connection:
+            x = Add()([x, inputs])
+        return x
 
 
 def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1, 1, MAX_BOXES_PER_IMAGES, 4),
@@ -101,15 +103,15 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1,
     x = skips[-1]
 
     for skip_layer in reversed(skips[:-1]):
-        x = upsample_block(x, skip_layer.shape[-1], strides=int(skip_layer.shape[1] / x.shape[1]))
+        x = BlockCreator.upsample_block(x, skip_layer.shape[-1], strides=int(skip_layer.shape[1] / x.shape[1]))
         x = Concatenate()([x, skip_layer])
 
     x = Dropout(0.3)(x)
 
-    x = conv_block(x, filters=128, strides=2, add_skip_connection=False)
+    x = BlockCreator.conv_block(x, filters=128, strides=2, add_skip_connection=False)
 
-    x = inverted_residual_block(x, 512, 128)
-    x = inverted_residual_block(x, 512, 128)
+    x = BlockCreator.inverted_residual_block(x, 512, 128)
+    x = BlockCreator.inverted_residual_block(x, 512, 128)
 
     x = Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
                padding="same",
@@ -274,4 +276,4 @@ if __name__ == '__main__':
     # tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
     # build_model()[0].summary()
     train()
-    #fine_tune()
+    # fine_tune()
