@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.live
+package ro.ubb.mobile_app.live.yuv
 
 /*
 https://github.com/android/camera-samples/blob/master/Camera2Basic/utils/src/main/java/com/example/android/camera/utils/YuvToRgbConverter.kt

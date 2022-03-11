@@ -66,12 +66,12 @@ object Detector{
         val results = detector.detect(image)
         Log.v(TAG, "Detection time: ${System.currentTimeMillis()-start}ms")
 
-        Log.v(TAG, "Before NMS")
+        Log.d(TAG, "Before NMS")
         logResults(results)
         start = System.currentTimeMillis()
         val nmsResults = nonMaximumSuppression(results)
         Log.v(TAG, "NMS time: ${System.currentTimeMillis()-start}ms")
-        Log.v(TAG, "after NMS")
+        Log.d(TAG, "after NMS")
         logResults(nmsResults)
         return nmsResults
     }
@@ -126,17 +126,17 @@ object Detector{
     }
 
     private fun logResults(results : List<Detection>) {
-        Log.v(TAG, "#detections: ${results.size}")
+        Log.d(TAG, "#detections: ${results.size}")
         for ((i, obj) in results.withIndex()) {
             val box = obj.boundingBox
 
-            Log.v(TAG, "Detected object: $i ")
-            Log.v(TAG, "  boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})")
+            Log.d(TAG, "Detected object: $i ")
+            Log.d(TAG, "  boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})")
 
             for ((j, category) in obj.categories.withIndex()) {
-                Log.v(TAG, "    Label $j: ${category.label}")
+                Log.d(TAG, "    Label $j: ${category.label}")
                 val confidence: Int = category.score.times(100).toInt()
-                Log.v(TAG, "    Confidence: ${confidence}%")
+                Log.d(TAG, "    Confidence: ${confidence}%")
             }
         }
     }

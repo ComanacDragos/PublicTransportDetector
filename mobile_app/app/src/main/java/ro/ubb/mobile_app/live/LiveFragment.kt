@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_live.*
 import ro.ubb.mobile_app.R
 import ro.ubb.mobile_app.core.TAG
+import ro.ubb.mobile_app.live.yuv.YuvToRgbConverter
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -32,7 +33,6 @@ class LiveFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         overlaySurfaceView = OverlaySurfaceView(resultView)
         cameraExecutor = Executors.newSingleThreadExecutor()
-        //setupCamera()
     }
 
     private fun setupCamera(){

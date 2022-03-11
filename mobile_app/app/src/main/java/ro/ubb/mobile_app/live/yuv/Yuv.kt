@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.live
+package ro.ubb.mobile_app.live.yuv
 
 import android.graphics.ImageFormat
 import android.media.Image
