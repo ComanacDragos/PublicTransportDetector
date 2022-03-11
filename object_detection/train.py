@@ -7,6 +7,8 @@ from tensorflow.keras.initializers import HeNormal
 from tensorflow.keras.regularizers import l1_l2
 from tensorflow.keras.callbacks import ModelCheckpoint, TerminateOnNaN, TensorBoard, EarlyStopping, ReduceLROnPlateau
 
+from tensorflow.python.keras.callbacks import History
+
 L1 = 2e-6
 L2 = 2e-5
 LEAKY_RELU_ALPHA = 0.1
@@ -79,11 +81,11 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1,
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False,
                                                                   alpha=alpha)
     downsample_skip_layer_name = [
-        #"block_4_expand_relu",
-        #"block_6_expand_relu",
-        #"block_8_expand_relu",
-        #"block_10_expand_relu",
-        #"block_14_expand_relu",
+        # "block_4_expand_relu",
+        # "block_6_expand_relu",
+        # "block_8_expand_relu",
+        # "block_10_expand_relu",
+        # "block_14_expand_relu",
         "block_7_add",
         "block_9_add",
         "block_12_add",
@@ -138,7 +140,7 @@ class CosineAnnealingScheduler(tf.keras.callbacks.Callback):
         self.n_max = n_max
         self.T = T
         self.learning_rates = {
-            #0: 1e-3
+            # 0: 1e-3
         }
 
     def on_epoch_begin(self, epoch, logs=None):
@@ -152,7 +154,17 @@ class CosineAnnealingScheduler(tf.keras.callbacks.Callback):
         print(f"\nEpoch {epoch + 1}: Learning rate is {scheduled_lr}.")
 
 
-class Train:
+class Trainer:
+    def train(self, name: str) -> History: pass
+
+    def load_model(self, path_to_model: str): pass
+
+    @property
+    def model(self) -> tf.keras.Model:
+        return None
+
+
+class SimpleTrainer(Trainer):
     def __init__(self, epochs=5, batch_size=BATCH_SIZE,
                  n_min=1e-5, n_max=4e-4, T=None,
                  path_to_model=None, alpha=1.0,
@@ -166,18 +178,19 @@ class Train:
         self.n_min = n_min
         self.n_max = n_max
         self.alpha = alpha
-        self.model = None
-        self.true_boxes = None
-        if path_to_model is None:
-            self.new_model()
-        else:
+
+        self._model, self.true_boxes = build_model(alpha=self.alpha)
+        if path_to_model is not None:
             self.load_model(path_to_model)
 
-    def train(self, name="model.h5", fine_tune=False):
-        if fine_tune:
-            self.model.trainable = True
-        self.model.summary()
+    @Trainer.model.getter
+    def model(self):
+        return self._model
 
+    def load_model(self, path_to_model: str):
+        self.model.load_weights(f"weights/{path_to_model}")
+
+    def train(self, name: str):
         self.model.compile(optimizer=tf.keras.optimizers.Adam(epsilon=1e-8,
                                                               decay=0.0
                                                               ),
@@ -196,30 +209,69 @@ class Train:
                                             TensorBoard(log_dir=f"info_about_runs/{name}")
                                             ]
                                  , workers=os.cpu_count())
+        return history
+
+
+class ExtendedTrainer(Trainer):
+    def __init__(self, trainer):
+        self.trainer = trainer
+
+    def train(self, name: str):
+        return self.trainer.train(name)
+
+    def load_model(self, path_to_model: str):
+        self.trainer.load_model(path_to_model)
+
+    @Trainer.model.getter
+    def model(self):
+        return self.trainer.model
+
+
+class FineTuneTrainer(ExtendedTrainer):
+    def __init__(self, trainer):
+        super().__init__(trainer)
+
+    def train(self, name: str):
+        self.model.trainable = True
+        return super().train(name)
+
+    def load_model(self, path_to_model: str):
+        self.model.trainable = True
+        super().load_model(path_to_model)
+
+
+class LogTrainer(ExtendedTrainer):
+    def __init__(self, trainer):
+        super().__init__(trainer)
+
+    def train(self, name: str):
+        self.model.summary()
+        history = super().train(name)
         plot_history(history.history)
+        return history
 
-    def load_model(self, path: str):
-        self.model, self.true_boxes = build_model(alpha=self.alpha)
-        if "fine_tuned" in path:
-            self.model.trainable = True
-        self.model.load_weights(f"weights/{path}")
 
-    def new_model(self):
-        self.model, self.true_boxes = build_model(alpha=self.alpha)
+def compose_trainer(concrete_trainer, decorators):
+    trainer = concrete_trainer
+    for DecoratorClass in decorators:
+        trainer = DecoratorClass(trainer)
+    return trainer
 
 
 def train():
-    t = Train(epochs=50, n_min=1e-9, n_max=1e-4, path_to_model=None)
-    t.train(name="model_v27.h5")
+    trainer = SimpleTrainer(epochs=1, n_min=1e-9, n_max=1e-4, path_to_model=None, limit_batches=1)
+    trainer = compose_trainer(trainer, [LogTrainer])
+    trainer.train(name="test.h5")
 
 
 def fine_tune():
-    fine_tune = Train(epochs=10, n_min=1e-10, n_max=5e-7, path_to_model="model_v27.h5")
-    fine_tune.train(name="model_v27_fine_tuned.h5", fine_tune=True)
+    trainer = SimpleTrainer(epochs=1, n_min=1e-10, n_max=5e-7, path_to_model="test.h5", limit_batches=1)
+    trainer = compose_trainer(trainer, [LogTrainer, FineTuneTrainer])
+    trainer.train(name="test.h5")
 
 
 if __name__ == '__main__':
     # tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
-    #build_model()[0].summary()
-    #train()
-    fine_tune()
+    # build_model()[0].summary()
+    train()
+    #fine_tune()
