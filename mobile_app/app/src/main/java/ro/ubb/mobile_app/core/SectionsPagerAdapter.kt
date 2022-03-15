@@ -6,23 +6,27 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import ro.ubb.mobile_app.R
 import ro.ubb.mobile_app.image.ImageFragment
+import ro.ubb.mobile_app.live.AccessibleLiveFragment
 import ro.ubb.mobile_app.live.LiveFragment
 
 private val TAB_TITLES = arrayOf(
     R.string.tab_text_image,
-    R.string.tab_text_live
+    R.string.tab_text_live,
+    R.string.tab_text_live_accessible
 )
 
 class SectionsPagerAdapter(private val context: Context, fm: FragmentManager) : FragmentPagerAdapter(fm) {
 
     override fun getItem(position: Int): Fragment {
-        if(position == 0)
-            return ImageFragment()
-        return LiveFragment()
+        return when(position){
+            0 -> ImageFragment()
+            1 -> LiveFragment()
+            else -> AccessibleLiveFragment()
+        }
     }
 
     override fun getCount(): Int {
-        return 2
+        return 3
     }
 
     override fun getPageTitle(position: Int): CharSequence? {

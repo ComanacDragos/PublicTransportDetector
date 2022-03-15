@@ -2,4 +2,5 @@
     <string name="app_name">Public transport detector</string>
     <string name="tab_text_image">Image</string>
     <string name="tab_text_live">Live</string>
+    <string name="tab_text_live_accessible">Accessible Live</string>
 </resources>

@@ -137,15 +137,8 @@ class ImageFragment : Fragment() {
                     requireContext().contentResolver.openInputStream(it)
                 }.also {
                     var bitmap = BitmapFactory.decodeStream(it)
-
+                    bitmap = rotateIfPossible(bitmap, uri!!)
                     lifecycleScope.launch(Dispatchers.Default) {
-                        bitmap = Bitmap.createScaledBitmap(
-                            bitmap,
-                            416, 416, false
-                        )
-
-                        bitmap = rotateIfPossible(bitmap, uri!!)
-
                         Log.v(TAG, "width: ${bitmap.width} height: ${bitmap.height} starting detection...")
 
                         val elapsed = measureTimeMillis {
@@ -182,8 +175,8 @@ class ImageFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_image, container, false)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         captureVideo.setOnClickListener { openCamera() }
         openGalleryButton.setOnClickListener { openGallery() }
         detectionViewModel = ViewModelProvider(this)[DetectionViewModel::class.java]

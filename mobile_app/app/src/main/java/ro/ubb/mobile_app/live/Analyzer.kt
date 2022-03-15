@@ -32,9 +32,6 @@ class Analyzer (
         Log.v(TAG, "targetImage width: ${targetImage.width} height: ${targetImage.height}")
         val targetBitmap = Bitmap.createBitmap(targetImage.width, targetImage.height, Bitmap.Config.ARGB_8888)
         yuvToRgbConverter.yuvToRgb(targetImage, targetBitmap)
-        return Detector.detect(Bitmap.createScaledBitmap(
-            targetBitmap,
-            416, 416, false
-        ))
+        return Detector.detect(targetBitmap)
     }
 }

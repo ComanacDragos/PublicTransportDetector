@@ -14,8 +14,8 @@ import kotlin.math.max
 import kotlin.math.min
 
 object Detector{
-    private const val MAX_FONT_SIZE = 32F
-    private const val MIN_FONT_SIZE = 15f
+    private const val IMAGE_WIDTH = 416
+    private const val IMAGE_HEIGHT = 416
 
     private lateinit var detector: ObjectDetector
     private lateinit var configuration: Configuration
@@ -108,7 +108,10 @@ object Detector{
     }
 
     fun detect(bitmap: Bitmap): List<DetectionResult>{
-        val results = runDetection(bitmap)
+        val results = runDetection(Bitmap.createScaledBitmap(
+            bitmap,
+            IMAGE_WIDTH, IMAGE_HEIGHT, false
+        ))
         return results.map {
             val category = it.categories.first()
             val label = category.label
@@ -141,44 +144,43 @@ object Detector{
         }
     }
 
-    private fun drawDetectionResult(
+    fun drawDetectionResult(
         canvas: Canvas,
         detectionResults: List<DetectionResult>
     ) {
-        val pen = Paint()
-        pen.textAlign = Paint.Align.LEFT
-
-        detectionResults.forEach {
-            when(it.classIndex){
-                0-> pen.color = Color.RED
-                1-> pen.color = Color.GREEN
-                2-> pen.color = Color.BLUE
+        val paint = Paint()
+        detectionResults.map{
+                detectionObject ->
+            paint.apply {
+                color = when(detectionObject.classIndex){
+                    0-> Color.RED
+                    1-> Color.GREEN
+                    2-> Color.BLUE
+                    else -> Color.RED
+                }
+                style = Paint.Style.STROKE
+                strokeWidth = 7f
+                isAntiAlias = false
             }
-            pen.strokeWidth = 3F
-            pen.style = Paint.Style.STROKE
-            val box = it.boundingBox
-            canvas.drawRect(box, pen)
 
+            val boundingBox = RectF().apply {
+                top=detectionObject.boundingBox.top/ IMAGE_HEIGHT*canvas.height
+                left=detectionObject.boundingBox.left/ IMAGE_WIDTH*canvas.width
+                bottom=detectionObject.boundingBox.bottom/IMAGE_HEIGHT*canvas.height
+                right=detectionObject.boundingBox.right/IMAGE_WIDTH*canvas.width
+            }
+            canvas.drawRect(boundingBox, paint)
 
-            val tagSize = Rect(0, 0, 0, 0)
-
-            pen.style = Paint.Style.FILL_AND_STROKE
-            pen.color = Color.MAGENTA
-            pen.strokeWidth = 2F
-
-            pen.textSize = MAX_FONT_SIZE
-
-            val text = it.label + " " + "%,.2f".format(it.score * 100) + "%"
-
-            pen.getTextBounds(text, 0, text.length, tagSize)
-            val fontSize: Float = pen.textSize * box.width() / tagSize.width()
-
-            if (fontSize < pen.textSize) pen.textSize = fontSize
-            if(pen.textSize < MIN_FONT_SIZE) pen.textSize = MIN_FONT_SIZE
+            paint.apply {
+                style = Paint.Style.FILL
+                isAntiAlias = true
+                textSize = 36f
+            }
             canvas.drawText(
-                text,
-                box.left + 2f,
-                box.top - 5f, pen
+                detectionObject.label + " " + "%,.2f".format(detectionObject.score * 100) + "%",
+                boundingBox.left,
+                boundingBox.top - 5f,
+                paint
             )
         }
     }
