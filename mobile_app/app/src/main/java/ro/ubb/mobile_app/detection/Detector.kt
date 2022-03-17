@@ -5,7 +5,6 @@ import android.graphics.*
 import android.util.Log
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.task.core.BaseOptions
-import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import ro.ubb.mobile_app.core.TAG
 import ro.ubb.mobile_app.detection.configuration.Configuration
@@ -60,10 +59,15 @@ object Detector{
         this.configuration = configuration
     }
 
-    private fun runDetection(bitmap: Bitmap): List<Detection> {
+    private fun runDetection(bitmap: Bitmap): List<DetectionResult> {
         var start = System.currentTimeMillis()
         val image = TensorImage.fromBitmap(bitmap)
-        val results = detector.detect(image)
+        val results = detector.detect(image).map {
+            val category = it.categories.first()
+            val label = category.label
+            val score = category.score
+            DetectionResult(it.boundingBox, label, score, category.index)
+        }
         Log.v(TAG, "Detection time: ${System.currentTimeMillis()-start}ms")
 
         Log.d(TAG, "Before NMS")
@@ -86,14 +90,13 @@ object Detector{
         return intersect / union
     }
 
-    private fun nonMaximumSuppression(results: List<Detection>): List<Detection>{
-        val newResults = LinkedList<Detection>()
-        results.sortedByDescending { it.categories.first().score }
+    private fun nonMaximumSuppression(results: List<DetectionResult>): List<DetectionResult>{
+        val newResults = LinkedList<DetectionResult>()
+        results.sortedByDescending { it.score }
             .forEach{
                 var maxIou = -1f
-                val category = it.categories.first()
                 for(result in newResults){
-                    if(result.categories.first().label.equals(category.label)){
+                    if(result.label == it.label){
                         val currentIou = intersectionOverUnion(it.boundingBox, result.boundingBox)
 
                         if(maxIou < currentIou)
@@ -108,16 +111,10 @@ object Detector{
     }
 
     fun detect(bitmap: Bitmap): List<DetectionResult>{
-        val results = runDetection(Bitmap.createScaledBitmap(
+        return runDetection(Bitmap.createScaledBitmap(
             bitmap,
             IMAGE_WIDTH, IMAGE_HEIGHT, false
         ))
-        return results.map {
-            val category = it.categories.first()
-            val label = category.label
-            val score = category.score
-            DetectionResult(it.boundingBox, label, score, category.index)
-        }
     }
 
     fun imageWithBoxes(bitmap: Bitmap): Bitmap{
@@ -128,20 +125,21 @@ object Detector{
         return outputBitmap
     }
 
-    private fun logResults(results : List<Detection>) {
+    private fun logResults(results : List<DetectionResult>) {
         Log.d(TAG, "#detections: ${results.size}")
         for ((i, obj) in results.withIndex()) {
             val box = obj.boundingBox
-
             Log.d(TAG, "Detected object: $i ")
             Log.d(TAG, "  boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})")
-
-            for ((j, category) in obj.categories.withIndex()) {
-                Log.d(TAG, "    Label $j: ${category.label}")
-                val confidence: Int = category.score.times(100).toInt()
-                Log.d(TAG, "    Confidence: ${confidence}%")
-            }
+            Log.d(TAG, "    Label: ${obj.label}")
+            Log.d(TAG, "    Confidence: ${obj.score.times(100).toInt()}%")
         }
+    }
+
+    fun mergeDetections(detections: List<DetectionResult>, newDetections: List<DetectionResult>): List<DetectionResult>{
+        val finalResults: MutableList<DetectionResult> = LinkedList(detections)
+        finalResults.addAll(newDetections)
+        return nonMaximumSuppression(finalResults)
     }
 
     fun drawDetectionResult(
@@ -156,7 +154,7 @@ object Detector{
                     0-> Color.RED
                     1-> Color.GREEN
                     2-> Color.BLUE
-                    else -> Color.RED
+                    else -> Color.MAGENTA
                 }
                 style = Paint.Style.STROKE
                 strokeWidth = 7f
