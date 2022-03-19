@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.live
+package ro.ubb.mobile_app.live.simple
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,18 +8,19 @@ import androidx.camera.core.Preview
 import kotlinx.android.synthetic.main.fragment_live.*
 import ro.ubb.mobile_app.R
 import ro.ubb.mobile_app.detection.DetectionResult
+import ro.ubb.mobile_app.live.AbstractLiveFragment
 
 
 class LiveFragment : AbstractLiveFragment() {
-    private lateinit var overlaySurfaceView: OverlaySurfaceView
+    private lateinit var detectionView: DetectionView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        overlaySurfaceView = OverlaySurfaceView(resultView)
+        detectionView = DetectionView(resultView)
     }
 
     override fun listener(detectedObjectList: List<DetectionResult>) {
-        overlaySurfaceView.draw(detectedObjectList)
+        detectionView.draw(detectedObjectList)
     }
 
     override fun getPreview(): Preview {

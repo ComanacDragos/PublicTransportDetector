@@ -1,6 +1,5 @@
-package ro.ubb.mobile_app.live
+package ro.ubb.mobile_app.live.accessible
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
@@ -13,7 +12,7 @@ import kotlinx.android.synthetic.main.fragment_live_accessible.*
 import ro.ubb.mobile_app.R
 import ro.ubb.mobile_app.core.TAG
 import ro.ubb.mobile_app.detection.DetectionResult
-import ro.ubb.mobile_app.detection.Detector
+import ro.ubb.mobile_app.live.AbstractLiveFragment
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -41,11 +40,11 @@ class AccessibleLiveFragment: AbstractLiveFragment(), TextToSpeech.OnInitListene
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         accessibleViewModel = ViewModelProvider(this)[AccessibleLiveFragmentViewModel::class.java]
+        voiceView.tts = tts
         accessibleViewModel.detections.observe(viewLifecycleOwner, {
             if(!tts.isSpeaking && it.isNotEmpty()){
                 val text = detectionsToString(it)
                     try{
-                        errorTextView.text = "${System.currentTimeMillis()}\n$text"
                         speakOut(text)
                     }catch (ex: Exception){
                         Log.e(TAG, "ERROR:\n${ex.stackTraceToString()}")
@@ -53,14 +52,12 @@ class AccessibleLiveFragment: AbstractLiveFragment(), TextToSpeech.OnInitListene
                 accessibleViewModel.resetDetections()
             }
         })
-
     }
 
     private fun speakOut(text: String) {
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null,"")
     }
 
-    @SuppressLint("SetTextI18n")
     override fun listener(detectedObjectList: List<DetectionResult>) {
         accessibleViewModel.mergeDetections(detectedObjectList)
     }
@@ -82,7 +79,7 @@ class AccessibleLiveFragment: AbstractLiveFragment(), TextToSpeech.OnInitListene
                     newLabel += if (newLabel.lowercase() == "bus") "ses" else "s"
                 "${it.value} $newLabel"
             }.reduce{
-                    acc, string -> "$acc\n$string"
+                    acc, string -> "$acc $string"
             }
         return text
     }
@@ -106,6 +103,7 @@ class AccessibleLiveFragment: AbstractLiveFragment(), TextToSpeech.OnInitListene
         }else{
             tts = TextToSpeech(requireContext(), this)
             onInit(TextToSpeech.SUCCESS)
+            voiceView.tts = tts
         }
     }
 

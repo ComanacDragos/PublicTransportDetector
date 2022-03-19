@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.live
+package ro.ubb.mobile_app.live.accessible
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -13,15 +13,8 @@ class AccessibleLiveFragmentViewModel(application: Application) : AndroidViewMod
     val detections: LiveData<List<DetectionResult>> = mutableDetections
 
     fun mergeDetections(newDetections: List<DetectionResult>){
-        val mergedDetections =
-            mutableDetections.value?.let { Detector.mergeDetections(it, newDetections) }
-        if(mergedDetections != null)
-            for (detection in mergedDetections){
-                if(!mutableDetections.value!!.contains(detection)) {
-                    mutableDetections.postValue(mergedDetections)
-                    break
-                }
-            }
+        mutableDetections.postValue(mutableDetections.value?.let
+            { Detector.mergeDetections(it, newDetections) })
     }
 
     fun resetDetections(){

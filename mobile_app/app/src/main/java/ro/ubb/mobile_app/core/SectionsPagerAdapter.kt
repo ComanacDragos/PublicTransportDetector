@@ -6,8 +6,8 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import ro.ubb.mobile_app.R
 import ro.ubb.mobile_app.image.ImageFragment
-import ro.ubb.mobile_app.live.AccessibleLiveFragment
-import ro.ubb.mobile_app.live.LiveFragment
+import ro.ubb.mobile_app.live.accessible.AccessibleLiveFragment
+import ro.ubb.mobile_app.live.simple.LiveFragment
 
 private val TAB_TITLES = arrayOf(
     R.string.tab_text_image,

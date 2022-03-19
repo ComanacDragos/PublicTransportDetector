@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.live
+package ro.ubb.mobile_app.live.simple
 
 import android.graphics.*
 import android.view.SurfaceHolder
@@ -6,7 +6,7 @@ import android.view.SurfaceView
 import ro.ubb.mobile_app.detection.DetectionResult
 import ro.ubb.mobile_app.detection.Detector
 
-class OverlaySurfaceView(surfaceView: SurfaceView) :
+class DetectionView(surfaceView: SurfaceView) :
     SurfaceView(surfaceView.context), SurfaceHolder.Callback {
 
     init {
