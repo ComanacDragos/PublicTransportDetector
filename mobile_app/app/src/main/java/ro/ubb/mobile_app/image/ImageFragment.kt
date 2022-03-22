@@ -35,6 +35,7 @@ import java.util.*
 import kotlin.system.measureTimeMillis
 import android.media.ExifInterface
 import android.widget.Toast
+import ro.ubb.mobile_app.core.toBase64
 import ro.ubb.mobile_app.detection.configuration.ConfigDialog
 
 class ImageFragment : Fragment() {
@@ -139,6 +140,7 @@ class ImageFragment : Fragment() {
                     var bitmap = BitmapFactory.decodeStream(it)
                     bitmap = rotateIfPossible(bitmap, uri!!)
                     lifecycleScope.launch(Dispatchers.Default) {
+                        imageFragmentViewModel.base64 = toBase64(bitmap)
                         Log.v(TAG, "width: ${bitmap.width} height: ${bitmap.height} starting detection...")
 
                         val elapsed = measureTimeMillis {
@@ -219,7 +221,7 @@ class ImageFragment : Fragment() {
         })
 
         ocrButton.setOnClickListener {
-            if(detectionViewModel.base64 == ""){
+            if(imageFragmentViewModel.base64 == ""){
                 Toast.makeText(requireContext(),
                     "No image to perform OCR on",
                     Toast.LENGTH_LONG).show()
@@ -228,7 +230,7 @@ class ImageFragment : Fragment() {
                     "Starting OCR...",
                     Toast.LENGTH_LONG).show()
                 lifecycleScope.launch(Dispatchers.Default) {
-                    detectionViewModel.ocr(detectionViewModel.base64)
+                    detectionViewModel.ocr(imageFragmentViewModel.base64)
                 }
             }
         }

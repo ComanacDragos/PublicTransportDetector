@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.detection.ocr.ocrSpaceApi
+package ro.ubb.mobile_app.ocr.ocrSpaceApi
 
 import okhttp3.RequestBody
 import retrofit2.http.Body

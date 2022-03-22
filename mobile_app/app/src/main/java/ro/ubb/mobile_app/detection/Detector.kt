@@ -30,8 +30,7 @@ object Detector{
                 "minScore: ${configuration.scoreThreshold}\n" +
                 "nmsIOU: ${configuration.nmsIouThreshold}\n")
 
-        if(
-            !this::this@Detector.configuration.isInitialized
+        if(!this::configuration.isInitialized
             || configuration.modelName != this.configuration.modelName
             || configuration.maxNoBoxes != this.configuration.maxNoBoxes
             || configuration.scoreThreshold != this.configuration.scoreThreshold

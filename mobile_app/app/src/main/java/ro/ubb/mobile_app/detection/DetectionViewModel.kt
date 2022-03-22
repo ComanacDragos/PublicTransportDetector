@@ -8,10 +8,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import ro.ubb.mobile_app.core.TAG
+import ro.ubb.mobile_app.core.toBase64
 import ro.ubb.mobile_app.detection.configuration.Configuration
 import ro.ubb.mobile_app.detection.configuration.local.ConfigurationDatabase
 import ro.ubb.mobile_app.detection.configuration.local.ConfigurationRepository
-import ro.ubb.mobile_app.detection.ocr.OCR
+import ro.ubb.mobile_app.ocr.OCR
 
 class DetectionViewModel(application: Application) : AndroidViewModel(application) {
     private val mutableLoading = MutableLiveData<Boolean>().apply { value = false }
@@ -25,7 +26,6 @@ class DetectionViewModel(application: Application) : AndroidViewModel(applicatio
 
     val loading: LiveData<Boolean> = mutableLoading
     val bitmap: LiveData<Bitmap> = mutableBitmap
-    var base64: String = ""
 
     private val configurationRepository: ConfigurationRepository
     val configuration: LiveData<Configuration>
@@ -64,7 +64,6 @@ class DetectionViewModel(application: Application) : AndroidViewModel(applicatio
         mutableLoading.postValue(true)
         mutableError.postValue(null)
         try{
-            base64 = OCR.toBase64(inputBitmap)
             mutableBitmap.postValue(Detector.imageWithBoxes(inputBitmap))
             Log.v(TAG, "done detecting")
         }catch (error: Exception){

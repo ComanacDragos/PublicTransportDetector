@@ -1,6 +1,6 @@
-package ro.ubb.mobile_app.detection.ocr.core
+package ro.ubb.mobile_app.ocr.core
 
-import ro.ubb.mobile_app.detection.ocr.ocrSpaceApi.Response
+import ro.ubb.mobile_app.ocr.ocrSpaceApi.Response
 
 interface Handler {
     suspend fun handle(base64: String): Response?

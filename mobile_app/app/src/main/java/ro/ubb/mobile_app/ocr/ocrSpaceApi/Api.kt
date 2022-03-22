@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.detection.ocr.ocrSpaceApi
+package ro.ubb.mobile_app.ocr.ocrSpaceApi
 
 
 import com.google.gson.GsonBuilder
