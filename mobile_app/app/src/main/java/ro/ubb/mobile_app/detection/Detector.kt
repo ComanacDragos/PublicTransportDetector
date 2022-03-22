@@ -1,11 +1,11 @@
 package ro.ubb.mobile_app.detection
 
-import android.content.Context
 import android.graphics.*
 import android.util.Log
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.task.core.BaseOptions
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
+import ro.ubb.mobile_app.MainActivity
 import ro.ubb.mobile_app.core.TAG
 import ro.ubb.mobile_app.detection.configuration.Configuration
 import java.util.*
@@ -23,7 +23,7 @@ object Detector{
         return this::detector.isInitialized
     }
 
-    fun setConfiguration(context: Context, configuration: Configuration){
+    fun setConfiguration(configuration: Configuration){
         Log.v(TAG, "Detector settings:\n" +
                 "name: ${configuration.modelName}\n" +
                 "maxBoxes: ${configuration.maxNoBoxes}\n" +
@@ -31,7 +31,7 @@ object Detector{
                 "nmsIOU: ${configuration.nmsIouThreshold}\n")
 
         if(
-            !this::configuration.isInitialized
+            !this::this@Detector.configuration.isInitialized
             || configuration.modelName != this.configuration.modelName
             || configuration.maxNoBoxes != this.configuration.maxNoBoxes
             || configuration.scoreThreshold != this.configuration.scoreThreshold
@@ -50,7 +50,7 @@ object Detector{
                 )
                 .build()
             detector = ObjectDetector.createFromFileAndOptions(
-                context,
+                MainActivity.applicationContext(),
                 configuration.modelName,
                 options
             )
@@ -172,7 +172,7 @@ object Detector{
             paint.apply {
                 style = Paint.Style.FILL
                 isAntiAlias = true
-                textSize = 36f
+                textSize = canvas.height/20f
             }
             canvas.drawText(
                 detectionObject.label + " " + "%,.2f".format(detectionObject.score * 100) + "%",

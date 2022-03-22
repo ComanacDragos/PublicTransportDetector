@@ -1,7 +1,6 @@
 package ro.ubb.mobile_app.detection
 
 import android.app.Application
-import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
@@ -12,16 +11,21 @@ import ro.ubb.mobile_app.core.TAG
 import ro.ubb.mobile_app.detection.configuration.Configuration
 import ro.ubb.mobile_app.detection.configuration.local.ConfigurationDatabase
 import ro.ubb.mobile_app.detection.configuration.local.ConfigurationRepository
+import ro.ubb.mobile_app.detection.ocr.OCR
 
 class DetectionViewModel(application: Application) : AndroidViewModel(application) {
     private val mutableLoading = MutableLiveData<Boolean>().apply { value = false }
     private val mutableBitmap = MutableLiveData<Bitmap>().apply { value = null }
     private val mutableError = MutableLiveData<Exception>().apply { value = null }
+    private val mutableOcrString = MutableLiveData<String>().apply {value = ""}
+
+    val ocrString: LiveData<String> = mutableOcrString
 
     val error: LiveData<Exception> = mutableError
 
     val loading: LiveData<Boolean> = mutableLoading
     val bitmap: LiveData<Bitmap> = mutableBitmap
+    var base64: String = ""
 
     private val configurationRepository: ConfigurationRepository
     val configuration: LiveData<Configuration>
@@ -32,22 +36,22 @@ class DetectionViewModel(application: Application) : AndroidViewModel(applicatio
         configuration = configurationRepository.configuration
     }
 
-    fun initDetector(context: Context, configuration: Configuration){
+    fun initDetector(configuration: Configuration){
         try{
             if(!Detector.isDetectorInitialized())
-                Detector.setConfiguration(context, configuration)
+                Detector.setConfiguration(configuration)
         }catch (error: Exception){
             mutableError.postValue(error)
             Log.v(TAG, "ERROR:\n${error.stackTraceToString()}")
         }
     }
 
-    suspend fun setConfiguration(context: Context, configuration: Configuration) {
+    suspend fun setConfiguration(configuration: Configuration) {
         Log.v(TAG, "Setting configuration: $configuration")
         mutableLoading.postValue(true)
         mutableError.postValue(null)
         try{
-            Detector.setConfiguration(context, configuration)
+            Detector.setConfiguration(configuration)
             configurationRepository.setConfiguration(configuration)
         }catch (error: Exception){
             mutableError.postValue(error)
@@ -60,8 +64,29 @@ class DetectionViewModel(application: Application) : AndroidViewModel(applicatio
         mutableLoading.postValue(true)
         mutableError.postValue(null)
         try{
+            base64 = OCR.toBase64(inputBitmap)
             mutableBitmap.postValue(Detector.imageWithBoxes(inputBitmap))
             Log.v(TAG, "done detecting")
+        }catch (error: Exception){
+            mutableError.postValue(error)
+            Log.v(TAG, "ERROR:\n${error.stackTraceToString()}")
+        }
+        mutableLoading.postValue(false)
+    }
+
+   suspend fun ocr(base64: String){
+        mutableLoading.postValue(true)
+        mutableError.postValue(null)
+        try{
+            val response = OCR.detect(base64)
+            if(response == null){
+                mutableError.postValue(Exception("Could not perform OCR"))
+            }else{
+                mutableOcrString.postValue(response.ParsedResults
+                    .map { it.ParsedText }
+                    .reduce { acc, s ->  "$acc $s"}
+                )
+            }
         }catch (error: Exception){
             mutableError.postValue(error)
             Log.v(TAG, "ERROR:\n${error.stackTraceToString()}")

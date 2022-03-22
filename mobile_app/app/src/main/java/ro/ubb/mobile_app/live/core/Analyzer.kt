@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.live
+package ro.ubb.mobile_app.live.core
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap

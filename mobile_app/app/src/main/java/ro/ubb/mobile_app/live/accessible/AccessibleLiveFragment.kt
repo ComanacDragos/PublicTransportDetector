@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.fragment_live_accessible.*
 import ro.ubb.mobile_app.R
 import ro.ubb.mobile_app.core.TAG
 import ro.ubb.mobile_app.detection.DetectionResult
-import ro.ubb.mobile_app.live.AbstractLiveFragment
+import ro.ubb.mobile_app.live.core.AbstractLiveFragment
 import java.util.*
 import kotlin.collections.HashMap
 

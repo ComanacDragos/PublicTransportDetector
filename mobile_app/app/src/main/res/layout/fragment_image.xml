@@ -20,19 +20,28 @@
             android:layout_height="wrap_content"
             android:visibility="gone" />
 
+        <TextView
+            android:id="@+id/ocrTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="10dp" />
+
         <ImageView
             android:id="@+id/ivImage"
             android:layout_width="match_parent"
             android:layout_height="300dp"
-            android:src="#dedede" />
+            android:src="#dedede"
+            android:contentDescription="@string/image_with_results" />
 
         <Button
-            android:id="@+id/captureVideo"
+            android:id="@+id/captureImage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:background="@color/purple_200"
-            android:text="Capture Photo"
+            android:gravity="center"
+            android:text="@string/capture_photo"
             android:textColor="@android:color/white" />
 
         <Button
@@ -41,8 +50,18 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:background="@color/purple_200"
+            android:gravity="center"
+            android:text="@string/open_gallery"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/ocrButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@color/purple_200"
             android:textColor="@android:color/white"
-            android:text="Open Gallery"
+            android:text="@string/perform_ocr"
             />
 
         <TextView
@@ -62,5 +81,7 @@
         android:layout_marginBottom="5dp"
         android:clickable="true"
         app:srcCompat="@android:drawable/ic_menu_manage"
-        tools:layout_marginEnd="5dp" />
+        tools:layout_marginEnd="5dp"
+        android:focusable="true"
+        android:contentDescription="@string/configuration" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

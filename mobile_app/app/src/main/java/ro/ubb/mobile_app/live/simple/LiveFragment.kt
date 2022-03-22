@@ -8,7 +8,7 @@ import androidx.camera.core.Preview
 import kotlinx.android.synthetic.main.fragment_live.*
 import ro.ubb.mobile_app.R
 import ro.ubb.mobile_app.detection.DetectionResult
-import ro.ubb.mobile_app.live.AbstractLiveFragment
+import ro.ubb.mobile_app.live.core.AbstractLiveFragment
 
 
 class LiveFragment : AbstractLiveFragment() {

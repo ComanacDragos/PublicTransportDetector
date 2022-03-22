@@ -32,7 +32,6 @@ class ConfigDialog: DialogFragment() {
             lifecycleScope.launch(Dispatchers.Default) {
                 Log.v(TAG, "start setting configuration")
                 detectionViewModel.setConfiguration(
-                    requireContext(),
                     Configuration(
                         modelSpinner.selectedItem.toString(),
                         maxNoBoxesSlider.value.toInt(),

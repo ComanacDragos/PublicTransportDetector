@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.live
+package ro.ubb.mobile_app.live.core
 
 import android.os.Bundle
 import android.util.Log
@@ -72,7 +72,8 @@ abstract class AbstractLiveFragment : Fragment(){
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraExecutor.shutdown()
+        if(this::cameraExecutor.isInitialized)
+            cameraExecutor.shutdown()
     }
 
     override fun setMenuVisibility(menuVisible: Boolean) {

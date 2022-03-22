@@ -11,6 +11,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /*
+Math formulas from:
 http://www.ecircuitcenter.com/Calc/draw_sine1/draw_sine_canvas_topic1.html
  */
 class VoiceView(context: Context, attributeSet: AttributeSet) :

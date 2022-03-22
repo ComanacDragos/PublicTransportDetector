@@ -34,7 +34,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.system.measureTimeMillis
 import android.media.ExifInterface
-import kotlinx.android.synthetic.main.activity_main.*
+import android.widget.Toast
 import ro.ubb.mobile_app.detection.configuration.ConfigDialog
 
 class ImageFragment : Fragment() {
@@ -177,7 +177,7 @@ class ImageFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        captureVideo.setOnClickListener { openCamera() }
+        captureImage.setOnClickListener { openCamera() }
         openGalleryButton.setOnClickListener { openGallery() }
         detectionViewModel = ViewModelProvider(this)[DetectionViewModel::class.java]
         imageFragmentViewModel = ViewModelProvider(this)[ImageFragmentViewModel::class.java]
@@ -185,8 +185,9 @@ class ImageFragment : Fragment() {
         detectionViewModel.loading.observe(viewLifecycleOwner, {
             Log.v(TAG, "update detecting")
             progressBar.visibility = if (it) View.VISIBLE else View.GONE
-            captureVideo.isEnabled = !it
+            captureImage.isEnabled = !it
             openGalleryButton.isEnabled = !it
+            ocrButton.isEnabled = !it
         })
 
         detectionViewModel.bitmap.observe(viewLifecycleOwner, {
@@ -199,20 +200,37 @@ class ImageFragment : Fragment() {
         detectionViewModel.error.observe(viewLifecycleOwner, {
             if(it != null)
                 errorTextView.text = it.message
-        })
-
-        detectionViewModel.configuration.observe(viewLifecycleOwner, {
-            errorTextView.text = "$it"
+            else
+                errorTextView.text = ""
         })
 
         detectionViewModel.configuration.observe(viewLifecycleOwner, {
             if(it!=null){
-                detectionViewModel.initDetector(requireContext(), it)
+                detectionViewModel.initDetector(it)
             }
         })
 
         settingsFab.setOnClickListener {
             ConfigDialog().show(requireActivity().supportFragmentManager, "ConfigDialog")
+        }
+
+        detectionViewModel.ocrString.observe(viewLifecycleOwner, {
+            ocrTextView.text = it
+        })
+
+        ocrButton.setOnClickListener {
+            if(detectionViewModel.base64 == ""){
+                Toast.makeText(requireContext(),
+                    "No image to perform OCR on",
+                    Toast.LENGTH_LONG).show()
+            }else{
+                Toast.makeText(requireContext(),
+                    "Starting OCR...",
+                    Toast.LENGTH_LONG).show()
+                lifecycleScope.launch(Dispatchers.Default) {
+                    detectionViewModel.ocr(detectionViewModel.base64)
+                }
+            }
         }
     }
 }

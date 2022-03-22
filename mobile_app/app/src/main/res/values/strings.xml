@@ -1,6 +1,11 @@
 <resources>
-    <string name="app_name">Public transport detector</string>
+    <string name="app_name">Object Detector</string>
     <string name="tab_text_image">Image</string>
     <string name="tab_text_live">Live</string>
     <string name="tab_text_live_accessible">Accessible Live</string>
+    <string name="perform_ocr">Perform OCR</string>
+    <string name="open_gallery">Open Gallery</string>
+    <string name="capture_photo">Capture Photo</string>
+    <string name="image_with_results">Image with results</string>
+    <string name="configuration">configuration</string>
 </resources>

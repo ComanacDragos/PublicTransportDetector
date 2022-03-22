@@ -21,7 +21,8 @@
             android:padding="@dimen/appbar_padding"
             android:text="@string/app_name"
             android:textAppearance="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"
-            android:textColor="@color/teal_200" />
+            android:textColor="@color/teal_700"
+            />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabs"
