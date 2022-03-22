@@ -1,5 +1,6 @@
 package ro.ubb.mobile_app.live.accessible
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
@@ -8,10 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.camera.core.Preview
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_live_accessible.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import ro.ubb.mobile_app.R
 import ro.ubb.mobile_app.core.TAG
 import ro.ubb.mobile_app.core.detection.DetectionResult
+import ro.ubb.mobile_app.core.detection.Detector
 import ro.ubb.mobile_app.live.core.AbstractLiveFragment
 import java.util.*
 import kotlin.collections.HashMap
@@ -52,14 +57,25 @@ class AccessibleLiveFragment: AbstractLiveFragment(), TextToSpeech.OnInitListene
                 accessibleViewModel.resetDetections()
             }
         })
+
+        accessibleViewModel.ocrString.observe(viewLifecycleOwner, {
+            if(it.isNotEmpty())
+                speakOut(it)
+        })
     }
 
     private fun speakOut(text: String) {
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null,"")
     }
 
-    override fun listener(detectedObjectList: List<DetectionResult>) {
-        accessibleViewModel.mergeDetections(detectedObjectList)
+    override fun listener(bitmap: Bitmap) {
+        accessibleViewModel.mergeDetections(Detector.detect(bitmap))
+        accessibleViewModel.detections.value?.apply {
+            if(!accessibleViewModel.ocrInProgress && this.isNotEmpty())
+                lifecycleScope.launch(Dispatchers.Default) {
+                    accessibleViewModel.ocr(bitmap)
+                }
+        }
     }
 
     private fun detectionsToString(detectedObjectList: List<DetectionResult>): String{

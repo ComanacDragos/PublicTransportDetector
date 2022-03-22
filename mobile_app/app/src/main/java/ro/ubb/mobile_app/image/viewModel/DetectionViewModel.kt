@@ -73,18 +73,15 @@ class DetectionViewModel(application: Application) : AndroidViewModel(applicatio
         mutableLoading.postValue(false)
     }
 
-   suspend fun ocr(base64: String){
+   suspend fun ocr(bitmap: Bitmap){
         mutableLoading.postValue(true)
         mutableError.postValue(null)
         try{
-            val response = OCR.detect(base64)
+            val response = OCR.detect(bitmap)
             if(response == null){
                 mutableError.postValue(Exception("Could not perform OCR"))
             }else{
-                mutableOcrString.postValue(response.ParsedResults
-                    .map { it.ParsedText }
-                    .reduce { acc, s ->  "$acc $s"}
-                )
+                mutableOcrString.postValue(response.getParsedText())
             }
         }catch (error: Exception){
             mutableError.postValue(error)

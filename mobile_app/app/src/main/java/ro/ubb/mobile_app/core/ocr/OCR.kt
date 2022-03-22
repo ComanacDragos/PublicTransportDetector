@@ -13,6 +13,9 @@ object OCR {
     }
 
     suspend fun detect(bitmap: Bitmap): Response?{
+        if(bitmap.height > 1024 || bitmap.width > 1024){
+            return detect(toBase64(Bitmap.createScaledBitmap(bitmap, 1024, 1024, false)))
+        }
         return detect(toBase64(bitmap))
     }
 }

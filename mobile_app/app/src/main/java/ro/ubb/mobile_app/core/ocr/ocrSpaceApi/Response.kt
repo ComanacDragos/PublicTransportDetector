@@ -5,7 +5,13 @@ data class Response(
     val OCRExitCode: Int,
     val IsErroredOnProcessing: Boolean,
     val ProcessingTimeInMilliseconds: String
-)
+){
+    fun getParsedText(): String{
+        return ParsedResults
+            .map { it.ParsedText }
+            .reduce { acc, s ->  "$acc $s"}
+    }
+}
 
 data class ResponseResult(
     val ParsedText: String,

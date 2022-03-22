@@ -1,5 +1,6 @@
 package ro.ubb.mobile_app.live.core
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
@@ -27,7 +28,7 @@ abstract class AbstractLiveFragment : Fragment(){
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
-    protected abstract fun listener(detectedObjectList: List<DetectionResult>)
+    protected abstract fun listener(bitmap: Bitmap)
     protected abstract fun getPreview(): Preview?
 
 
@@ -46,11 +47,7 @@ abstract class AbstractLiveFragment : Fragment(){
                 .also {
                     it.setAnalyzer(
                         cameraExecutor,
-                        Analyzer(
-                            yuvToRgbConverter
-                        ){
-                                detectedObjectList -> listener(detectedObjectList)
-                        }
+                        Analyzer(yuvToRgbConverter) { bitmap -> listener(bitmap) }
                     )
                 }
 

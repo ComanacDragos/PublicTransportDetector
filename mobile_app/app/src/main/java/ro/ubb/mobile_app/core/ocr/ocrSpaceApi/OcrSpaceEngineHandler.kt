@@ -24,6 +24,7 @@ class OcrSpaceEngineHandler(next: Handler?, private val engine: ENGINE): BaseHan
                 )
                 .build()
             val response = OcrApi.service.detect(requestBody)
+            Log.v(TAG, "Received response: $response")
             if(response.IsErroredOnProcessing){
                 Log.e(TAG, "Error on api call with code: ${response.OCRExitCode}")
                 return super.handle(base64)

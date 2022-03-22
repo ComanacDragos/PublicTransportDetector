@@ -1,5 +1,6 @@
 package ro.ubb.mobile_app.live.simple
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +9,7 @@ import androidx.camera.core.Preview
 import kotlinx.android.synthetic.main.fragment_live.*
 import ro.ubb.mobile_app.R
 import ro.ubb.mobile_app.core.detection.DetectionResult
+import ro.ubb.mobile_app.core.detection.Detector
 import ro.ubb.mobile_app.live.core.AbstractLiveFragment
 
 
@@ -19,8 +21,8 @@ class LiveFragment : AbstractLiveFragment() {
         detectionView = DetectionView(resultView)
     }
 
-    override fun listener(detectedObjectList: List<DetectionResult>) {
-        detectionView.draw(detectedObjectList)
+    override fun listener(bitmap: Bitmap) {
+        detectionView.draw(Detector.detect(bitmap))
     }
 
     override fun getPreview(): Preview {
