@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.detection
+package ro.ubb.mobile_app.core.detection
 
 import android.graphics.RectF
 

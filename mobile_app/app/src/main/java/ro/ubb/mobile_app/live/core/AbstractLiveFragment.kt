@@ -10,7 +10,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import ro.ubb.mobile_app.core.TAG
-import ro.ubb.mobile_app.detection.DetectionResult
+import ro.ubb.mobile_app.core.detection.DetectionResult
 import ro.ubb.mobile_app.live.yuv.YuvToRgbConverter
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors

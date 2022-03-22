@@ -3,8 +3,8 @@ package ro.ubb.mobile_app.live.simple
 import android.graphics.*
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import ro.ubb.mobile_app.detection.DetectionResult
-import ro.ubb.mobile_app.detection.Detector
+import ro.ubb.mobile_app.core.detection.DetectionResult
+import ro.ubb.mobile_app.core.detection.Detector
 
 class DetectionView(surfaceView: SurfaceView) :
     SurfaceView(surfaceView.context), SurfaceHolder.Callback {

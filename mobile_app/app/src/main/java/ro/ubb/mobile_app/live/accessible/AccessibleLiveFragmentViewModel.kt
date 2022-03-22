@@ -4,8 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import ro.ubb.mobile_app.detection.DetectionResult
-import ro.ubb.mobile_app.detection.Detector
+import ro.ubb.mobile_app.core.detection.DetectionResult
+import ro.ubb.mobile_app.core.detection.Detector
 import java.util.*
 
 class AccessibleLiveFragmentViewModel(application: Application) : AndroidViewModel(application) {

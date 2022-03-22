@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.image
+package ro.ubb.mobile_app.image.viewModel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel

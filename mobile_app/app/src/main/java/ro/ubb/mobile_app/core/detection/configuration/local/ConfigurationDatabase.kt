@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.detection.configuration.local
+package ro.ubb.mobile_app.core.detection.configuration.local
 
 import android.content.Context
 import android.util.Log
@@ -10,10 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ro.ubb.mobile_app.core.TAG
-import ro.ubb.mobile_app.detection.configuration.Configuration
-import androidx.room.migration.Migration
-
-
+import ro.ubb.mobile_app.core.detection.configuration.Configuration
 
 
 @Database(entities = [Configuration::class], version = 2)

@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.detection
+package ro.ubb.mobile_app.image.viewModel
 
 import android.app.Application
 import android.graphics.Bitmap
@@ -8,11 +8,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import ro.ubb.mobile_app.core.TAG
-import ro.ubb.mobile_app.core.toBase64
-import ro.ubb.mobile_app.detection.configuration.Configuration
-import ro.ubb.mobile_app.detection.configuration.local.ConfigurationDatabase
-import ro.ubb.mobile_app.detection.configuration.local.ConfigurationRepository
-import ro.ubb.mobile_app.ocr.OCR
+import ro.ubb.mobile_app.core.detection.Detector
+import ro.ubb.mobile_app.core.detection.configuration.Configuration
+import ro.ubb.mobile_app.core.detection.configuration.local.ConfigurationDatabase
+import ro.ubb.mobile_app.core.detection.configuration.local.ConfigurationRepository
+import ro.ubb.mobile_app.core.ocr.OCR
 
 class DetectionViewModel(application: Application) : AndroidViewModel(application) {
     private val mutableLoading = MutableLiveData<Boolean>().apply { value = false }

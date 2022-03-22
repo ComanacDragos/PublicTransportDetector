@@ -1,9 +1,9 @@
-package ro.ubb.mobile_app.ocr
+package ro.ubb.mobile_app.core.ocr
 
 import android.graphics.Bitmap
 import ro.ubb.mobile_app.core.toBase64
-import ro.ubb.mobile_app.ocr.ocrSpaceApi.OcrSpaceEngineHandler
-import ro.ubb.mobile_app.ocr.ocrSpaceApi.Response
+import ro.ubb.mobile_app.core.ocr.ocrSpaceApi.OcrSpaceEngineHandler
+import ro.ubb.mobile_app.core.ocr.ocrSpaceApi.Response
 
 object OCR {
     suspend fun detect(base64: String): Response?{

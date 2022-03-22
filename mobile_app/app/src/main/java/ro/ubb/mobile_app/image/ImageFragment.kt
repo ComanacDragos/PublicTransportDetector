@@ -27,7 +27,6 @@ import kotlinx.coroutines.launch
 import ro.ubb.mobile_app.BuildConfig
 import ro.ubb.mobile_app.R
 import ro.ubb.mobile_app.core.TAG
-import ro.ubb.mobile_app.detection.DetectionViewModel
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -36,7 +35,8 @@ import kotlin.system.measureTimeMillis
 import android.media.ExifInterface
 import android.widget.Toast
 import ro.ubb.mobile_app.core.toBase64
-import ro.ubb.mobile_app.detection.configuration.ConfigDialog
+import ro.ubb.mobile_app.image.viewModel.DetectionViewModel
+import ro.ubb.mobile_app.image.viewModel.ImageFragmentViewModel
 
 class ImageFragment : Fragment() {
     companion object{

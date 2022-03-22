@@ -1,12 +1,12 @@
-package ro.ubb.mobile_app.ocr.ocrSpaceApi
+package ro.ubb.mobile_app.core.ocr.ocrSpaceApi
 
 import android.util.Log
 import okhttp3.MultipartBody
 import ro.ubb.mobile_app.MainActivity
 import ro.ubb.mobile_app.R
 import ro.ubb.mobile_app.core.TAG
-import ro.ubb.mobile_app.ocr.core.BaseHandler
-import ro.ubb.mobile_app.ocr.core.Handler
+import ro.ubb.mobile_app.core.ocr.core.BaseHandler
+import ro.ubb.mobile_app.core.ocr.core.Handler
 
 class OcrSpaceEngineHandler(next: Handler?, private val engine: ENGINE): BaseHandler(next){
     override suspend fun handle(base64: String): Response? {

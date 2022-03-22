@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.ocr.ocrSpaceApi
+package ro.ubb.mobile_app.core.ocr.ocrSpaceApi
 
 data class Response(
     val ParsedResults: List<ResponseResult>,

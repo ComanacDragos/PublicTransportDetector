@@ -7,8 +7,8 @@ import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import ro.ubb.mobile_app.core.TAG
-import ro.ubb.mobile_app.detection.DetectionResult
-import ro.ubb.mobile_app.detection.Detector
+import ro.ubb.mobile_app.core.detection.DetectionResult
+import ro.ubb.mobile_app.core.detection.Detector
 import ro.ubb.mobile_app.live.yuv.YuvToRgbConverter
 import kotlin.system.measureTimeMillis
 
