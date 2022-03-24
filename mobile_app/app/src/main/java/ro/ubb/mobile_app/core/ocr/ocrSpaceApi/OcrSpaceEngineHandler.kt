@@ -29,6 +29,10 @@ class OcrSpaceEngineHandler(next: Handler?, private val engine: ENGINE): BaseHan
                 Log.e(TAG, "Error on api call with code: ${response.OCRExitCode}")
                 return super.handle(base64)
             }
+            if(response.getParsedText().trim().isEmpty()){
+                Log.v(TAG, "Empty results")
+                return super.handle(base64)
+            }
             return response
         }catch (ex: Exception){
             Log.e(TAG, "ERROR:\n${ex.stackTraceToString()}")

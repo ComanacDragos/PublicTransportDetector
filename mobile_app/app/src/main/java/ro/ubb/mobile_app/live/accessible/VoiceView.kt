@@ -48,7 +48,7 @@ class VoiceView(context: Context, attributeSet: AttributeSet) :
             canvas.drawColor(0)
             val midX = width / 2f
             val midY = height / 2f
-
+            Log.d(TAG, "onDraw voice view")
             if (!tts!!.isSpeaking) {
                 canvas.drawLine(0f, midY, width.toFloat(), midY, paint)
             } else {
@@ -88,8 +88,8 @@ class VoiceView(context: Context, attributeSet: AttributeSet) :
                     lastX = xp.toFloat()
                     lastY = yp.toFloat()
                 }
+                invalidate()
             }
-            invalidate()
         }
     }
 }

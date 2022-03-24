@@ -59,19 +59,24 @@ class AccessibleLiveFragment: AbstractLiveFragment(), TextToSpeech.OnInitListene
         })
 
         accessibleViewModel.ocrString.observe(viewLifecycleOwner, {
-            if(it.isNotEmpty())
-                speakOut(it)
+            try {
+                if (it.isNotEmpty())
+                    speakOut(it)
+            }catch (ex: Exception){
+                Log.e(TAG, "ERROR:\n${ex.stackTraceToString()}")
+            }
         })
     }
 
     private fun speakOut(text: String) {
+        voiceView.invalidate()
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null,"")
     }
 
     override fun listener(bitmap: Bitmap) {
         accessibleViewModel.mergeDetections(Detector.detect(bitmap))
         accessibleViewModel.detections.value?.apply {
-            if(!accessibleViewModel.ocrInProgress && this.isNotEmpty())
+            if(!accessibleViewModel.ocrInProgress)
                 lifecycleScope.launch(Dispatchers.Default) {
                     accessibleViewModel.ocr(bitmap)
                 }
