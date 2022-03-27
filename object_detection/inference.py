@@ -214,6 +214,8 @@ def test():
         # plt.subplot(6, 2, 2 * i)
         axs[i][1].imshow(pred_images_with_boxes[i])
         # axs[i][1].title('Predicted')
+        axs[i][0].axis("off")
+        axs[i][1].axis("off")
 
     plt.tight_layout()
     # plt.savefig(f"documentation/results/{batch}.jpeg")
@@ -221,12 +223,12 @@ def test():
 
 
 if __name__ == '__main__':
-    PATH_TO_MODEL = "weights/model_v27.h5"
-    #test()
+    PATH_TO_MODEL = "weights/model_v28.h5"
+    test()
     # run_on_one_image("documentation\\examples\\bus.jpg", 0.5)
 
-    run_on_one_image("documentation\\examples\\bus2.jpg", 0.45)
-    # run_on_one_image("documentation\\examples\\bus3.jpg", 0.2)
-    # run_on_one_image("documentation\\examples\\busses.jpg", 0.1)
-    # run_on_one_image("documentation\\examples\\car.jpg", 0.06)
-    #run_on_one_image("documentation\\examples\\busses2.png", 0.5)
+# run_on_one_image("documentation\\examples\\bus2.jpg", 0.45)
+# run_on_one_image("documentation\\examples\\bus3.jpg", 0.2)
+# run_on_one_image("documentation\\examples\\busses.jpg", 0.1)
+# run_on_one_image("documentation\\examples\\car.jpg", 0.06)
+# run_on_one_image("documentation\\examples\\busses2.png", 0.5)

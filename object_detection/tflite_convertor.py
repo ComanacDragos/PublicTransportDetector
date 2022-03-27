@@ -136,7 +136,7 @@ def analyze(model_name):
 
 
 if __name__ == '__main__':
-    model_name = "model_v27"
+    model_name = "model_v28"
     try:
         convert_model(model_name)
         analyze(model_name)

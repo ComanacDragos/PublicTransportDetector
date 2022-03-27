@@ -113,11 +113,12 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1,
     x = BlockCreator.inverted_residual_block(x, 512, 128)
     x = BlockCreator.inverted_residual_block(x, 512, 128)
 
-    x = Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
-               padding="same",
-               kernel_initializer=tf.keras.initializers.HeNormal(),
-               kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2))(x)
-
+    #x = Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
+    #           padding="same",
+    #           kernel_initializer=tf.keras.initializers.HeNormal(),
+    #           kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2))(x)
+    x = BlockCreator.conv_block(x, filters=no_anchors * (4 + 1 + no_classes),
+                                add_skip_connection=False, activation=False)
     x = Reshape((GRID_SIZE, GRID_SIZE, no_anchors, 4 + 1 + no_classes), name="final_output")(x)
     if inference_only:
         return tf.keras.Model(inputs=inputs, outputs=x)
@@ -261,9 +262,9 @@ def compose_trainer(concrete_trainer, decorators):
 
 
 def train():
-    trainer = SimpleTrainer(epochs=1, n_min=1e-9, n_max=1e-4, path_to_model=None, limit_batches=1)
+    trainer = SimpleTrainer(epochs=50, n_min=1e-9, n_max=1e-4, path_to_model=None)
     trainer = compose_trainer(trainer, [LogTrainer])
-    trainer.train(name="test.h5")
+    trainer.train(name="model_v28.h5")
 
 
 def fine_tune():
@@ -274,6 +275,6 @@ def fine_tune():
 
 if __name__ == '__main__':
     # tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
-    # build_model()[0].summary()
+    #build_model()[0].summary()
     train()
     # fine_tune()
