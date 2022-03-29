@@ -2,6 +2,7 @@ import os
 import re
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def convert(string):
@@ -49,7 +50,7 @@ def read_files(file_filter, model_filter, column_filter):
         for file in os.listdir(f'mean_average_precisions/{directory}'):
             ok = True
             for key, val in extract_data_from_file(file).items():
-                if convert(val) not in file_filter[key]:
+                if convert(val) not in file_filter[key] and len(file_filter[key]) > 0:
                     ok = False
                     break
             if ok:
@@ -57,16 +58,78 @@ def read_files(file_filter, model_filter, column_filter):
     return files
 
 
+def visualize(iou_tp, nms_iou, score, models, metrics):
+    data = read_files(
+        {
+            'iou_tp': [] if iou_tp is None else [iou_tp],
+            'nms_iou': [] if nms_iou is None else [nms_iou],
+            'score': [] if score is None else [score]
+        },
+        models,
+        ['model_name', *metrics]
+    )
+    if iou_tp is None:
+        x_axis_attr = 'iou_tp'
+        x_axis_label = 'True positive IOU threshold'
+    elif nms_iou is None:
+        x_axis_attr = 'nms_iou'
+        x_axis_label = 'NMS IOU threshold'
+    else:
+        x_axis_attr = 'score'
+        x_axis_label = 'Score threshold'
+    x = []
+    for file in data:
+        file_data = extract_data_from_file(file)
+        x.append(file_data[x_axis_attr])
+
+    fig, axs = plt.subplots(len(metrics), figsize=(5, 20))
+
+    for (i, metric) in enumerate(metrics):
+        y = []
+        legend = []
+        for value in data.values():
+            legend = value['model_name']
+            y.append(value[metric])
+        y = np.asarray(y)
+        axs[i].title.set_text(metric)
+        y_ticks = []
+        for (j, model) in enumerate(legend):
+            y_values = y[:, j]
+            axs[i].plot(x, y_values, label=model)
+            max_index = np.argmax(y_values)
+            max_y_value = y_values[max_index]
+            y_ticks.append(max_y_value)
+            axs[i].plot(x[max_index], max_y_value, 'r*')
+
+        filtered_y_ticks = [round(y_ticks[0], 2)]
+        for tick in y_ticks[1:]:
+            if tick - filtered_y_ticks[-1] > 1e-2:
+                filtered_y_ticks.append(round(tick, 2))
+
+        axs[i].set_xticks(x)
+        axs[i].set_yticks(filtered_y_ticks)
+        axs[i].legend()
+        axs[i].set_xlabel(x_axis_label)
+        axs[i].set_ylabel('AP')
+
+    plt.tight_layout()
+    plt.show()
+
+
 if __name__ == '__main__':
     out = read_files(
         {
             'iou_tp': [0.5],
-            'nms_iou': [0.3],
-            'score': [0.5, 0.6]
+            'nms_iou': [],
+            'score': [0.4]
         },
         ['model_v27', 'model_v28'],
-        ['model_name', 'mAP', 'Bus']
+        ['model_name', 'mAP', 'Bus', 'Car', 'Vehicle registration plate']
     )
     for k, v in out.items():
         print(f"{k} -> {v}")
 
+    visualize(0.5, 0.4, None,
+              ['model_v26', 'model_v27', 'model_v27_fine_tuned', 'model_v28'],
+              ['mAP', 'Bus', 'Car', 'Vehicle registration plate']
+              )
