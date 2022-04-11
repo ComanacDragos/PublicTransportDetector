@@ -197,7 +197,7 @@ def mosaic(images, min_size=50):
     new_img.image[0:y_cut, x_cut:IMAGE_SIZE, :] = images[1].image
     new_img.image[y_cut:IMAGE_SIZE, 0:x_cut, :] = images[2].image
     new_img.image[y_cut:IMAGE_SIZE, x_cut:IMAGE_SIZE, :] = images[3].image
-    new_img.clip_boxes()
+    new_img.clip_boxes(min_val=new_img.min_clip_val, max_val=new_img.max_clip_val)
     return new_img
 
 

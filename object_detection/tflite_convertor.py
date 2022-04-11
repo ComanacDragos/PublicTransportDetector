@@ -96,7 +96,10 @@ def convert_model(model_name):
         f.write(tflite_model)
 
     ObjectDetectorWriter = object_detector.MetadataWriter
-    _LABEL_FILE = "data/labels.txt"
+    if USE_COCO:
+        _LABEL_FILE = "data/coco_labels.txt"
+    else:
+        _LABEL_FILE = "data/labels.txt"
     _SAVE_TO_PATH = _MODEL_PATH
 
     _INPUT_NORM_MEAN = 127.5
@@ -136,7 +139,7 @@ def analyze(model_name):
 
 
 if __name__ == '__main__':
-    model_name = "model_v28"
+    model_name = "coco"
     try:
         convert_model(model_name)
         analyze(model_name)

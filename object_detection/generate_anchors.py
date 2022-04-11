@@ -15,7 +15,10 @@ def _worker(paths, boxes, dir, mutex):
 
 
 def read_boxes():
-    directories = [PATH_TO_TRAIN, PATH_TO_TEST, PATH_TO_VALIDATION]
+    directories = [
+        PATH_TO_TRAIN,
+        #PATH_TO_TEST,
+        PATH_TO_VALIDATION]
     boxes = []
     mutex = threading.Lock()
 
@@ -36,8 +39,8 @@ def distance(centroid, box):
 
 
 def generate_centroid():
-    width = random.randint(0, IMAGE_SIZE)
-    height = random.randint(0, IMAGE_SIZE)
+    width = random.randint(1, IMAGE_SIZE)
+    height = random.randint(1, IMAGE_SIZE)
     return width, height
 
 
@@ -100,11 +103,11 @@ def run_generate_anchors(no_anchors):
 
     anchors = generate_anchors(no_anchors=no_anchors)
     print(anchors)
-    anchors.dump(f"data/anchors_{no_anchors}.pickle")
+    anchors.dump(f"data/coco_anchors_{no_anchors}.pickle")
 
     print("Time to generate anchors: ", time.time() - start)
 
-    anchors = np.load(f"data/anchors_{no_anchors}.pickle", allow_pickle=True)
+    anchors = np.load(f"data/coco_anchors_{no_anchors}.pickle", allow_pickle=True)
     print(anchors)
 
 
@@ -124,9 +127,9 @@ def visualize_anchors(path):
 
 
 if __name__ == '__main__':
-    #run_generate_anchors(4)
+    run_generate_anchors(5)
 
-    visualize_anchors("data/anchors_4.pickle")
+    visualize_anchors("data/coco_anchors_5.pickle")
 
     """
     [[114 130 294 280]
@@ -149,4 +152,12 @@ if __name__ == '__main__':
      [288 256]
      [ 76  70]
      [ 28  24]]
+     
+     COCO:
+     
+     [[ 64  92]
+ [205 234]
+ [  5  10]
+ [ 12  18]
+ [ 26  38]]
     """

@@ -77,4 +77,4 @@ if __name__ == '__main__':
         print("\tNumber of files:")
         for currentClass, occurrences in no_files.items():
             print(f"\t\t{currentClass} : {occurrences}")
-    #get_max_labels_per_box()
+    get_max_labels_per_box()

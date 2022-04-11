@@ -160,8 +160,8 @@ def run_on_one_image(path, score_threshold):
     plt.show()
 
 
-def test():
-    generator = DataGenerator(PATH_TO_TEST, shuffle=False)
+def test(score_threshold=0.2, iou_threshold=0.3, batch_size=BATCH_SIZE):
+    generator = DataGenerator(PATH_TO_TEST, shuffle=False, batch_size=batch_size)
     model, true_boxes = build_model()
     if "fine_tuned" in PATH_TO_MODEL:
         model.trainable = True
@@ -183,7 +183,7 @@ def test():
     print(f"loss: {loss}")
 
     start = time.perf_counter()
-    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=0.20, iou_threshold=0.3)
+    scores, boxes, classes, valid_detections = inference(model, images, score_threshold=score_threshold, iou_threshold=iou_threshold)
     scores, boxes, classes, valid_detections = K.get_value(scores), \
                                                K.get_value(boxes), \
                                                K.get_value(classes), \
@@ -223,8 +223,12 @@ def test():
 
 
 if __name__ == '__main__':
-    PATH_TO_MODEL = "weights/model_v28.h5"
-    test()
+    PATH_TO_MODEL = "weights/coco.h5"
+    test(
+        score_threshold=0.4,
+        iou_threshold=0.2,
+        batch_size=8
+    )
     # run_on_one_image("documentation\\examples\\bus.jpg", 0.5)
 
 # run_on_one_image("documentation\\examples\\bus2.jpg", 0.45)

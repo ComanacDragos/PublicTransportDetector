@@ -6,10 +6,13 @@ from utils import *
 
 
 class Image:
-    def __init__(self, dir=None, image_name=None):
+    def __init__(self, dir=None, image_name=None, min_clip_val=0, max_clip_val=IMAGE_SIZE-1):
         self.bounding_boxes = []
+        self.min_clip_val = min_clip_val
+        self.max_clip_val = max_clip_val
         if dir and image_name:
             self.image_name = image_name
+            self.test_dir = dir
             self.image = cv2.cvtColor(cv2.imread(f"{dir}\\{image_name}"), cv2.COLOR_BGR2RGB)
             self.read_bounding_boxes(f"{dir}\\Label\\{image_name[:-4]}.txt")
 
@@ -19,9 +22,9 @@ class Image:
                 tokens = line.split()
                 label = tokens[0] if len(tokens) == 5 else " ".join(tokens[:len(tokens) - 4])
                 coordinates = [my_round(float(t)) for t in tokens[-4:]]
-                if coordinates[0] < coordinates[2] and coordinates[1] < coordinates[3]:
+                if coordinates[0] < coordinates[2]-1 and coordinates[1] < coordinates[3]-1:
                     self.bounding_boxes.append(BoundingBox(ENCODE_LABEL[label], *coordinates))
-            self.clip_boxes()
+            self.clip_boxes(self.min_clip_val, self.max_clip_val)
 
     def with_bboxes(self, width=3):
         img = self.image
@@ -34,7 +37,7 @@ class Image:
             img[bbox.y_min:bbox.y_max, bbox.x_max - width:bbox.x_max + width] = color
         return img
 
-    def clip_boxes(self, min_val=0, max_val=IMAGE_SIZE-1):
+    def clip_boxes(self, min_val, max_val):
         for bbox in self.bounding_boxes:
             bbox.x_min = np.clip(bbox.x_min, min_val, max_val)
             bbox.x_max = np.clip(bbox.x_max, min_val, max_val)
@@ -49,7 +52,7 @@ class Image:
             bbox.y_max += y
 
     def save_image(self, dir):
-        if self.image_name:
+        if not self.image_name:
             raise Exception("Image name is not set")
         image_to_save = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
         cv2.imwrite(f"{dir}/{self.image_name}", image_to_save)
@@ -137,12 +140,20 @@ if __name__ == '__main__':
 
     print(BoundingBox(-1, 3, 3, 6, 6).center())
 
-    images = [
-        Image(PATH_TO_VALIDATION, "0f4bfc46402a9f52.jpg"),
-        Image(PATH_TO_VALIDATION, "3f10138eb086f2e9.jpg"),
-        Image(PATH_TO_VALIDATION, "3fc5aee11ddb3651.jpg"),
-        Image(PATH_TO_VALIDATION, "4a23eee283f294b6.jpg"),
-    ]
+    if USE_COCO:
+        images = [
+            Image("D:\\datasets\\coco\\coco_resized\\val", "000000000285.jpg", max_clip_val=10000),
+            Image("D:\\datasets\\coco\\train2017", "000000000127.jpg", max_clip_val=10000),
+            Image("D:\\datasets\\coco\\coco_resized\\train", "000000000127.jpg", max_clip_val=10000),
+            Image("C:\\Users\\Dragos\\datasets\\coco\\train", "000000429913.jpg", max_clip_val=10000)
+        ]
+    else:
+        images = [
+            Image(PATH_TO_VALIDATION, "0f4bfc46402a9f52.jpg"),
+            Image(PATH_TO_VALIDATION, "3f10138eb086f2e9.jpg"),
+            Image(PATH_TO_VALIDATION, "3fc5aee11ddb3651.jpg"),
+            Image(PATH_TO_VALIDATION, "4a23eee283f294b6.jpg"),
+        ]
 
     plt.figure(figsize=(10, 20))
     for i, img in enumerate(images):

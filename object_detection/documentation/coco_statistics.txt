@@ -1,0 +1,341 @@
+C:\Users\Dragos\datasets\coco\train 118287
+C:\Users\Dragos\datasets\coco\val 5000
+C:\Users\Dragos\datasets\coco\test 40670
+train 859995
+	Bounding boxes:
+		bowl : 14358
+		broccoli : 7308
+		orange : 6399
+		dog : 5508
+		boat : 10759
+		person : 262464
+		giraffe : 5131
+		kite : 9076
+		horse : 6587
+		car : 43867
+		bus : 6069
+		clock : 6334
+		dining table : 15714
+		banana : 9458
+		cup : 20650
+		cell phone : 6434
+		bottle : 24342
+		refrigerator : 2637
+		oven : 3334
+		sink : 5610
+		laptop : 4970
+		chair : 38490
+		potted plant : 8652
+		vase : 6613
+		bench : 9838
+		pizza : 5821
+		sandwich : 4373
+		carrot : 7852
+		zebra : 5303
+		toilet : 4157
+		parking meter : 1285
+		umbrella : 11431
+		frisbee : 2682
+		cow : 8147
+		bird : 10806
+		bed : 4192
+		couch : 5779
+		hot dog : 2917
+		elephant : 5513
+		remote : 5703
+		cake : 6353
+		book : 24715
+		fork : 5479
+		surfboard : 6125
+		truck : 9973
+		stop sign : 1983
+		train : 4571
+		tv : 5805
+		backpack : 8720
+		handbag : 12354
+		traffic light : 12884
+		baseball bat : 3276
+		baseball glove : 3747
+		bicycle : 7113
+		tie : 6496
+		fire hydrant : 1865
+		knife : 7770
+		motorcycle : 8725
+		skateboard : 5543
+		wine glass : 7913
+		airplane : 5135
+		sports ball : 6347
+		tennis racket : 4811
+		microwave : 1673
+		apple : 5851
+		cat : 4768
+		spoon : 6164
+		snowboard : 2685
+		skis : 6646
+		suitcase : 6192
+		sheep : 9509
+		donut : 7179
+		mouse : 2262
+		teddy bear : 4793
+		toaster : 225
+		scissors : 1481
+		toothbrush : 1954
+		keyboard : 2855
+		bear : 1294
+		hair drier : 198
+	Number of files:
+		bowl : 7111
+		broccoli : 1939
+		orange : 1699
+		dog : 4385
+		boat : 3025
+		person : 64115
+		kite : 2261
+		giraffe : 2546
+		horse : 2941
+		car : 12251
+		bus : 3952
+		clock : 4659
+		dining table : 11837
+		banana : 2243
+		cup : 9189
+		bottle : 8501
+		refrigerator : 2360
+		oven : 2877
+		sink : 4678
+		laptop : 3524
+		chair : 12774
+		cell phone : 4803
+		potted plant : 4452
+		vase : 3593
+		bench : 5570
+		pizza : 3166
+		sandwich : 2365
+		carrot : 1683
+		zebra : 1916
+		toilet : 3353
+		parking meter : 705
+		umbrella : 3968
+		frisbee : 2184
+		cow : 1968
+		bird : 3237
+		bed : 3682
+		couch : 4423
+		hot dog : 1222
+		elephant : 2143
+		remote : 3076
+		cake : 2925
+		book : 5332
+		fork : 3555
+		surfboard : 3486
+		truck : 6127
+		stop sign : 1734
+		tv : 4561
+		backpack : 5528
+		handbag : 6841
+		train : 3588
+		traffic light : 4139
+		baseball bat : 2506
+		baseball glove : 2629
+		bicycle : 3252
+		tie : 3810
+		fire hydrant : 1711
+		knife : 4326
+		motorcycle : 3502
+		skateboard : 3476
+		wine glass : 2533
+		airplane : 2986
+		sports ball : 4262
+		tennis racket : 3394
+		microwave : 1547
+		apple : 1586
+		cat : 4114
+		spoon : 3529
+		snowboard : 1654
+		skis : 3082
+		suitcase : 2402
+		sheep : 1529
+		donut : 1523
+		mouse : 1876
+		teddy bear : 2140
+		toaster : 217
+		scissors : 947
+		toothbrush : 1007
+		keyboard : 2115
+		bear : 960
+		hair drier : 189
+validation 36781
+	Bounding boxes:
+		potted plant : 343
+		tv : 288
+		chair : 1791
+		person : 11004
+		microwave : 55
+		refrigerator : 126
+		book : 1161
+		clock : 267
+		vase : 277
+		dining table : 697
+		cell phone : 262
+		bear : 71
+		car : 1932
+		sheep : 361
+		cow : 380
+		boat : 430
+		elephant : 255
+		banana : 379
+		motorcycle : 371
+		handbag : 540
+		couch : 261
+		cup : 899
+		laptop : 231
+		mouse : 106
+		keyboard : 153
+		bed : 163
+		giraffe : 232
+		stop sign : 75
+		truck : 415
+		dog : 218
+		cat : 202
+		teddy bear : 191
+		umbrella : 413
+		bottle : 1025
+		bowl : 626
+		bus : 285
+		hot dog : 127
+		skis : 241
+		pizza : 285
+		kite : 336
+		oven : 143
+		orange : 287
+		bird : 440
+		sink : 225
+		sports ball : 263
+		baseball glove : 148
+		wine glass : 343
+		bench : 413
+		tennis racket : 225
+		traffic light : 637
+		surfboard : 269
+		suitcase : 303
+		zebra : 268
+		backpack : 371
+		donut : 338
+		train : 190
+		horse : 273
+		frisbee : 115
+		carrot : 371
+		skateboard : 179
+		knife : 326
+		toilet : 179
+		sandwich : 177
+		spoon : 253
+		fork : 215
+		fire hydrant : 101
+		cake : 316
+		bicycle : 316
+		airplane : 143
+		tie : 254
+		apple : 239
+		baseball bat : 146
+		broccoli : 316
+		remote : 283
+		toothbrush : 57
+		scissors : 36
+		snowboard : 69
+		parking meter : 60
+		toaster : 9
+		hair drier : 11
+	Number of files:
+		potted plant : 172
+		tv : 207
+		chair : 580
+		person : 2693
+		microwave : 54
+		refrigerator : 101
+		book : 230
+		clock : 204
+		vase : 137
+		dining table : 501
+		cell phone : 214
+		bear : 49
+		sheep : 65
+		cow : 87
+		boat : 121
+		elephant : 89
+		car : 535
+		banana : 103
+		motorcycle : 159
+		handbag : 292
+		couch : 195
+		cup : 390
+		laptop : 183
+		mouse : 88
+		keyboard : 106
+		bed : 149
+		giraffe : 101
+		stop sign : 69
+		truck : 250
+		dog : 177
+		cat : 184
+		teddy bear : 94
+		umbrella : 174
+		bus : 189
+		bottle : 379
+		bowl : 314
+		hot dog : 51
+		skis : 120
+		pizza : 153
+		kite : 91
+		oven : 115
+		orange : 85
+		bird : 125
+		sink : 187
+		wine glass : 110
+		bench : 235
+		sports ball : 169
+		baseball glove : 100
+		traffic light : 191
+		tennis racket : 167
+		surfboard : 149
+		zebra : 85
+		suitcase : 105
+		backpack : 228
+		donut : 62
+		train : 157
+		frisbee : 84
+		horse : 128
+		carrot : 81
+		skateboard : 127
+		knife : 181
+		toilet : 149
+		sandwich : 98
+		spoon : 153
+		fork : 155
+		fire hydrant : 86
+		cake : 124
+		bicycle : 149
+		airplane : 97
+		tie : 145
+		apple : 76
+		baseball bat : 97
+		broccoli : 71
+		remote : 145
+		toothbrush : 34
+		scissors : 28
+		snowboard : 49
+		parking meter : 37
+		toaster : 8
+		hair drier : 9
+test 0
+	Bounding boxes:
+	Number of files:
+C:\Users\Dragos\datasets\coco\val
+63
+C:\Users\Dragos\datasets\coco\test
+0
+C:\Users\Dragos\datasets\coco\train
+90
+90
+
+Process finished with exit code 0

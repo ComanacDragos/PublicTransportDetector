@@ -18,6 +18,10 @@ def resize_image(image: Image, h=IMAGE_SIZE, w=IMAGE_SIZE):
         [albumentations.Resize(height=h, width=w, always_apply=True)],
         bbox_params=albumentations.BboxParams(format='pascal_voc'))
 
+    for bbox in image.bounding_boxes:
+        if bbox.x_min >= bbox.x_max:
+            print('\n', image.image_name, image.test_dir)
+            print(str(bbox))
     transformed = transform(image=image.image, bboxes=image.bounding_boxes_as_array_with_classes())
     image.image = np.asarray(transformed["image"])
 
@@ -30,21 +34,24 @@ def resize_image(image: Image, h=IMAGE_SIZE, w=IMAGE_SIZE):
 
 
 def preprocess_dataset_worker(image_files, dir, new_dir):
-    for image_file in image_files:
-        image = Image(dir, image_file)
+    total = len(image_files)
+    for i, image_file in enumerate(image_files):
+        image = Image(dir, image_file, max_clip_val=1e10)
         resize_image(image)
         image.save_image(new_dir)
+        if i % 1000 == 0:
+            print(f"{i}/{total} {threading.current_thread().ident}")
 
 
 def preprocess_dataset():
     dirs = {
         PATH_TO_TRAIN_UNPROCESSED: PATH_TO_TRAIN,
-        PATH_TO_VALIDATION_UNPROCESSED: PATH_TO_VALIDATION,
-        PATH_TO_TEST_UNPROCESSED: PATH_TO_TEST,
+        #PATH_TO_VALIDATION_UNPROCESSED: PATH_TO_VALIDATION,
+        #PATH_TO_TEST_UNPROCESSED: PATH_TO_TEST,
     }
 
     for dir, new_dir in dirs.items():
-        print(new_dir, " starting...")
+        print(new_dir, " starting... ", os.cpu_count(), " threads")
         image_files = os.listdir(dir)
         image_files.remove("Label")
         run_task(image_files, preprocess_dataset_worker, [dir, new_dir])
@@ -96,7 +103,6 @@ def prune_test_set():
             print(i, time.perf_counter() - start, bus_boxes, car_boxes, plate_boxes, kept)
 
 
-
 if __name__ == '__main__':
-    # preprocess_dataset()
-    prune_test_set()
+    preprocess_dataset()
+    #prune_test_set()
