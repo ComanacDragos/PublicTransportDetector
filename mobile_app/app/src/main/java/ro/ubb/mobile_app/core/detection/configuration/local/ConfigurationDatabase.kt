@@ -33,14 +33,14 @@ abstract class ConfigurationDatabase: RoomDatabase() {
                     ConfigurationDatabase::class.java,
                     "conf_db"
                 )
-                    .addCallback(WordDatabaseCallback(scope))
+                    .addCallback(InitDatabaseCallback(scope))
                     .fallbackToDestructiveMigration()
                     .build()
             INSTANCE = instance
             return instance
         }
 
-        private class WordDatabaseCallback(private val scope: CoroutineScope) :
+        private class InitDatabaseCallback(private val scope: CoroutineScope) :
             RoomDatabase.Callback() {
 
             override fun onOpen(db: SupportSQLiteDatabase) {

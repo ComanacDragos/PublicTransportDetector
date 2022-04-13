@@ -223,7 +223,7 @@ def test(score_threshold=0.2, iou_threshold=0.3, batch_size=BATCH_SIZE):
 
 
 if __name__ == '__main__':
-    PATH_TO_MODEL = "weights/coco.h5"
+    PATH_TO_MODEL = "weights/coco_v2.h5"
     test(
         score_threshold=0.4,
         iou_threshold=0.2,

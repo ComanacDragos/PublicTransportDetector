@@ -139,7 +139,7 @@ def analyze(model_name):
 
 
 if __name__ == '__main__':
-    model_name = "coco"
+    model_name = "coco_v2"
     try:
         convert_model(model_name)
         analyze(model_name)
