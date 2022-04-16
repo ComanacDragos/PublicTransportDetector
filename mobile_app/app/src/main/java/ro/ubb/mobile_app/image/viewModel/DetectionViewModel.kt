@@ -9,9 +9,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import ro.ubb.mobile_app.core.TAG
 import ro.ubb.mobile_app.core.detection.Detector
-import ro.ubb.mobile_app.core.detection.configuration.Configuration
-import ro.ubb.mobile_app.core.detection.configuration.local.ConfigurationDatabase
-import ro.ubb.mobile_app.core.detection.configuration.local.ConfigurationRepository
+import ro.ubb.mobile_app.core.configuration.Configuration
+import ro.ubb.mobile_app.core.configuration.local.ConfigurationDatabase
+import ro.ubb.mobile_app.core.configuration.local.ConfigurationRepository
 import ro.ubb.mobile_app.core.ocr.OCR
 
 class DetectionViewModel(application: Application) : AndroidViewModel(application) {

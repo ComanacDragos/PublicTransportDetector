@@ -15,7 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ro.ubb.mobile_app.core.TAG
-import ro.ubb.mobile_app.core.detection.configuration.Configuration
+import ro.ubb.mobile_app.core.configuration.Configuration
 import ro.ubb.mobile_app.image.viewModel.DetectionViewModel
 
 

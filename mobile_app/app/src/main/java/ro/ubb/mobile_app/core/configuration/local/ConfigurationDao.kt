@@ -1,7 +1,7 @@
-package ro.ubb.mobile_app.core.detection.configuration.local
+package ro.ubb.mobile_app.core.configuration.local
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import ro.ubb.mobile_app.core.detection.configuration.Configuration
+import ro.ubb.mobile_app.core.configuration.Configuration
 
 @Dao
 interface ConfigurationDao {

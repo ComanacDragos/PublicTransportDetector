@@ -7,7 +7,7 @@ import org.tensorflow.lite.task.core.BaseOptions
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import ro.ubb.mobile_app.MainActivity
 import ro.ubb.mobile_app.core.TAG
-import ro.ubb.mobile_app.core.detection.configuration.Configuration
+import ro.ubb.mobile_app.core.configuration.Configuration
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min

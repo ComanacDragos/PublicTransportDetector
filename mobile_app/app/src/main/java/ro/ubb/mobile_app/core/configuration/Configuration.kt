@@ -1,4 +1,4 @@
-package ro.ubb.mobile_app.core.detection.configuration
+package ro.ubb.mobile_app.core.configuration
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

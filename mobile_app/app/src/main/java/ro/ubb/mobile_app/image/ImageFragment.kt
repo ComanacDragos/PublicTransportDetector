@@ -197,6 +197,7 @@ class ImageFragment : Fragment() {
             Log.v(TAG, "update bitmap")
             requireActivity().runOnUiThread{
                 ivImage.setImageBitmap(it)
+                ocrButton.isEnabled = it != null
             }
         })
 
