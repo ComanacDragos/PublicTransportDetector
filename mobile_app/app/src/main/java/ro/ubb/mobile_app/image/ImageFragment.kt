@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -14,6 +15,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -27,17 +29,13 @@ import kotlinx.coroutines.launch
 import ro.ubb.mobile_app.BuildConfig
 import ro.ubb.mobile_app.R
 import ro.ubb.mobile_app.core.TAG
+import ro.ubb.mobile_app.image.viewModel.DetectionViewModel
+import ro.ubb.mobile_app.image.viewModel.ImageFragmentViewModel
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.system.measureTimeMillis
-import android.media.ExifInterface
-import android.widget.Toast
-import ro.ubb.mobile_app.core.ocr.OCR
-import ro.ubb.mobile_app.core.toBase64
-import ro.ubb.mobile_app.image.viewModel.DetectionViewModel
-import ro.ubb.mobile_app.image.viewModel.ImageFragmentViewModel
 
 class ImageFragment : Fragment() {
     companion object{

@@ -25,6 +25,7 @@ import kotlin.collections.HashMap
 class AccessibleLiveFragment: AbstractLiveFragment(), TextToSpeech.OnInitListener {
     private lateinit var tts: TextToSpeech
     private lateinit var accessibleViewModel: AccessibleLiveFragmentViewModel
+    private var errorOnSetup = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -118,13 +119,18 @@ class AccessibleLiveFragment: AbstractLiveFragment(), TextToSpeech.OnInitListene
     }
 
     override fun setMenuVisibility(menuVisible: Boolean){
-        super.setMenuVisibility(menuVisible)
-        if(!menuVisible) {
-            stopTalking()
-        }else{
-            tts = TextToSpeech(requireContext(), this)
-            onInit(TextToSpeech.SUCCESS)
-            voiceView.tts = tts
+        try {
+            super.setMenuVisibility(menuVisible)
+            if (!menuVisible) {
+                stopTalking()
+            } else {
+                tts = TextToSpeech(requireContext(), this)
+                onInit(TextToSpeech.SUCCESS)
+                voiceView.tts = tts
+            }
+        }catch (err: Exception){
+            err.let { Log.e(TAG, it.stackTraceToString()) }
+            errorOnSetup = true
         }
     }
 
@@ -138,6 +144,11 @@ class AccessibleLiveFragment: AbstractLiveFragment(), TextToSpeech.OnInitListene
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        Log.d(TAG, "ON CREATE VIEW")
+        if(errorOnSetup){
+            setMenuVisibility(true)
+            errorOnSetup = false
+        }
         return inflater.inflate(R.layout.fragment_live_accessible, container, false)
     }
 }

@@ -79,17 +79,16 @@ object Detector{
         return nmsResults
     }
 
-    private fun intersectionOverUnion(box: RectF, otherBox: RectF): Float{
+    fun intersectionOverUnion(box: RectF, otherBox: RectF): Float{
         val intersectWidth = max(min(box.right, otherBox.right) - max(box.left, otherBox.left), 0f)
         val intersectHeight = max(min(box.bottom, otherBox.bottom) - max(box.top, otherBox.top), 0f)
 
         val intersect = intersectHeight * intersectWidth
         val union = box.height() * box.width() + otherBox.height() * otherBox.width() - intersect
-
         return intersect / union
     }
 
-    private fun nonMaximumSuppression(results: List<DetectionResult>): List<DetectionResult>{
+    fun nonMaximumSuppression(results: List<DetectionResult>): List<DetectionResult>{
         val newResults = LinkedList<DetectionResult>()
         results.sortedByDescending { it.score }
             .forEach{
@@ -104,7 +103,6 @@ object Detector{
                 }
                 if(maxIou < configuration.nmsIouThreshold/100)
                     newResults.add(it)
-
             }
         return newResults
     }

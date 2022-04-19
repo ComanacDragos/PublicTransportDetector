@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
+import android.view.View
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -75,6 +76,7 @@ abstract class AbstractLiveFragment : Fragment(){
 
     override fun setMenuVisibility(menuVisible: Boolean) {
         super.setMenuVisibility(menuVisible)
+        Log.d(TAG, "setMenuVisibility")
         if(menuVisible && !cameraIsSetup)
             setupCamera()
         else{
