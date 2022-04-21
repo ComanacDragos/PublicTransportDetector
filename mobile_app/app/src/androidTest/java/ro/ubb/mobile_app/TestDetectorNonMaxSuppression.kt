@@ -38,6 +38,7 @@ class TestDetectorNonMaxSuppression {
         val iou = Detector.intersectionOverUnion(RectF(
             10f,10f,20f, 20f
         ), RectF(10f, 10f, 20f, 20f))
+
         assertEquals(1f, iou)
     }
 
@@ -46,6 +47,7 @@ class TestDetectorNonMaxSuppression {
         val iou = Detector.intersectionOverUnion(RectF(
             10f,10f,20f, 20f
         ), RectF(15f, 10f, 25f, 20f))
+
         assertEquals(1/3f, iou)
     }
 
@@ -54,6 +56,7 @@ class TestDetectorNonMaxSuppression {
         val iou = Detector.intersectionOverUnion(RectF(
             10f,10f,20f, 20f
         ), RectF(10f, 15f, 20f, 25f))
+
         assertEquals(1/3f, iou)
     }
 
@@ -64,6 +67,7 @@ class TestDetectorNonMaxSuppression {
             10f,10f,20f, 20f
         ), RectF(20f, 20f, 30f, 30f)
         )
+
         assertEquals(0f, iou)
     }
 
@@ -71,6 +75,7 @@ class TestDetectorNonMaxSuppression {
     @Test
     fun emptyList(){
         val actual = Detector.nonMaximumSuppression(LinkedList<DetectionResult>()).size
+
         assertEquals(0, actual)
     }
 
@@ -81,8 +86,63 @@ class TestDetectorNonMaxSuppression {
                 RectF(1f,1f,2f,2f),
                 "label", 0.5f, 0)
         )
+
         val actual = Detector.nonMaximumSuppression(input)
+
         assertEquals(1, actual.size)
         assertEquals(input[0], actual[0])
+    }
+
+    @Test
+    fun twoBoxesDifferentLabels(){
+        val input =  listOf(
+            DetectionResult(
+                RectF(1f,1f,2f,2f),
+                "label", 0.5f, 0),
+            DetectionResult(
+                RectF(1f,1f,2f,2f),
+                "label2", 0.5f, 1)
+        )
+
+        val actual = Detector.nonMaximumSuppression(input)
+
+        assertEquals(2, actual.size)
+        for(i in input.indices)
+            assertEquals(input[i], actual[i])
+    }
+
+    @Test
+    fun twoBoxesSameLabelsNoOverlap(){
+        val input =  listOf(
+            DetectionResult(
+                RectF(1f,1f,2f,2f),
+                "label", 0.5f, 0),
+            DetectionResult(
+                RectF(2f,2f,3f,3f),
+                "label", 0.5f, 0)
+        )
+
+        val actual = Detector.nonMaximumSuppression(input)
+
+        assertEquals(2, actual.size)
+        for(i in input.indices)
+            assertEquals(input[i], actual[i])
+    }
+
+    @Test
+    fun twoBoxesSameLabelsWithOverlap(){
+        val input =  listOf(
+            DetectionResult(
+                RectF(1f,1f,2f,2f),
+                "label", 0.5f, 0),
+            DetectionResult(
+                RectF(1f,1f,2f,2f),
+                "label", 0.7f, 0)
+        )
+
+        val actual = Detector.nonMaximumSuppression(input)
+
+        assertEquals(1, actual.size)
+        assertEquals(input[1], actual[0])
     }
 }
