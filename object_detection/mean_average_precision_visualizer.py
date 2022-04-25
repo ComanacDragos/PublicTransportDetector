@@ -130,6 +130,6 @@ if __name__ == '__main__':
         print(f"{k} -> {v}")
 
     visualize(0.5, 0.3, None,
-              ['model_v29', 'model_v30', 'model_v27_fine_tuned', 'model_v28'],
+              ['model_v29', 'model_v30', 'model_v31', 'model_v28'],
               ['mAP', 'Bus', 'Car', 'Vehicle registration plate']
               )
