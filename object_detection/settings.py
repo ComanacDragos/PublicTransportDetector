@@ -2,8 +2,9 @@ import logging
 from utils_file import open_pickle
 
 ENHANCE = True
-UNDER_SAMPLE = True
-USE_COCO = True
+UNDER_SAMPLE = False
+
+USE_COCO = False
 
 if not USE_COCO:
     if not ENHANCE:

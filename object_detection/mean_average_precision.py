@@ -150,7 +150,7 @@ def log_to_file_map(model, generator, model_name, iou_true_positive_threshold, n
 
 
 if __name__ == '__main__':
-    model_name = "model_v28"
+    model_name = "model_v29"
     iou_true_positive_thresholds = [0.3, 0.5, 0.7]
     nms_iou_thresholds = [0.3, 0.4, 0.5]
     score_thresholds = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
@@ -159,7 +159,7 @@ if __name__ == '__main__':
         'RandomColorAugmentation': RandomColorAugmentation,
         'Cutout': Cutout
     }, compile=False)
-    generator = DataGenerator(PATH_TO_TEST, shuffle=False)
+    generator = DataGenerator(PATH_TO_TEST, batch_size=8, shuffle=False)
     logging.Filter()
     for iou_true_positive_threshold in iou_true_positive_thresholds:
         for nms_iou_threshold in nms_iou_thresholds:

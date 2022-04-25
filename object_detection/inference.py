@@ -161,7 +161,7 @@ def run_on_one_image(path, score_threshold):
 
 
 def test(score_threshold=0.2, iou_threshold=0.3, batch_size=BATCH_SIZE):
-    generator = DataGenerator(PATH_TO_TEST, shuffle=False, batch_size=batch_size)
+    generator = DataGenerator(PATH_TO_VALIDATION, shuffle=False, batch_size=batch_size)
     model, true_boxes = build_model()
     if "fine_tuned" in PATH_TO_MODEL:
         model.trainable = True

@@ -1,0 +1,124 @@
+ENHANCE = False
+UNDER_SAMPLE = True
+
+C:\Users\Dragos\datasets\OID\OID\PublicTransportFilteredProcessed\train 19773
+C:\Users\Dragos\datasets\OID\OID\PublicTransportFilteredProcessed\validation 4967
+C:\Users\Dragos\datasets\OID\OID\PublicTransportFilteredProcessed\test_filtered 669
+train 47938
+	Bounding boxes:
+		Car : 28159
+		Bus : 11927
+		Vehicle registration plate : 7852
+	Number of files:
+		Car : 10166
+		Bus : 7293
+		Vehicle registration plate : 5368
+validation 9985
+	Bounding boxes:
+		Car : 9381
+		Vehicle registration plate : 512
+		Bus : 92
+	Number of files:
+		Car : 4900
+		Vehicle registration plate : 386
+		Bus : 73
+test 1483
+	Bounding boxes:
+		Car : 764
+		Vehicle registration plate : 366
+		Bus : 353
+	Number of files:
+		Car : 369
+		Vehicle registration plate : 266
+		Bus : 247
+C:\Users\Dragos\datasets\OID\OID\PublicTransportFilteredProcessed\validation
+27
+C:\Users\Dragos\datasets\OID\OID\PublicTransportFilteredProcessed\test_filtered
+31
+C:\Users\Dragos\datasets\OID\OID\PublicTransportFilteredProcessed\train
+51
+51
+
+
+ENHANCE = False
+UNDER_SAMPLE = False
+
+C:\Users\Dragos\datasets\PublicTransportProcessed\train 30939
+C:\Users\Dragos\datasets\PublicTransportProcessed\validation 4967
+C:\Users\Dragos\datasets\PublicTransportProcessed\test 14894
+train 80291
+	Bounding boxes:
+		Car : 60513
+		Bus : 11927
+		Vehicle registration plate : 7851
+	Number of files:
+		Car : 21852
+		Bus : 7293
+		Vehicle registration plate : 5368
+validation 9985
+	Bounding boxes:
+		Car : 9381
+		Vehicle registration plate : 512
+		Bus : 92
+	Number of files:
+		Car : 4900
+		Vehicle registration plate : 386
+		Bus : 73
+test 30660
+	Bounding boxes:
+		Car : 28737
+		Vehicle registration plate : 1570
+		Bus : 353
+	Number of files:
+		Car : 14663
+		Vehicle registration plate : 1113
+		Bus : 247
+C:\Users\Dragos\datasets\PublicTransportProcessed\validation
+27
+C:\Users\Dragos\datasets\PublicTransportProcessed\test
+43
+C:\Users\Dragos\datasets\PublicTransportProcessed\train
+111
+111
+
+
+ENHANCE = True
+UNDER_SAMPLE = False
+
+C:\Users\Dragos\datasets\OID\OID\PublicTransportEnhanced\train 19773
+C:\Users\Dragos\datasets\OID\OID\PublicTransportEnhanced\validation 4967
+C:\Users\Dragos\datasets\OID\OID\PublicTransportEnhanced\test 669
+train 50110
+	Bounding boxes:
+		Bus : 11927
+		Car : 28159
+		Vehicle registration plate : 10024
+	Number of files:
+		Bus : 7293
+		Car : 10166
+		Vehicle registration plate : 7184
+validation 10824
+	Bounding boxes:
+		Car : 9381
+		Vehicle registration plate : 1351
+		Bus : 92
+	Number of files:
+		Car : 4900
+		Vehicle registration plate : 1196
+		Bus : 73
+test 1580
+	Bounding boxes:
+		Car : 764
+		Vehicle registration plate : 463
+		Bus : 353
+	Number of files:
+		Car : 369
+		Vehicle registration plate : 354
+		Bus : 247
+C:\Users\Dragos\datasets\OID\OID\PublicTransportEnhanced\validation
+27
+C:\Users\Dragos\datasets\OID\OID\PublicTransportEnhanced\test
+31
+C:\Users\Dragos\datasets\OID\OID\PublicTransportEnhanced\train
+51
+51

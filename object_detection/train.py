@@ -264,7 +264,7 @@ def compose_trainer(concrete_trainer, decorators):
 def train():
     trainer = SimpleTrainer(epochs=50, n_min=1e-9, n_max=1e-3, path_to_model=None)
     trainer = compose_trainer(trainer, [LogTrainer])
-    trainer.train(name="coco_v2.h5")
+    trainer.train(name="model_v29.h5")
 
 
 def fine_tune():

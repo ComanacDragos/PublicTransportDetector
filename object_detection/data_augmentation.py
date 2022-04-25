@@ -218,40 +218,49 @@ def visualize_augmentations():
     plt.subplot(rows, cols, 1)
     plt.imshow(img[0])
     plt.title("original")
+    plt.axis("off")
 
     plt.subplot(rows, cols, 2)
     plt.imshow(cutout_layer.call(img, training=True)[0])
     plt.title("cutout")
+    plt.axis("off")
 
     plt.subplot(rows, cols, 3)
     plt.imshow(hue_layer.call(img, training=True)[0])
     plt.title("hue")
+    plt.axis("off")
 
     plt.subplot(rows, cols, 4)
     plt.imshow(saturation_layer.call(img, training=True)[0])
     plt.title("saturation")
+    plt.axis("off")
 
     plt.subplot(rows, cols, 5)
     plt.imshow(brightness_layer.call(img, training=True)[0])
     plt.title("brightness")
+    plt.axis("off")
 
     plt.subplot(rows, cols, 6)
     plt.imshow(contrast_layer.call(img, training=True)[0])
     plt.title("contrast")
+    plt.axis("off")
 
     plt.subplot(rows, cols, 7)
     plt.imshow(random_layer.call(img, training=True)[0])
     plt.title("random")
+    plt.axis("off")
 
     plt.subplot(rows, cols, 8)
     plt.imshow(random_layer.call(img, training=True)[0])
     plt.title("random")
+    plt.axis("off")
 
     plt.tight_layout()
-    plt.savefig("documentation/augmentation.jpg")
+    #plt.savefig("documentation/augmentation.jpg")
+    plt.show()
 
 
-if __name__ == '__main__':
+def visualize_mosaic():
     images = [
         Image(PATH_TO_VALIDATION, "0f4bfc46402a9f52.jpg"),
         Image(PATH_TO_VALIDATION, "3f10138eb086f2e9.jpg"),
@@ -260,6 +269,11 @@ if __name__ == '__main__':
     ]
     img = mosaic(images)
     plt.imshow(img.with_bboxes(3))
+    plt.axis("off")
     plt.show()
     print(img.image.shape)
-    # visualize_augmentations()
+
+
+if __name__ == '__main__':
+    #visualize_mosaic()
+    visualize_augmentations()
