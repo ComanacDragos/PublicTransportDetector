@@ -129,7 +129,7 @@ if __name__ == '__main__':
     for k, v in out.items():
         print(f"{k} -> {v}")
 
-    visualize(0.5, 0.4, None,
-              ['model_v29', 'model_v27', 'model_v27_fine_tuned', 'model_v28'],
+    visualize(0.5, 0.3, None,
+              ['model_v29', 'model_v30', 'model_v27_fine_tuned', 'model_v28'],
               ['mAP', 'Bus', 'Car', 'Vehicle registration plate']
               )
