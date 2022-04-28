@@ -61,12 +61,20 @@ object Detector{
     private fun runDetection(bitmap: Bitmap): List<DetectionResult> {
         var start = System.currentTimeMillis()
         val image = TensorImage.fromBitmap(bitmap)
-        val results = detector.detect(image).map {
+        val results = detector.detect(image)
+            .map {
             val category = it.categories.first()
             val label = category.label
             val score = category.score
-            DetectionResult(it.boundingBox, label, score, category.index)
+            DetectionResult(RectF().apply {
+                top = it.boundingBox.top
+                left = it.boundingBox.left
+                bottom = it.boundingBox.right
+                right = it.boundingBox.bottom
+            }, label, score, category.index)
         }
+            .filter { it.boundingBox.width() != 0f && it.boundingBox.height() != 0f }
+
         Log.v(TAG, "Detection time: ${System.currentTimeMillis()-start}ms")
 
         Log.d(TAG, "Before NMS")
@@ -126,7 +134,7 @@ object Detector{
         Log.d(TAG, "#detections: ${results.size}")
         for ((i, obj) in results.withIndex()) {
             val box = obj.boundingBox
-            Log.d(TAG, "Detected object: $i ")
+            Log.d(TAG, "Detected object: $i, w: ${box.width()} h: ${box.height()} ${box.width().toDouble() != 0.0 && box.height().toDouble() != 0.0}")
             Log.d(TAG, "  boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})")
             Log.d(TAG, "    Label: ${obj.label}")
             Log.d(TAG, "    Confidence: ${obj.score.times(100).toInt()}%")
