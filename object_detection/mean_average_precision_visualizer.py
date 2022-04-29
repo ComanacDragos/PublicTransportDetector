@@ -65,7 +65,7 @@ def visualize(iou_tp, nms_iou, score, models, metrics):
             'nms_iou': [] if nms_iou is None else [nms_iou],
             'score': [] if score is None else [score]
         },
-        models,
+        models.keys(),
         ['model_name', *metrics]
     )
     if iou_tp is None:
@@ -95,7 +95,7 @@ def visualize(iou_tp, nms_iou, score, models, metrics):
         y_ticks = []
         for (j, model) in enumerate(legend):
             y_values = y[:, j]
-            axs[i].plot(x, y_values, label=model)
+            axs[i].plot(x, y_values, label=f"{model} {models[model]}")
             max_index = np.argmax(y_values)
             max_y_value = y_values[max_index]
             y_ticks.append(max_y_value)
@@ -110,7 +110,10 @@ def visualize(iou_tp, nms_iou, score, models, metrics):
         axs[i].set_yticks(filtered_y_ticks)
         axs[i].legend()
         axs[i].set_xlabel(x_axis_label)
-        axs[i].set_ylabel('AP')
+        if metric != 'mAP':
+            axs[i].set_ylabel('AP')
+        else:
+            axs[i].set_ylabel('mAP')
 
     plt.tight_layout()
     plt.show()
@@ -129,7 +132,16 @@ if __name__ == '__main__':
     for k, v in out.items():
         print(f"{k} -> {v}")
 
+    models = {
+        #'model_v29': "T=100",
+        #'model_v30': "T=50",
+        #'model_v31': "T=25",
+        #'model_v32': "T=10",
+        'model_v33': "T=60",
+        'model_v34': "T=75"
+    }
+
     visualize(0.5, 0.3, None,
-              ['model_v29', 'model_v30', 'model_v32', 'model_v28', 'model_v33'],
+              models,
               ['mAP', 'Bus', 'Car', 'Vehicle registration plate']
               )
