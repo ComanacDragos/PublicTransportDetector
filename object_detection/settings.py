@@ -84,7 +84,7 @@ else:
     NO_ANCHORS = 3
     ANCHORS_PATH = f"data/anchors_{NO_ANCHORS}.pickle"
 
-BATCH_SIZE = 16
+BATCH_SIZE = 8
 
 
 logging.basicConfig(level=logging.INFO)
