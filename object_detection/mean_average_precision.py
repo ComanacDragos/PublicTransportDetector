@@ -150,7 +150,7 @@ def log_to_file_map(model, generator, model_name, iou_true_positive_threshold, n
 
 
 if __name__ == '__main__':
-    model_name = "model_v38"
+    model_name = "model_v39"
     iou_true_positive_thresholds = [0.3, 0.5, 0.7]
     nms_iou_thresholds = [0.3, 0.4, 0.5]
     score_thresholds = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
