@@ -112,6 +112,24 @@ def extract_boxes(scores, boxes, classes, valid_detections) -> List[List[Boundin
     return output_boxes
 
 
+def image_to_bounding_boxes(model, path, score_threshold=0.4, iou_threshold=0.3):
+    image = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
+
+    image = cv2.resize(image, (IMAGE_SIZE, IMAGE_SIZE))
+
+    image = np.expand_dims(image, axis=0)
+    scores, boxes, classes, valid_detections = inference(model, image,
+                                                         score_threshold=score_threshold,
+                                                         iou_threshold=iou_threshold,
+                                                         batch_size=1)
+    scores, boxes, classes, valid_detections = K.get_value(scores), \
+                                               K.get_value(boxes), \
+                                               K.get_value(classes), \
+                                               K.get_value(valid_detections)
+
+    return extract_boxes(scores, boxes, classes, valid_detections)[0]
+
+
 def draw_images(images, scores, boxes, classes, valid_detections):
     output_boxes = extract_boxes(scores, boxes, classes, valid_detections)
     return [with_bounding_boxes(img, bboxes) for img, bboxes in zip(images, output_boxes)]

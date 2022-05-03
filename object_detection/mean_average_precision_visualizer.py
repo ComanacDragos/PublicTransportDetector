@@ -133,13 +133,14 @@ if __name__ == '__main__':
         print(f"{k} -> {v}")
 
     models = {
-        'model_v36': "dropout=0.3",
-        'model_v37': "T=0.4",
-        'model_v38': "T=0.5",
+        #'model_v36': "dropout=0.3",
+        #'model_v37': "dropout=0.4",
+        #'model_v38': "dropout=0.5",
+        #'model_v39': "dropout=0.2",
 
-        #'model_v33': "bs=32",
-        #'model_v35': "bs=16",
-        #'model_v36': "bs=8",
+        'model_v33': "bs=32",
+        'model_v35': "bs=16",
+        'model_v36': "bs=8",
     }
 
     visualize(0.5, 0.3, None,

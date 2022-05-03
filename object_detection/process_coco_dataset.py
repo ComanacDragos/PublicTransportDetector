@@ -92,4 +92,12 @@ if __name__ == '__main__':
     #prepare_annotations('val')
     #prepare_labels('val')
     #create_test_set_label_files()
-    print(len(os.listdir("D:\\datasets\\coco\\train2017")))
+    #print(len(os.listdir("D:\\datasets\\coco\\train2017")))
+
+"""
+    annotation_data = open_json(f"D:\\datasets\\coco\\image_infoannotations\\image_info_test-dev2017.json")
+
+    to_pickle(extract_image_file_names(annotation_data['images']), "D:\\datasets\\coco\\annotations\\id_to_file_name_test-dev.pickle")
+
+    print(open_pickle("D:\\datasets\\coco\\annotations\\id_to_file_name_test.pickle"))
+"""
