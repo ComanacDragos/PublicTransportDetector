@@ -31,7 +31,7 @@ def voc_ap(rec, prec):
     return ap
 
 
-def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_threshold, score_threshold, no_classes=3):
+def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_threshold, score_threshold, no_classes=len(ENCODE_LABEL)):
     start = time.perf_counter()
     true_boxes_all = extract_boxes(*process_ground_truth(y_true, len(anchors)))
     logging.debug(f"Ground truth processing: {time.perf_counter() - start}")
@@ -91,7 +91,7 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
 
 
 def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_positive_threshold, nms_iou_threshold,
-                   score_threshold, no_classes=3):
+                   score_threshold, no_classes=len(ENCODE_LABEL)):
     average_precisions = []
     ap_to_class_all = {c: [] for c in range(no_classes)}
     for i in range(len(generator)):
@@ -149,18 +149,11 @@ def log_to_file_map(model, generator, model_name, iou_true_positive_threshold, n
         f.write(line)
 
 
-if __name__ == '__main__':
-    model_name = "model_v39"
+def compute_map_to_file(model, generator):
     iou_true_positive_thresholds = [0.3, 0.5, 0.7]
     nms_iou_thresholds = [0.3, 0.4, 0.5]
     score_thresholds = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 
-    model = tf.keras.models.load_model(f"weights/{model_name}.h5", custom_objects={
-        'RandomColorAugmentation': RandomColorAugmentation,
-        'Cutout': Cutout
-    }, compile=False)
-    generator = DataGenerator(PATH_TO_TEST, batch_size=8, shuffle=False)
-    logging.Filter()
     for iou_true_positive_threshold in iou_true_positive_thresholds:
         for nms_iou_threshold in nms_iou_thresholds:
             for score_threshold in score_thresholds:
@@ -172,3 +165,26 @@ if __name__ == '__main__':
                                 score_threshold=score_threshold
                                 )
                 logging.info(f"Done with: {iou_true_positive_threshold} - {nms_iou_threshold} - {score_threshold} in {time.perf_counter()-start}")
+
+
+def compute_single_map(model, generator, iou_true_positive_threshold, nms_iou_threshold, score_threshold):
+    mAP, aps, no_items = evaluate_model(model, generator, iou_true_positive_threshold=iou_true_positive_threshold,
+                                        nms_iou_threshold=nms_iou_threshold,
+                                        score_threshold=score_threshold)
+    print(f"mAP: {mAP}")
+    print(aps)
+    print(no_items)
+
+
+if __name__ == '__main__':
+    model_name = "coco_v2" # "model_v39"
+
+    model = tf.keras.models.load_model(f"weights/{model_name}.h5", custom_objects={
+        'RandomColorAugmentation': RandomColorAugmentation,
+        'Cutout': Cutout
+    }, compile=False)
+    generator = DataGenerator(PATH_TO_VALIDATION, batch_size=8, shuffle=False)
+    #logging.Filter()
+
+    compute_single_map(model, generator, 0.5, 0.2, 0.4)
+
