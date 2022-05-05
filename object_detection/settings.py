@@ -4,7 +4,7 @@ from utils_file import open_pickle
 ENHANCE = True
 UNDER_SAMPLE = False
 
-USE_COCO = True
+USE_COCO = False
 
 if not USE_COCO:
     if not ENHANCE:

@@ -106,17 +106,13 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1,
         x = BlockCreator.upsample_block(x, skip_layer.shape[-1], strides=int(skip_layer.shape[1] / x.shape[1]))
         x = Concatenate()([x, skip_layer])
 
-    x = Dropout(0.2)(x)
+    x = Dropout(0.3)(x)
 
     x = BlockCreator.conv_block(x, filters=128, strides=2, add_skip_connection=False)
 
     x = BlockCreator.inverted_residual_block(x, 512, 128)
     x = BlockCreator.inverted_residual_block(x, 512, 128)
 
-    #x = Conv2D(kernel_size=3, filters=no_anchors * (4 + 1 + no_classes),
-    #           padding="same",
-    #           kernel_initializer=tf.keras.initializers.HeNormal(),
-    #           kernel_regularizer=tf.keras.regularizers.l1_l2(l1=L1, l2=L2))(x)
     x = BlockCreator.conv_block(x, filters=no_anchors * (4 + 1 + no_classes),
                                 add_skip_connection=False, activation=False)
     x = Reshape((GRID_SIZE, GRID_SIZE, no_anchors, 4 + 1 + no_classes), name="final_output")(x)
@@ -264,7 +260,7 @@ def compose_trainer(concrete_trainer, decorators):
 def train():
     trainer = SimpleTrainer(epochs=50, n_min=1e-6, n_max=1e-3, T=60, path_to_model=None)
     trainer = compose_trainer(trainer, [LogTrainer])
-    trainer.train(name="model_v39.h5")
+    trainer.train(name="model_v40.h5")
 
 
 def fine_tune():

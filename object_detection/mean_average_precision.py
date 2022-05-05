@@ -177,14 +177,14 @@ def compute_single_map(model, generator, iou_true_positive_threshold, nms_iou_th
 
 
 if __name__ == '__main__':
-    model_name = "coco_v2" # "model_v39"
+    model_name = "model_v40"
 
     model = tf.keras.models.load_model(f"weights/{model_name}.h5", custom_objects={
         'RandomColorAugmentation': RandomColorAugmentation,
         'Cutout': Cutout
     }, compile=False)
-    generator = DataGenerator(PATH_TO_VALIDATION, batch_size=8, shuffle=False)
-    #logging.Filter()
-
-    compute_single_map(model, generator, 0.5, 0.2, 0.4)
+    generator = DataGenerator(PATH_TO_TEST, batch_size=8, shuffle=False)
+    logging.Filter()
+    compute_map_to_file(model, generator)
+    #compute_single_map(model, generator, 0.5, 0.2, 0.4)
 

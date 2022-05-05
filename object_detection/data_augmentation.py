@@ -45,10 +45,10 @@ def cutout(x, crop_size):
 class Cutout(tf.keras.layers.Layer):
     def __init__(self, crop_size, **kwargs):
         """
-        :param crop_size: half the size of the crop
+        :param crop_size: size of the crop
         """
         super().__init__(**kwargs)
-        self.crop_size = crop_size
+        self.crop_size = crop_size // 2
 
     def call(self, x, training=None):
         x = tf.cast(x, dtype=tf.int32)
@@ -204,7 +204,7 @@ def mosaic(images, min_size=50):
 def visualize_augmentations():
     img = Image(PATH_TO_VALIDATION, "4a23eee283f294b6.jpg").image
     img = np.stack([img] * 2)
-    cutout_layer = Cutout(32)
+    cutout_layer = Cutout(64)
     hue_layer = RandomHue()
     saturation_layer = RandomSaturation()
     brightness_layer = RandomBrightness()
