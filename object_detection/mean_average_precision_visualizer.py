@@ -144,6 +144,7 @@ if __name__ == '__main__':
 
         'model_v39': "cutout=64",
         'model_v40': "cutout=32",
+        'model_v41': "cutout=128",
     }
 
     visualize(0.5, 0.3, None,

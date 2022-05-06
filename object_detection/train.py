@@ -77,7 +77,7 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), true_boxes_shape=(1, 1,
     x = inputs
     if not inference_only:
         x = RandomColorAugmentation()(x)
-        x = Cutout(32)(x)
+        x = Cutout(128)(x)
         x = tf.cast(x, tf.float32)
         x = tf.keras.applications.mobilenet_v2.preprocess_input(x)
     mobilenet_v2 = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=input_shape, include_top=False,
@@ -260,7 +260,7 @@ def compose_trainer(concrete_trainer, decorators):
 def train():
     trainer = SimpleTrainer(epochs=50, n_min=1e-6, n_max=1e-3, T=60, path_to_model=None)
     trainer = compose_trainer(trainer, [LogTrainer])
-    trainer.train(name="model_v40.h5")
+    trainer.train(name="model_v41.h5")
 
 
 def fine_tune():
