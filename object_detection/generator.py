@@ -50,7 +50,8 @@ class DataGenerator(tf.keras.utils.Sequence):
             if self.apply_mosaic and np.random.rand() < 0.8:
                 indices = np.random.choice(batch_indices, 4, replace=False)
                 image = mosaic(
-                    [Image(self.db_dir, self.image_paths[idx]) for idx in indices]
+                    [Image(self.db_dir, self.image_paths[idx]) for idx in indices],
+                    min_size=100
                 )
             else:
                 index = batch_indices[i]

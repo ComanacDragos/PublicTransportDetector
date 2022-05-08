@@ -142,11 +142,14 @@ if __name__ == '__main__':
         #'model_v35': "bs=16",
         #'model_v36': "bs=8",
 
-        'model_v39': "cutout=64",
-        'model_v40': "cutout=32",
-        'model_v41': "cutout=128",
-        'model_v42': "cutout=192",
-        'model_v43': "cutout=256",
+        #'model_v39': "cutout=64",
+        #'model_v40': "cutout=32",
+        #'model_v41': "cutout=128",
+        #'model_v42': "cutout=192",
+        #'model_v43': "cutout=256",
+
+        'model_v42': "min_size=50",
+        'model_v44': "min_size=100"
     }
 
     visualize(0.5, 0.3, None,
