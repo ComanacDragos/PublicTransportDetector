@@ -149,7 +149,8 @@ if __name__ == '__main__':
         #'model_v43': "cutout=256",
 
         'model_v42': "min_size=50",
-        'model_v44': "min_size=100"
+        'model_v44': "min_size=100",
+        'model_v45': "min_size=25",
     }
 
     visualize(0.5, 0.3, None,
