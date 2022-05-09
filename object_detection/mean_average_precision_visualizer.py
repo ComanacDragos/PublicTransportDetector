@@ -148,9 +148,12 @@ if __name__ == '__main__':
         #'model_v42': "cutout=192",
         #'model_v43': "cutout=256",
 
-        'model_v42': "min_size=50",
-        'model_v44': "min_size=100",
-        'model_v45': "min_size=25",
+        #'model_v42': "min_size=50",
+        #'model_v44': "min_size=100",
+        #'model_v45': "min_size=25",
+
+        'model_v42': "probability=0.8",
+        'model_v46': "probability=0.6"
     }
 
     visualize(0.5, 0.3, None,
