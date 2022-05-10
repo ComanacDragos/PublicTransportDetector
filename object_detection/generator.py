@@ -47,7 +47,7 @@ class DataGenerator(tf.keras.utils.Sequence):
         batch_y = []
         batch_true_boxes = []
         for i in range(len(batch_indices)):
-            if self.apply_mosaic and np.random.rand() < 0.6:
+            if self.apply_mosaic and np.random.rand() < 0.4:
                 indices = np.random.choice(batch_indices, 4, replace=False)
                 image = mosaic(
                     [Image(self.db_dir, self.image_paths[idx]) for idx in indices],

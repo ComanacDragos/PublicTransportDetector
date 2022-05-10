@@ -153,7 +153,8 @@ if __name__ == '__main__':
         #'model_v45': "min_size=25",
 
         'model_v42': "probability=0.8",
-        'model_v46': "probability=0.6"
+        'model_v46': "probability=0.6",
+        'model_v47': "probability=0.4",
     }
 
     visualize(0.5, 0.3, None,
