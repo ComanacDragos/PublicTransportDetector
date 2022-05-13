@@ -27,15 +27,7 @@ class Image:
             self.clip_boxes(self.min_clip_val, self.max_clip_val)
 
     def with_bboxes(self, width=3):
-        img = self.image
-        for bbox in self.bounding_boxes:
-            color = [0, 0, 0]
-            color[bbox.c % 3] = 255
-            img[bbox.y_min - width:bbox.y_min + width, bbox.x_min:bbox.x_max] = color
-            img[bbox.y_max - width:bbox.y_max + width, bbox.x_min:bbox.x_max] = color
-            img[bbox.y_min:bbox.y_max, bbox.x_min - width:bbox.x_min + width] = color
-            img[bbox.y_min:bbox.y_max, bbox.x_max - width:bbox.x_max + width] = color
-        return img
+        return with_bounding_boxes(self.image, self.bounding_boxes, width)
 
     def clip_boxes(self, min_val, max_val):
         for bbox in self.bounding_boxes:
@@ -88,6 +80,13 @@ class BoundingBox:
 
     def center(self):
         return my_round((self.x_min + self.x_max) / 2), my_round((self.y_min + self.y_max) / 2)
+
+    def rescale_box(self, new_w, new_h, original_w=IMAGE_SIZE, original_h=IMAGE_SIZE):
+        new_x_min = (self.x_min/original_w)*new_w
+        new_x_max = (self.x_max/original_w)*new_w
+        new_y_min = (self.y_min/original_h)*new_h
+        new_y_max = (self.y_max/original_h)*new_h
+        return BoundingBox(self.c, new_x_min, new_y_min, new_x_max, new_y_max, self.score)
 
     def __str__(self):
         return str(self.as_coordinates_array_with_class())
