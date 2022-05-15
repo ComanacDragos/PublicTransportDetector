@@ -273,5 +273,5 @@ def fine_tune():
 if __name__ == '__main__':
     # tf.keras.applications.mobilenet_v2.MobileNetV2().summary()
     # build_model()[0].summary()
-    train()
-    # fine_tune()
+    #train()
+    fine_tune()

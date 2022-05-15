@@ -157,7 +157,8 @@ if __name__ == '__main__':
         #'model_v47': "probability=0.4",
 
         'model_v42': "",
-        'model_v28': ""
+        'model_v42_fine_tuned': "",
+        #'model_v28': ""
     }
 
     visualize(0.5, 0.3, None,
