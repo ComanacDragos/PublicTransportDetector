@@ -218,12 +218,13 @@ def test(score_threshold=0.2, iou_threshold=0.3, batch_size=BATCH_SIZE, batch=No
 
 
 if __name__ == '__main__':
-    PATH_TO_MODEL = "weights/model_v42.h5"
+    PATH_TO_MODEL = "weights/model_v42_fine_tuned.h5"
     test(score_threshold=0.4, batch_size=8, batch=9)
-    #run_on_one_image("documentation\\examples\\bus.jpg", 0.5)
+    #run_on_one_image("documentation\\examples\\bus.jpg", 0.4)
+    #run_on_one_image("documentation\\examples\\bus2.jpg", 0.37)
+    #run_on_one_image("documentation\\examples\\bus3.jpg", 0.4)
+    #run_on_one_image("documentation\\examples\\bus4.jpg", 0.4)
 
-# run_on_one_image("documentation\\examples\\bus2.jpg", 0.45)
-# run_on_one_image("documentation\\examples\\bus3.jpg", 0.2)
-# run_on_one_image("documentation\\examples\\busses.jpg", 0.1)
-# run_on_one_image("documentation\\examples\\car.jpg", 0.06)
-# run_on_one_image("documentation\\examples\\busses2.png", 0.5)
+    #run_on_one_image("documentation\\examples\\busses.jpg", 0.4)
+    #run_on_one_image("documentation\\examples\\busses2.png", 0.5)
+    #run_on_one_image("documentation\\examples\\ubb_bus.jpg", 0.4)

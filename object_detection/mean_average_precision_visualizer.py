@@ -123,10 +123,10 @@ if __name__ == '__main__':
     out = read_files(
         {
             'iou_tp': [0.5],
-            'nms_iou': [],
-            'score': [0.4]
+            'nms_iou': [0.3],
+            'score': []
         },
-        ['model_v27', 'model_v28'],
+        ['model_v42', 'model_v42_fine_tuned'],
         ['model_name', 'mAP', 'Bus', 'Car', 'Vehicle registration plate']
     )
     for k, v in out.items():
