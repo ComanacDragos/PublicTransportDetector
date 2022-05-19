@@ -1,3 +1,4 @@
+import os
 import random
 from typing import List
 
@@ -219,11 +220,15 @@ def test(score_threshold=0.2, iou_threshold=0.3, batch_size=BATCH_SIZE, batch=No
 
 if __name__ == '__main__':
     PATH_TO_MODEL = "weights/model_v42_fine_tuned.h5"
-    test(score_threshold=0.4, batch_size=8, batch=9)
-    #run_on_one_image("documentation\\examples\\bus.jpg", 0.4)
+    #test(score_threshold=0.4, batch_size=8, batch=9)
+    run_on_one_image("documentation\\examples\\bus.jpg", 0.4)
     #run_on_one_image("documentation\\examples\\bus2.jpg", 0.37)
+
     #run_on_one_image("documentation\\examples\\bus3.jpg", 0.4)
     #run_on_one_image("documentation\\examples\\bus4.jpg", 0.4)
+    #run_on_one_image("documentation\\examples\\bus5.jpg", 0.4)
+    #run_on_one_image("documentation\\examples\\bus6.jpg", 0.42)
+    #run_on_one_image("documentation\\examples\\bus7.jpg", 0.4)
 
     #run_on_one_image("documentation\\examples\\busses.jpg", 0.4)
     #run_on_one_image("documentation\\examples\\busses2.png", 0.5)
