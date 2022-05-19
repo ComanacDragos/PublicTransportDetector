@@ -29,7 +29,15 @@ abstract class AbstractLiveFragment : Fragment(){
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
+    /**
+     * Listener for the live bitmaps
+     * @param bitmap input bitmap
+     */
     protected abstract fun listener(bitmap: Bitmap)
+
+    /**
+     * @return the preview on which the live feed from the camera should be drawn
+     */
     protected abstract fun getPreview(): Preview?
 
 

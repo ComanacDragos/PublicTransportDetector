@@ -36,6 +36,10 @@ class DetectionViewModel(application: Application) : AndroidViewModel(applicatio
         configuration = configurationRepository.configuration
     }
 
+    /**
+     * If the detector is not initialized, it initializes it with the given configuration
+     * @param configuration initial configuration which should come from the local database at startup
+     */
     fun initDetector(configuration: Configuration){
         try{
             if(!Detector.isDetectorInitialized())
@@ -46,6 +50,10 @@ class DetectionViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    /**
+     * Sets a new configuration for the detector, and updates the local database
+     * @param configuration new configuration
+     */
     suspend fun setConfiguration(configuration: Configuration) {
         Log.v(TAG, "Setting configuration: $configuration")
         mutableLoading.postValue(true)
@@ -60,6 +68,10 @@ class DetectionViewModel(application: Application) : AndroidViewModel(applicatio
         mutableLoading.postValue(false)
     }
 
+    /**
+     * Performs object detection on the given bitmap
+     * @param inputBitmap input bitmap
+     */
     fun detect(inputBitmap: Bitmap){
         mutableLoading.postValue(true)
         mutableError.postValue(null)
@@ -73,7 +85,12 @@ class DetectionViewModel(application: Application) : AndroidViewModel(applicatio
         mutableLoading.postValue(false)
     }
 
-   suspend fun ocr(bitmap: Bitmap){
+
+    /**
+     * Performs OCR on the given bitmap
+     * @param bitmap input bitmap
+     */
+    suspend fun ocr(bitmap: Bitmap){
         mutableLoading.postValue(true)
         mutableError.postValue(null)
         try{

@@ -16,7 +16,10 @@ private val TAB_TITLES = arrayOf(
 )
 
 class SectionsPagerAdapter(private val context: Context, fm: FragmentManager) : FragmentPagerAdapter(fm) {
-
+    /**
+     * @param position the page where the fragment should be displayed
+     * @return which fragment to show on each page
+     */
     override fun getItem(position: Int): Fragment {
         return when(position){
             0 -> ImageFragment()
@@ -25,10 +28,17 @@ class SectionsPagerAdapter(private val context: Context, fm: FragmentManager) : 
         }
     }
 
+    /**
+     * @return the number of pages the pager has
+     */
     override fun getCount(): Int {
         return 3
     }
 
+    /**
+     * @param position the page where the title is shown
+     * @return title for the given page
+     */
     override fun getPageTitle(position: Int): CharSequence? {
         return context.resources.getString(TAB_TITLES[position])
     }

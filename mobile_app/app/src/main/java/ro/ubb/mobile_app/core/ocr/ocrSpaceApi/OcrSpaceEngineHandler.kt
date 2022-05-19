@@ -9,6 +9,11 @@ import ro.ubb.mobile_app.core.ocr.core.BaseHandler
 import ro.ubb.mobile_app.core.ocr.core.Handler
 
 class OcrSpaceEngineHandler(next: Handler?, private val engine: ENGINE): BaseHandler(next){
+    /**
+     * Specific handler for [OCR space](https://ocr.space/OCRAPI)
+     * If there is an error, or the called engine does not detect any text, the next handler is called
+     * @see BaseHandler
+     */
     override suspend fun handle(base64: String): Response? {
         val engineRepresentation = when(engine){
             ENGINE.ENGINE1 -> "1"

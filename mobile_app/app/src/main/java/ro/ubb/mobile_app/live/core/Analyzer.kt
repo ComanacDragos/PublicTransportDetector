@@ -18,6 +18,10 @@ class Analyzer (
     private val listener: AnalyzerCallback
 ) : ImageAnalysis.Analyzer {
 
+    /**
+     * Receives an image from the live camera pipeline and applies the listener over it
+     * @param image input image
+     */
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(image: ImageProxy) {
         if(image.image == null) return

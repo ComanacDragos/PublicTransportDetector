@@ -10,9 +10,9 @@ import ro.ubb.mobile_app.core.TAG
 import kotlin.math.sin
 import kotlin.random.Random
 
-/*
-Math formulas from:
-http://www.ecircuitcenter.com/Calc/draw_sine1/draw_sine_canvas_topic1.html
+/**
+Draws a sinusoidal curve on the screen, following the math formulas from:
+[Draw a Sine Wave on the Canvas](http://www.ecircuitcenter.com/Calc/draw_sine1/draw_sine_canvas_topic1.html)
  */
 class VoiceView(context: Context, attributeSet: AttributeSet) :
     SurfaceView(context, attributeSet) {

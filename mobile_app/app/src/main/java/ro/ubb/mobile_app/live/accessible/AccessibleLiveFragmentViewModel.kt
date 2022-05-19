@@ -23,6 +23,10 @@ class AccessibleLiveFragmentViewModel(application: Application) : AndroidViewMod
 
     var ocrInProgress = false
 
+    /**
+     * Calls the [OCR.detect] on a given bitmap
+     * @param bitmap input bitmap
+     */
     suspend fun ocr(bitmap: Bitmap){
         ocrInProgress = true
         try{
@@ -33,11 +37,18 @@ class AccessibleLiveFragmentViewModel(application: Application) : AndroidViewMod
         ocrInProgress = false
     }
 
+    /**
+     * Merges the new detections with the current detections using [Detector.mergeDetections]
+     * @param newDetections the new list of predicted bounding boxes
+     */
     fun mergeDetections(newDetections: List<DetectionResult>){
         mutableDetections.postValue(mutableDetections.value?.let
             { Detector.mergeDetections(it, newDetections) })
     }
 
+    /**
+     * Empties the list of bounding boxes
+     */
     fun resetDetections(){
         mutableDetections.postValue(LinkedList())
     }

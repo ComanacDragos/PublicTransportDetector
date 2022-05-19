@@ -21,10 +21,18 @@ class LiveFragment : AbstractLiveFragment() {
         detectionView = DetectionView(resultView)
     }
 
+    /**
+     * Performs object detection on the given bitmap and calls [DetectionView.draw] in order to draw
+     * them on the screen
+     * @param bitmap input bitmap
+     */
     override fun listener(bitmap: Bitmap) {
         detectionView.draw(Detector.detect(bitmap))
     }
 
+    /**
+     * @return Returns the preview on which the live images from the camera are drawn
+     */
     override fun getPreview(): Preview {
         return Preview.Builder().build()
             .also { it.setSurfaceProvider(cameraView.surfaceProvider) }

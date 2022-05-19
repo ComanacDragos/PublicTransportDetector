@@ -4,6 +4,10 @@ import android.graphics.Bitmap
 import android.util.Base64
 import java.io.ByteArrayOutputStream
 
+/**
+ * @param bitmap input bitmap
+ * @return the input bitmap as a base64 string
+ */
 fun toBase64(bitmap: Bitmap): String{
     val byteArrayOutputStream = ByteArrayOutputStream()
     bitmap.compress(Bitmap.CompressFormat.JPEG, 10, byteArrayOutputStream)

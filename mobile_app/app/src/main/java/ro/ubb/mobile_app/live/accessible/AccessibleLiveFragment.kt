@@ -69,11 +69,19 @@ class AccessibleLiveFragment: AbstractLiveFragment(), TextToSpeech.OnInitListene
         })
     }
 
+    /**
+     * Activates the sinusoidal wave and start the TTS
+     * @param text text to be played on the speakers using TTS
+     */
     private fun speakOut(text: String) {
         voiceView.invalidate()
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null,"")
     }
 
+    /**
+     * Applies object detection and OCR on the given bitmap
+     * @param bitmap input bitmap
+     */
     override fun listener(bitmap: Bitmap) {
         accessibleViewModel.mergeDetections(Detector.detect(bitmap))
         accessibleViewModel.detections.value?.apply {
@@ -84,6 +92,12 @@ class AccessibleLiveFragment: AbstractLiveFragment(), TextToSpeech.OnInitListene
         }
     }
 
+    /**
+     * Converts the list of object detection results to a string
+     * @param detectedObjectList list of predicted bounding boxes
+     * @return the bounding boxes in the form of a string of the following format:
+     * N_1 Class_1, N_2 class_2, ..., N_m class_m
+     */
     private fun detectionsToString(detectedObjectList: List<DetectionResult>): String{
         val counter = HashMap<String, Int>()
         detectedObjectList.forEach{
@@ -106,6 +120,9 @@ class AccessibleLiveFragment: AbstractLiveFragment(), TextToSpeech.OnInitListene
         return text
     }
 
+    /**
+     * Stops the TTS service
+     */
     private fun stopTalking(){
         if(this::tts.isInitialized){
             tts.stop()
@@ -134,8 +151,10 @@ class AccessibleLiveFragment: AbstractLiveFragment(), TextToSpeech.OnInitListene
         }
     }
 
+    /**
+     * @return null in order to not show the image preview
+     */
     override fun getPreview(): Preview? {
-        //Returns null in order to not show the image preview
         return null
     }
 

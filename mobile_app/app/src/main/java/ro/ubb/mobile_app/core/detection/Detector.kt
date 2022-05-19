@@ -23,6 +23,13 @@ object Detector{
         return this::detector.isInitialized
     }
 
+    /**
+     * Sets the new configuration
+     * If modelName, maxNoBoxes or the scoreThreshold variables are changed,
+     * then the detector is initialized again with the new parameters,
+     * otherwise, only the configuration is changed
+     * @param configuration new configuration
+     */
     fun setConfiguration(configuration: Configuration){
         Log.v(TAG, "Detector settings:\n" +
                 "name: ${configuration.modelName}\n" +
@@ -58,6 +65,15 @@ object Detector{
         this.configuration = configuration
     }
 
+    /**
+     * Performs the object detection pipeline on a Bitmap
+     * 1. The bitmap is converted to a TensorImage
+     * 2. The image is run through the object detector
+     * 3. The results are converted to [DetectionResult]
+     * 4. Non-maximum Suppression (NMS) is applied in order to filter extra boxes
+     * @param bitmap the input bitmap
+     * @return results of object detection, as a list
+     */
     private fun runDetection(bitmap: Bitmap): List<DetectionResult> {
         var start = System.currentTimeMillis()
         val image = TensorImage.fromBitmap(bitmap)
@@ -87,6 +103,12 @@ object Detector{
         return nmsResults
     }
 
+    /**
+     * Performs Intersection over Union (IOU)
+     * @param box bounding box
+     * @param otherBox the other bounding box
+     * @return the division between area of the intersection and are of union between the 2 boxes
+     */
     fun intersectionOverUnion(box: RectF, otherBox: RectF): Float{
         val intersectWidth = max(min(box.right, otherBox.right) - max(box.left, otherBox.left), 0f)
         val intersectHeight = max(min(box.bottom, otherBox.bottom) - max(box.top, otherBox.top), 0f)
@@ -96,6 +118,11 @@ object Detector{
         return intersect / union
     }
 
+    /**
+     * Filters out extra boxes that overlap too much (high IOU) with other boxes with high scores (NMS)
+     * @param results list of unfiltered object detection results
+     * @return the input list of results, but filtered
+     */
     fun nonMaximumSuppression(results: List<DetectionResult>): List<DetectionResult>{
         val newResults = LinkedList<DetectionResult>()
         results.sortedByDescending { it.score }
@@ -115,6 +142,11 @@ object Detector{
         return newResults
     }
 
+    /**
+     * Calls the runDetection method, but firstly the bitmap is rescaled
+     * @param bitmap the initial bitmap
+     * @return list of object detection results on the rescaled bitmap
+     */
     fun detect(bitmap: Bitmap): List<DetectionResult>{
         return runDetection(Bitmap.createScaledBitmap(
             bitmap,
@@ -122,6 +154,11 @@ object Detector{
         ))
     }
 
+    /**
+     * Performs object detection on a bitmap and returns a copy that has bounding boxes drawn on it
+     * @param bitmap the initial bitmap
+     * @return another bitmap, but with the prediction drawn over it
+     */
     fun imageWithBoxes(bitmap: Bitmap): Bitmap{
         val resultToDisplay = detect(bitmap)
         val outputBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
@@ -130,6 +167,10 @@ object Detector{
         return outputBitmap
     }
 
+    /**
+     * Logs a list of object detection results
+     * @param results list of object detection results
+     */
     private fun logResults(results : List<DetectionResult>) {
         Log.d(TAG, "#detections: ${results.size}")
         for ((i, obj) in results.withIndex()) {
@@ -141,12 +182,23 @@ object Detector{
         }
     }
 
+    /**
+     * Merges two lists of object detection results, then applies NMS on the merged list
+     * @param detections list of object detection results
+     * @param newDetections list of object detection results
+     * @return merged and filtered list of object detection results
+     */
     fun mergeDetections(detections: List<DetectionResult>, newDetections: List<DetectionResult>): List<DetectionResult>{
         val finalResults: MutableList<DetectionResult> = LinkedList(detections)
         finalResults.addAll(newDetections)
         return nonMaximumSuppression(finalResults)
     }
 
+    /**
+     * Draws the given object detection results on the given canvas
+     * @param canvas can be a static image, or the live detection screen
+     * @param detectionResults object detection predictions
+     */
     fun drawDetectionResult(
         canvas: Canvas,
         detectionResults: List<DetectionResult>

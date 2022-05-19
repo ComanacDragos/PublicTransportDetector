@@ -27,6 +27,10 @@ class DetectionView(surfaceView: SurfaceView) :
     override fun surfaceDestroyed(holder: SurfaceHolder) {
     }
 
+    /**
+     * Draws the list of object detection bounding boxes on the screen
+     * @param detectedObjectList list of predicted bounding boxes
+     */
     fun draw(detectedObjectList: List<DetectionResult>){
         val canvas: Canvas? = surfaceHolder.lockCanvas()
         if(canvas!=null){
