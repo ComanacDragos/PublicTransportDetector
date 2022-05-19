@@ -6,6 +6,14 @@ Aim: provide a system that aids the visually impaired persons in using any publi
 
 ![cover](https://user-images.githubusercontent.com/46956225/169350678-1f402c18-87b7-4edb-ba9b-42f544f38fcf.png)
 
+Bounding box color meanings:
+
+Red: Bus
+
+Green: Car
+
+Blue: License plate
+<hr>
 <a href="https://youtu.be/KleiULI0XbI">Early stages presentation</a>
 
 <a href="https://github.com/ComanacDragos/PublicTransportDetector/tree/main/object_detection/documentation/results/final_results_model_v42_fine_tuned">v42_fine_tuned results</a>
