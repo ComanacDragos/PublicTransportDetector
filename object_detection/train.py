@@ -15,6 +15,9 @@ LEAKY_RELU_ALPHA = 0.1
 
 
 class BlockCreator:
+    """
+    Facade for creating types of neural network blocks
+    """
     @staticmethod
     def conv_block(inputs, kernel_size=3, filters=32, activation=True, add_skip_connection=True, strides=1):
         x = Conv2D(kernel_size=kernel_size, filters=filters, padding="same", strides=strides,

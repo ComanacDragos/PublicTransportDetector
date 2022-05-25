@@ -4,6 +4,12 @@ from utils_file import to_pickle, open_pickle, open_json
 
 
 def extract_image_file_names(images_data):
+    """
+    Extracts the ids and the file names
+
+    :param images_data: data about the images
+    :return: id to file name dictionary
+    """
     id_to_file_name = {}
     for image in images_data:
         id_to_file_name[image['id']] = image['file_name']
@@ -11,6 +17,14 @@ def extract_image_file_names(images_data):
 
 
 def extract_bounding_boxes(annotations, categories, id_to_file_name):
+    """
+    Extracts for each image the bounding boxes
+
+    :param annotations: COCO annotations
+    :param categories: COCO id to category
+    :param id_to_file_name: dictionary mapping the id of an image to it's file name
+    :return: dictionary mapping each file to it's corresponding bounding boxes
+    """
     file_to_boxes = {}
     for annotation in annotations:
         file_name = id_to_file_name[annotation['image_id']]

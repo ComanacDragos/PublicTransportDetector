@@ -9,6 +9,16 @@ from preprocessor import resize_image
 
 @tf.function
 def cutout(x, crop_size):
+    """
+    Applies cutout on an image
+    The maximum size of the cutout patch is (2*crop_size)x(2*crop_size)
+    If the patch does not fit in the image, then the patch is clipped
+
+    :param x: tensor containing image
+    :param crop_size: half the length of the cutout square side
+
+    :return: cutout image
+    """
     image_shape = tf.convert_to_tensor((IMAGE_SIZE, IMAGE_SIZE))
 
     x_coord = tf.random.uniform(shape=[], maxval=IMAGE_SIZE, dtype=tf.int32)
@@ -45,6 +55,8 @@ def cutout(x, crop_size):
 class Cutout(tf.keras.layers.Layer):
     def __init__(self, crop_size, **kwargs):
         """
+        Keras layer applying cutout
+
         :param crop_size: size of the crop
         """
         super().__init__(**kwargs)
@@ -142,6 +154,14 @@ class RandomContrast(tf.keras.layers.Layer):
 
 @tf.function
 def apply_transformation(layers, x, training):
+    """
+    Applies a random layer on the input tensor x
+
+    :param layers: list of 4 layers
+    :param x: input tensor
+    :param training: boolean indicating if the function is called during training or not
+    :return: transformed tensor
+    """
     transformation = tf.random.uniform(shape=[], maxval=len(layers), dtype=tf.int32)
     if tf.equal(transformation, tf.constant(0)):
         return layers[0].call(x, training)
@@ -170,6 +190,14 @@ class RandomColorAugmentation(tf.keras.layers.Layer):
 
 
 def mosaic(images, min_size=50):
+    """
+    Mosaic data augmentation
+    Combines 4 images into a single one by putting them in a grid, with random sizes
+
+    :param images: list of 4 images
+    :param min_size: the minimum size each image will have in the end
+    :return: a single image containing the 4 input images
+    """
     x_cut = np.random.randint(min_size, IMAGE_SIZE - min_size)
     y_cut = np.random.randint(min_size, IMAGE_SIZE - min_size)
     resize_image(images[0], h=y_cut, w=x_cut)

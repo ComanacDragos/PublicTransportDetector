@@ -88,11 +88,14 @@ def clip_value(value):
 
 def generate_output_array(image: Image, anchors):
     """
-    each example is mapped to the following:
-    array of shape C x C x ANCHORS x (tx + ty + tw + th + obj_score + C)
-    - tx, ty the offsets with respect to the grid cell
-    - tw, th the offsets with respect to the anchor
-    - C number of classes
+    Maps the input image to it's corresponding tensor output
+
+    :param image: input image
+    :param anchors: list of anchors
+    :return: array of shape C x C x ANCHORS x (tx + ty + tw + th + obj_score + C), where:
+     tx, ty are the offsets with respect to the grid cell,
+     tw, th are the offsets with respect to the anchor, and
+     C is the number of classes
     """
     no_anchors = anchors.shape[0]
     output = np.zeros((GRID_SIZE, GRID_SIZE, no_anchors, (5 + len(ENCODE_LABEL))))

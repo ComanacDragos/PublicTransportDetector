@@ -10,6 +10,9 @@ paths = {
 
 
 def process_annotations(files, classes, no_files):
+    """
+    Multi-threaded worker for computing the number of files and number of bounding boxes for each class
+    """
     for file in files:
         contains_class = {}
         with open(file) as f:
@@ -30,6 +33,9 @@ def process_annotations(files, classes, no_files):
 
 
 def sizes():
+    """
+    Driver function for computing statistics on the dataset
+    """
     stages = {}
     for stage, path in paths.items():
         classes = {}
@@ -42,6 +48,9 @@ def sizes():
 
 
 def max_labels_worker(images, dir, output, lock):
+    """
+    Multi-threaded worker for computing the maximum number of bounding boxes an image can have
+    """
     local_output = []
     for path in images:
         img = Image(dir, path)

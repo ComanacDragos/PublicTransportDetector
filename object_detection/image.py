@@ -96,7 +96,7 @@ def iou(bbox, other_bbox):
     """
     :param bbox: array of coordinates x_min, y_min, x_max, y_max
     :param other_bbox: array of coordinates x_min, y_min, x_max, y_max
-    :return: IOU
+    :return: Intersection/Union
     """
     x_min, y_min, x_max, y_max = bbox
     other_x_min, other_y_min, other_x_max, other_y_max = other_bbox

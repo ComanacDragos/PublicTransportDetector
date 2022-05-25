@@ -7,7 +7,7 @@ from image import *
 
 def resize_image(image: Image, h=IMAGE_SIZE, w=IMAGE_SIZE):
     """
-    :param img_arr: original image as a numpy array
+    :param image: Image
     :param bboxes: bboxes as numpy array where each row is 'x_min', 'y_min', 'x_max', 'y_max', "class_id"
     :param h: resized height dimension of image
     :param w: resized weight dimension of image
@@ -34,6 +34,13 @@ def resize_image(image: Image, h=IMAGE_SIZE, w=IMAGE_SIZE):
 
 
 def preprocess_dataset_worker(image_files, dir, new_dir):
+    """
+    Multi-threaded worker function for resizing a list of images
+
+    :param image_files: list with the name of the images only, including extension
+    :param dir: path to the directory containing the images in the list of image paths
+    :param new_dir: the new directory where the resized files are saved
+    """
     total = len(image_files)
     for i, image_file in enumerate(image_files):
         image = Image(dir, image_file, max_clip_val=1e10)
@@ -44,6 +51,10 @@ def preprocess_dataset_worker(image_files, dir, new_dir):
 
 
 def preprocess_dataset():
+    """
+    Driver function that starts multiple threads in order to resize a dataset
+    """
+    # dir -> new dir
     dirs = {
         PATH_TO_TRAIN_UNPROCESSED: PATH_TO_TRAIN,
         #PATH_TO_VALIDATION_UNPROCESSED: PATH_TO_VALIDATION,

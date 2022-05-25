@@ -9,6 +9,13 @@ from train import *
 
 
 def process_ground_truth_for_one(ground_truth, no_anchors):
+    """
+    Extracts from a single ground truth a tensor of scores, boxes and classes
+
+    :param ground_truth: ground truth
+    :param no_anchors: number of anchors
+    :return: scores, boxes, classes
+    """
     conf_scores, boxes, classes = [], [], []
     cell_size = IMAGE_SIZE / GRID_SIZE
     for cx in range(GRID_SIZE):
@@ -27,6 +34,13 @@ def process_ground_truth_for_one(ground_truth, no_anchors):
 
 
 def process_ground_truth(ground_truth, no_anchors):
+    """
+    Extracts from a batch of ground truth a tensor of scores, boxes and classes
+
+    :param ground_truth: ground truth
+    :param no_anchors: number of anchors
+    :return: scores, boxes, classes
+    """
     conf_scores, boxes, classes, valid_detections = [], [], [], []
     for i in range(ground_truth.shape[0]):
         conf_scores_i, boxes_i, classes_i = process_ground_truth_for_one(ground_truth[i], no_anchors)
@@ -47,6 +61,14 @@ def softmax(x, t=1):
 
 
 def output_processor(output, anchors, apply_argmax=True):
+    """
+    Extracts from the output scores, boxes, and classes
+
+    :param output: prediction made by model
+    :param anchors: anchors corresponding to the dataset
+    :param apply_argmax: indicates whether or not argmax is applied on classes
+    :return: scores, boxes, classes
+    """
     cell_grid = create_cell_grid(len(anchors))
     cell_size = IMAGE_SIZE / GRID_SIZE
     xy = (K.sigmoid(output[..., :2]) + cell_grid) * cell_size
@@ -65,6 +87,16 @@ def output_processor(output, anchors, apply_argmax=True):
 
 
 def non_max_suppression(y_pred, anchors, iou_threshold, score_threshold, batch_size=BATCH_SIZE):
+    """
+    Applies non-maximum suppression in order to prune extra bounding boxes
+
+    :param y_pred: raw prediction
+    :param anchors: anchors corresponding to the dataset
+    :param iou_threshold: max IOU two boxes with the same class can have
+    :param score_threshold: the minimum score a bounding box can have
+    :param batch_size: batch size
+    :return: filtered bonding boxes in the form of scores, boxes, classes, number of valid predictions
+    """
     _, boxes, classes = output_processor(y_pred, anchors, apply_argmax=False)
     boxes = tf.reshape(boxes, (-1, GRID_SIZE * GRID_SIZE * len(anchors), 4))
     boxes = tf.expand_dims(boxes, axis=2)
@@ -76,6 +108,18 @@ def non_max_suppression(y_pred, anchors, iou_threshold, score_threshold, batch_s
 
 
 def inference(model, inputs, score_threshold=0.6, iou_threshold=0.5, batch_size=BATCH_SIZE, use_predict_fn=True):
+    """
+    Performs inference on a set of inputs
+    Inference: Image -> Model -> NMS
+
+    :param model: neural network model
+    :param inputs: a batch of images
+    :param score_threshold: the minimum score a bounding box can have
+    :param iou_threshold: max IOU two boxes with the same class can have
+    :param batch_size: batch size
+    :param use_predict_fn: if true, the predict function of the model is used, otherwise, is called in a functional way
+    :return: predicted bonding boxes in the form of scores, boxes, classes, number of valid predictions
+    """
     anchors = process_anchors(ANCHORS_PATH)
     dummy_array = np.zeros((1, 1, 1, 1, MAX_BOXES_PER_IMAGES, 4))
     if use_predict_fn:
@@ -86,6 +130,15 @@ def inference(model, inputs, score_threshold=0.6, iou_threshold=0.5, batch_size=
 
 
 def extract_boxes(scores, boxes, classes, valid_detections) -> List[List[BoundingBox]]:
+    """
+    Extracts a list of bounding boxes in our format from each item in the batch
+
+    :param scores: batch of scores
+    :param boxes: batch of boxes
+    :param classes: batch of classes
+    :param valid_detections: batch of valid detections
+    :return: list of lists with BoundingBox objects
+    """
     output_boxes = []
     for i in range(len(boxes)):
         bboxes = []
@@ -103,6 +156,15 @@ def extract_boxes(scores, boxes, classes, valid_detections) -> List[List[Boundin
 
 
 def image_to_bounding_boxes(model, path, score_threshold=0.4, iou_threshold=0.3):
+    """
+    Performs the steps for processing an image and getting the bounding boxes for it
+
+    :param model: neural network
+    :param path: path to the image
+    :param score_threshold: the minimum score a bounding box can have
+    :param iou_threshold: max IOU two boxes with the same class can have
+    :return: list of bounding boxes for the given image
+    """
     image = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
 
     image = cv2.resize(image, (IMAGE_SIZE, IMAGE_SIZE))
@@ -121,11 +183,27 @@ def image_to_bounding_boxes(model, path, score_threshold=0.4, iou_threshold=0.3)
 
 
 def draw_images(images, scores, boxes, classes, valid_detections):
+    """
+    Draws the bounding boxes on a batch of images
+
+    :param images: batch of images as a tensor
+    :param scores: batch of scores
+    :param boxes: batch of boxes
+    :param classes: batch of classes
+    :param valid_detections: batch of valid detections
+    :return: the input images, but with bounding boxes over them as a tensor
+    """
     output_boxes = extract_boxes(scores, boxes, classes, valid_detections)
     return [with_bounding_boxes(img, bboxes) for img, bboxes in zip(images, output_boxes)]
 
 
 def run_on_one_image(path, score_threshold):
+    """
+    Driver function for loading, performing object detection and displaying the results
+
+    :param path: path to the image
+    :param score_threshold: minimum score a bounding box can have
+    """
     model, true_boxes = build_model()
     if "fine_tuned" in PATH_TO_MODEL:
         model.trainable = True

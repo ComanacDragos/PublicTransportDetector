@@ -6,10 +6,24 @@ from utils_file import *
 
 
 def box_to_result_format(box: BoundingBox, image_id, category_to_id):
+    """
+    Wrapper function for box_to_result_format_exact_category
+
+    :param box: the bounding box in our format (x_min, y_min, x_max, y_max)
+    :param image_id: id of the image which contains the bounding box
+    :param category_to_id: dictionary that maps a category to it's official COCO id
+    """
     return box_to_result_format_exact_category(box, image_id, category_to_id[DECODE_LABEL[box.c]])
 
 
 def box_to_result_format_exact_category(box: BoundingBox, image_id, category_id):
+    """
+    Converts a bounding box in our format to the COCO format
+
+    :param box: the bounding box in our format (x_min, y_min, x_max, y_max)
+    :param image_id: id of the image which contains the bounding box
+    :param category_id:  official COCO category id
+    """
     x, y = box.center()
     w, h = box.width_height()
 
@@ -22,6 +36,12 @@ def box_to_result_format_exact_category(box: BoundingBox, image_id, category_id)
 
 
 def create_results(split, score):
+    """
+    Driver function that creates the results in COCO format
+
+    :param split: the dataset split for which the results are created, can be test-dev (test) or val (validation)
+    :param score: minimum score that a bounding box can have
+    """
     if split == 'test-dev':
         PATH_TO_DIR = PATH_TO_TEST
     elif split == 'val':
@@ -58,6 +78,12 @@ def create_results(split, score):
 
 
 def filter_results(new_score, results):
+    """
+    Keeps the results that have the score greater than a new score
+
+    :param new_score: the new minimum score
+    :param results: list of results to be filtered
+    """
     new_results = []
     for result in results:
         if result['score'] >= new_score:
@@ -66,6 +92,12 @@ def filter_results(new_score, results):
 
 
 def statistics(file, path_to_dir):
+    """
+    Print statistics about the scores on a given dataset split
+
+    :param file: path the the file where the results are stored in json format
+    :param path_to_dir: the path to the directory of the dataset split
+    """
     results = open_json(file)
 
     d = {}
@@ -93,6 +125,12 @@ def statistics(file, path_to_dir):
 
 
 def convert_bounding_boxes(split, score):
+    """
+    Driver function for resizing the results
+
+    :param split: the split on which we resize the results
+    :param score: new minimum score for the results
+    """
     if split == 'test-dev':
         PATH_TO_DIR = PATH_TO_TEST
         PATH_TO_DIR_UNPROCESSED = PATH_TO_TEST_UNPROCESSED
@@ -130,7 +168,7 @@ def convert_bounding_boxes(split, score):
     to_json(boxes, f"coco_results/resized/{split}_results_score={str(int(score * 100))}.json")
 
 
-def filter_results_test(split, score):
+def test_filter_results(split, score):
     results = open_json(f"coco_results/{split}_results_score=30.json")
     file = f"coco_results/{split}_results_score={str(int(score * 100))}.json"
     to_json(filter_results(score, results), file)

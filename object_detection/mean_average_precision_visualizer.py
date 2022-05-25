@@ -17,6 +17,14 @@ def convert(string):
 
 
 def read_file(file, model_filter, column_filter):
+    """
+    Reads a CSV file
+
+    :param file: path to the file
+    :param model_filter: rows that should appear in the result
+    :param column_filter: columns that should appear in the result
+    :return: dictionary representing the filtered CSV file
+    """
     with open(file) as f:
         lines = f.readlines()
         index_to_attr = {i: attr for i, attr in enumerate(lines[0].split(','))
@@ -32,6 +40,12 @@ def read_file(file, model_filter, column_filter):
 
 
 def extract_data_from_file(file):
+    """
+    Extracts information about a file
+
+    :param file: file in the format iou_tp=float_nms_iou=float_score=float.csv
+    :return: dictionary mapping the attributes found in the file name to their float values
+    """
     data = {}
     for pair in re.split('(?<=[0-9])_', file[:file.rfind(".")]):
         split = pair.split('=')
@@ -41,9 +55,12 @@ def extract_data_from_file(file):
 
 def read_files(file_filter, model_filter, column_filter):
     """
-    filter is a dictionary of the form
-    keys are the attributes that are filtered
-    values are the values of the attributes
+    Reads multiple csv files
+
+    :param file_filter: files that should appear in the results
+    :param model_filter: rows that should appear in the result
+    :param column_filter: columns that should appear in the result
+    :return: dictionary mapping files to their data
     """
     files = {}
     for directory in os.listdir('mean_average_precisions'):

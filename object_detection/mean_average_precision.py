@@ -32,6 +32,18 @@ def voc_ap(rec, prec):
 
 
 def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_threshold, score_threshold, no_classes=len(ENCODE_LABEL)):
+    """
+    Computes for each class the average precision for a batch
+
+    :param y_true: ground truth
+    :param y_pred: predicted
+    :param anchors: list of anchors
+    :param iou_threshold: minimum IOU for a true positive
+    :param nms_iou_threshold: maximum IOU for NMS
+    :param score_threshold: minimum score a bounding box can have
+    :param no_classes: number of classes
+    :return: dictionary mapping a class to it's corresponding average precision
+    """
     start = time.perf_counter()
     true_boxes_all = extract_boxes(*process_ground_truth(y_true, len(anchors)))
     logging.debug(f"Ground truth processing: {time.perf_counter() - start}")
@@ -92,6 +104,17 @@ def mean_average_precision(y_true, y_pred, anchors, iou_threshold, nms_iou_thres
 
 def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_positive_threshold, nms_iou_threshold,
                    score_threshold, no_classes=len(ENCODE_LABEL)):
+    """
+    Computes mean average precision and average precisions for an entire dataset
+
+    :param model: neural network under evaluation
+    :param generator: generator for the dataset
+    :param iou_true_positive_threshold: minimum IOU for a true positive
+    :param nms_iou_threshold: maximum IOU for NMS
+    :param score_threshold: minimum score a bounding box can have
+    :param no_classes: number of classes
+    :return: mAP, average precisions, number of bounding boxes detected for each class
+    """
     average_precisions = []
     ap_to_class_all = {c: [] for c in range(no_classes)}
     for i in range(len(generator)):
@@ -123,6 +146,16 @@ def evaluate_model(model: tf.keras.Model, generator: DataGenerator, iou_true_pos
 
 
 def log_to_file_map(model, generator, model_name, iou_true_positive_threshold, nms_iou_threshold, score_threshold):
+    """
+    Logs to a file the results
+
+    :param model: neural network under evaluation
+    :param generator: generator for the dataset
+    :param model_name: the name of the model
+    :param iou_true_positive_threshold: minimum IOU for a true positive
+    :param nms_iou_threshold: maximum IOU for NMS
+    :param score_threshold: minimum score a bounding box can have
+    """
     dir = f"mean_average_precisions/iou_tp={iou_true_positive_threshold}"
     file = f"{dir}/iou_tp={iou_true_positive_threshold}_nms_iou={nms_iou_threshold}_score={score_threshold}.csv"
     if not os.path.exists(file):

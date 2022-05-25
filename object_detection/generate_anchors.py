@@ -5,6 +5,14 @@ from image import *
 
 
 def _worker(paths, boxes, dir, mutex):
+    """
+    Multi-threaded worker for reading the bounding boxes
+
+    :param paths: list composed of names of images
+    :param boxes: global variable holding all boxes
+    :param dir: the directory which holds the images
+    :param mutex: lock for accessing the boxes global variable
+    """
     local_boxes = []
     for path in paths:
         image_boxes = Image(dir, path).bounding_boxes_as_arrays()
@@ -15,6 +23,11 @@ def _worker(paths, boxes, dir, mutex):
 
 
 def read_boxes():
+    """
+    Reads all bounding boxes in the dataset using multiple threads
+
+    :return: list of all bounding boxes
+    """
     directories = [
         PATH_TO_TRAIN,
         #PATH_TO_TEST,
@@ -33,18 +46,38 @@ def read_boxes():
 
 
 def distance(centroid, box):
+    """
+    Computes the distance between a centroid and a bounding box (the center of the centroid is the center of the box)
+
+    :param centroid: pair of width and height
+    :param box: bounding box
+    :return: 1-IOU(centroid, box)
+    """
     x, y = BoundingBox(-1, *box).center()
     w, h = centroid
     return 1 - iou([x-w//2, y-h//w, x+w//2, y+h//2], box)
 
 
 def generate_centroid():
+    """
+    Generates a random width and height that make a centroid
+
+    :return: random width, height pair, between 1 and IMAGE_SIZE global parameter
+    """
     width = random.randint(1, IMAGE_SIZE)
     height = random.randint(1, IMAGE_SIZE)
     return width, height
 
 
 def generate_anchors(no_anchors, bounding_boxes=None, prior_centroids=None):
+    """
+    K-Means algorithm
+
+    :param no_anchors: the number of desired anchors/centroids
+    :param bounding_boxes: the bounding boxes on which K-Means is applied, if None, then the boxes are read
+    :param prior_centroids: previously computed centroids, if None, they are generated randomly from scratch
+    :return: list of generated anchors
+    """
     if not bounding_boxes:
         boxes = read_boxes()
     else:
@@ -99,6 +132,11 @@ def generate_anchors(no_anchors, bounding_boxes=None, prior_centroids=None):
 
 
 def run_generate_anchors(no_anchors):
+    """
+    Driver function for running K-Means and saving the results
+
+    :param no_anchors: the number of desired anchors
+    """
     start = time.time()
 
     anchors = generate_anchors(no_anchors=no_anchors)
