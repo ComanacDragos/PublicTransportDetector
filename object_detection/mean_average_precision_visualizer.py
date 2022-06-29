@@ -159,7 +159,7 @@ if __name__ == '__main__':
         #'model_v35': "bs=16",
         #'model_v36': "bs=8",
 
-        #'model_v39': "cutout=64",
+        #'model_v36': "cutout=64",
         #'model_v40': "cutout=32",
         #'model_v41': "cutout=128",
         #'model_v42': "cutout=192",
@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
         'model_v42': "",
         'model_v42_fine_tuned': "",
-        #'model_v28': ""
+        'model_v28': ""
     }
 
     visualize(0.5, 0.3, None,

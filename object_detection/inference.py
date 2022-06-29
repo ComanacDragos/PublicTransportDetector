@@ -246,13 +246,16 @@ def run_on_one_image(path, score_threshold):
     plt.show()
 
 
-def test(score_threshold=0.2, iou_threshold=0.3, batch_size=BATCH_SIZE, batch=None):
-    generator = DataGenerator(PATH_TO_TEST, shuffle=False, batch_size=batch_size)
+def test(path_to_model, score_threshold=0.2, iou_threshold=0.3, batch_size=BATCH_SIZE, batch=None, _generator=None):
+    if _generator is None:
+        generator = DataGenerator(PATH_TO_TEST, shuffle=False, batch_size=batch_size)
+    else:
+        generator = _generator
     print('#Batches:', len(generator))
     model, true_boxes = build_model()
-    if "fine_tuned" in PATH_TO_MODEL:
+    if "fine_tuned" in path_to_model:
         model.trainable = True
-    model.load_weights(PATH_TO_MODEL)
+    model.load_weights(path_to_model)
 
     model.summary()
     model.compile(optimizer=tf.keras.optimizers.Adam(),
@@ -298,7 +301,7 @@ def test(score_threshold=0.2, iou_threshold=0.3, batch_size=BATCH_SIZE, batch=No
 
 if __name__ == '__main__':
     PATH_TO_MODEL = "weights/model_v42_fine_tuned.h5"
-    #test(score_threshold=0.4, batch_size=8, batch=9)
+    #test(PATH_TO_MODEL, score_threshold=0.4, batch_size=8, batch=9)
     run_on_one_image("documentation\\examples\\bus.jpg", 0.4)
     #run_on_one_image("documentation\\examples\\bus2.jpg", 0.37)
 
