@@ -14,6 +14,7 @@ Green: Car
 
 Blue: License plate
 <hr>
+<a href="https://youtu.be/gsEJQS9rsGU">Final demo</a></br>
 <a href="https://youtu.be/KleiULI0XbI">Early stages presentation</a>
 
 <a href="https://github.com/ComanacDragos/PublicTransportDetector/tree/main/object_detection/documentation/results/final_results_model_v42_fine_tuned">v42_fine_tuned results</a>
